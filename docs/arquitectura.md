@@ -34,11 +34,11 @@ Cada módulo es un contexto del negocio con sus propias capas.
 
 | Módulo | Responsabilidad | Historias |
 |---|---|---|
-| `iam` | Usuarios, roles, autenticación JWT, consentimiento | HU-05, HU-14 |
-| `catalog` | Obras, autores, temas, ejemplares, ubicaciones, importación CSV | HU-06, HU-07, HU-08, HU-19 |
-| `search` | Búsqueda, filtros, detalle público, cita, analítica | HU-01–04, HU-16, HU-20 |
-| `loans` | Préstamos, devoluciones, alertas, avisos de disponibilidad | HU-09, HU-10, HU-15 |
-| `help` | Asistente guiado sin IA y solicitudes de ayuda presencial | HU-17, HU-18 |
+| `iam` | Usuarios, roles, autenticación JWT, consentimiento, eliminación de cuenta | HU-09, HU-16, HU-17, HU-18 |
+| `catalog` | Obras, autores, temas, ejemplares, ubicaciones, importación CSV | HU-10, HU-11, HU-12, HU-19 |
+| `search` | Búsqueda tolerante, filtros, detalle público, disponibilidad | HU-01, HU-02, HU-03, HU-06, HU-07, HU-08, HU-13 |
+| `loans` | Préstamos, devoluciones, reservas, alertas | HU-14, HU-20, HU-21 |
+| Frontend transversal | Accesibilidad, QR, tutorial | HU-04, HU-05, HU-15 |
 | `shared` | Configuración, errores, logs, Prisma, salud, correo | Transversal |
 
 ## 4. Capas y regla de dependencia

@@ -2,29 +2,39 @@
 
 Una sección por sprint. Se completa el día del Planning, con la grabación enlazada en [`evidencias.md`](evidencias.md).
 
-## Sprint 1 · 8 – 10 nov 2026
+## Sprint 1 · 9 – 13 nov 2026
 
 - **Fecha y hora:** dom 8 nov 2026, _hh:mm_
 - **Asistentes:** _
 - **Grabación:** _enlace_
-- **Objetivo del sprint:** un visitante busca un libro por parte del título, autor o tema y ve dónde está; el personal inicia sesión y registra obras. Todo desplegado con URL pública.
-- **Capacidad:** 24 pts
+- **Objetivo del sprint:** el 80 % del alcance mínimo de punta a punta, para la Entrega 1 del vie 13 nov (9:00 am): catálogo con CSV, búsqueda tolerante con filtros, ubicación y disponibilidad, QR y tutorial, login JWT, tres roles y aviso de privacidad.
+- **Capacidad:** 58 pts
 
 | Issue | Historia / tarea | Pts | Responsable |
 |---|---|---|---|
-| #_ | HU-01 Buscar por parte del título, autor o tema | 5 | Orlando Palma |
-| #_ | HU-02 Ver ubicación y disponibilidad | 3 | Orlando Palma |
-| #_ | HU-05 Inicio de sesión del personal con roles | 8 | Juan Camilo |
-| #_ | HU-06 Registrar y editar obras | 8 | Daniel Méndez |
-| #_ | T-07 Despliegue con URL pública | — | Rafael Potes |
-| #_ | T-14 Aviso de privacidad y licencia | — | Humberto Llinás |
+| #_ | HU-01 Buscar por parte del título | 5 | Orlando Palma |
+| #_ | HU-02 Buscar por autor o tema | 3 | Orlando Palma |
+| #_ | HU-03 Ver la ubicación del libro | 2 | Orlando Palma |
+| #_ | HU-08 Filtrar por categoría o sala | 3 | Orlando Palma |
+| #_ | HU-04 Interfaz legible para adultos mayores | 3 | Rafael Potes |
+| #_ | HU-05 Abrir el catálogo con QR | 2 | Rafael Potes |
+| #_ | HU-15 Tutorial guiado | 5 | Rafael Potes |
+| #_ | HU-06 Ver la disponibilidad | 3 | Daniel Méndez |
+| #_ | HU-10 Registrar un libro nuevo | 5 | Daniel Méndez |
+| #_ | HU-11 Editar ubicación y estado | 3 | Daniel Méndez |
+| #_ | HU-19 Registrar ejemplares | 3 | Daniel Méndez |
+| #_ | HU-09 Iniciar sesión como bibliotecario | 5 | Juan Camilo Fernández |
+| #_ | HU-16 Crear cuenta de lector con aviso | 5 | Juan Camilo Fernández |
+| #_ | HU-18 Cuentas del personal y roles | 3 | Juan Camilo Fernández |
+| #_ | HU-12 Importar el catálogo desde CSV | 8 | Humberto Llinás |
+| #_ | T-06, T-08, T-13, T-14, T-12 | — | Daniel, Rafael, Juan Camilo, Humberto |
 
 **Acuerdos:** _
 
-## Sprint 2 · 11 – 17 nov 2026
+## Sprint 2 · 14 – 19 nov 2026
 
-_Pendiente._
+_Pendiente. Previsto: HU-07, HU-14, HU-17, HU-20, HU-21, T-07, T-09._
 
-## Sprint 3 · 18 – 23 nov 2026
+## Sprint 3 · 20 – 25 nov 2026
 
-_Pendiente._
+_Pendiente. Previsto: HU-13 si hay capacidad, T-09, T-10, T-11, cierre y aceptación._

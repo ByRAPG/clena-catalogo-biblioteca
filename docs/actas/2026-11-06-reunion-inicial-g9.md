@@ -22,8 +22,8 @@
 
 | # | Decisión | Queda en |
 |---|---|---|
-| D1 | El chat se reemplaza por un botón «Necesito ayuda» con asistente guiado (sin IA) que termina pidiendo que un trabajador se acerque | HU-17, HU-18 |
-| D2 | El mapa de la biblioteca es un extra («Podría») | HU-19 |
+| D1 | Se descarta el chat. Se evaluó un botón «Necesito ayuda»; luego se verificó en el enunciado que el chat pertenece al proyecto de la Sala de Internet (P1) y no al alcance mínimo de este proyecto | Sugerencias en `backlog.md` |
+| D2 | El mapa de la biblioteca es un extra, fuera del backlog comprometido | Sugerencias en `backlog.md` |
 | D3 | Prioridad: buscar por lo que se recuerda del título, autor o tema y ver la ubicación clara | HU-01, HU-02, HU-03 |
 | D4 | Repositorio propio de Backend | `clena-catalogo-biblioteca` |
 | D5 | Planificación en Plane; GitHub Projects como evidencia oficial | `docs/plan-proyecto.md` |
