@@ -25,7 +25,7 @@ Una historia o tarea está **terminada** solo si cumple todo lo siguiente.
 
 ## Revisión y cierre
 - [ ] PR con `Closes #<issue>` y `CLENA-<n>`, descripción, cómo probar y capturas si hay interfaz.
-- [ ] Aprobado por el revisor par asignado.
-- [ ] Revisión final y squash merge de Rafael Potes; rama borrada.
+- [ ] Revisión con comentarios del compañero asignado por rotación.
+- [ ] Aprobado y fusionado (squash merge) por Rafael Potes o, como alterno, Humberto Llinás; rama borrada.
 - [ ] Issue cerrado y tarjeta en **Done** en GitHub Projects; work item en **Done** en Plane con comentario de evidencia (PR, validación).
 - [ ] Documentación afectada actualizada (README, manuales, arquitectura).

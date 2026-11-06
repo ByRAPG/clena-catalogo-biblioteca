@@ -28,7 +28,7 @@ El backlog completo está en [`docs/backlog.md`](docs/backlog.md) y en el tabler
 | Integrante | Rol |
 |---|---|
 | Rafael Potes | Scrum Master · Tech Lead · Release Manager (planificación, sprints, arquitectura, CI/CD, revisión final y merge) |
-| Humberto Llinás | Product Owner · revisor de arquitectura y plan |
+| Humberto Llinás | Product Owner · revisor de arquitectura y plan · aprobador alterno de PRs |
 | Juan Camilo | Development Team |
 | Daniel Méndez | Development Team |
 | Orlando Palma | Development Team |
@@ -90,7 +90,7 @@ El docente permite usar IA como asistente. El equipo la usa de forma transparent
 
 - **Para qué se usa:** apoyo en planificación (organización del backlog y los sprints), redacción y revisión de documentación, sugerencias de código, pruebas y revisión de Pull Requests.
 - **Qué no se delega:** las decisiones de producto (las toman el Product Owner y el Grupo 9), la aprobación de los Pull Requests y la aceptación de riesgos. Las actas reflejan reuniones reales con su grabación.
-- **Responsabilidad:** quien sube un cambio lo entiende, lo prueba y puede explicarlo y modificarlo en la sustentación. Todo código, con o sin ayuda de IA, pasa por Pull Request, CI y revisión de un compañero.
+- **Responsabilidad:** quien sube un cambio lo entiende, lo prueba y puede explicarlo y modificarlo en la sustentación. Todo código, con o sin ayuda de IA, pasa por Pull Request, CI, revisión de un compañero y aprobación de Rafael Potes o Humberto Llinás.
 - **Datos:** no se comparten con herramientas de IA datos personales, credenciales ni información del CLENA que no sea pública.
 - **Producto:** la aplicación **no usa IA** en esta etapa. El asistente de ayuda es un flujo guiado determinista (sin costo de API). Un asistente con IA queda como mejora futura.
 

@@ -1,3 +1,4 @@
-# Revisión final de todo cambio: Rafael Potes (Release Manager).
-# Agregar a cada integrante cuando se conozca su usuario de GitHub.
+# Solo los code owners aprueban y fusionan PRs:
+# Rafael Potes (principal) y Humberto Llinás (alterno).
+# Agregar el usuario de GitHub de Humberto en esta línea cuando se conozca.
 * @ByRAPG

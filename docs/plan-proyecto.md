@@ -40,15 +40,17 @@ Fechas del Grupo 9: Entrega 1 el 11 nov y entrega final el 25 nov.
 
 ## Responsables
 
-| Integrante | Rol | Módulos | Revisor par |
+| Integrante | Rol | Módulos | Comenta sus PRs |
 |---|---|---|---|
-| Rafael Potes | Scrum Master · Tech Lead · Release Manager | Fundaciones, CI/CD, Docker, despliegue, QR, tutorial, lectura fácil, actas, manual de operación | Rotación |
-| Humberto Llinás | Product Owner · revisor de arquitectura y plan | Préstamos y alertas, manual de usuario, aviso de privacidad | Orlando Palma |
+| Rafael Potes | Scrum Master · Tech Lead · Release Manager · aprobador principal de PRs | Fundaciones, CI/CD, Docker, despliegue, QR, tutorial, lectura fácil, actas, manual de operación | Quien tenga menos revisiones esa semana |
+| Humberto Llinás | Product Owner · revisor de arquitectura y plan · aprobador alterno de PRs | Préstamos y alertas, manual de usuario, aviso de privacidad | Quien tenga menos revisiones esa semana |
 | Juan Camilo | Development Team | Identidad y acceso, asistente de ayuda, Swagger | Daniel Méndez |
-| Daniel Méndez | Development Team | Catálogo, CSV, modelo de datos, mapa | Juan Camilo |
-| Orlando Palma | Development Team | Búsqueda, cita, analítica, esqueleto frontend | Humberto Llinás |
+| Daniel Méndez | Development Team | Catálogo, CSV, modelo de datos, mapa | Orlando Palma |
+| Orlando Palma | Development Team | Búsqueda, cita, analítica, esqueleto frontend | Juan Camilo |
 
-Regla del docente: cada integrante necesita commits, PRs y revisiones en al menos 2 sprints. La rotación lo garantiza.
+Solo Rafael Potes (principal) o Humberto Llinás (alterno) aprueban y fusionan PRs. Antes, un compañero deja una revisión de tipo **Comment** según la tabla.
+
+Regla del docente: cada integrante necesita commits, PRs y revisiones en al menos 2 sprints. La revisión con comentarios en cada PR lo garantiza.
 
 ## Rol del Grupo 9
 

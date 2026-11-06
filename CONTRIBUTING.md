@@ -41,20 +41,27 @@ Ejemplos: `feat(catalog): importa obras desde CSV`, `fix(auth): rota el refresh 
 2. `Closes #<issue>` y el identificador de Plane (`CLENA-<n>`).
 3. Qué cambia, cómo probarlo y capturas si hay interfaz.
 4. Checklist de la Definition of Done completo.
-5. Un compañero revisa y aprueba (rotación). Después, revisión final y merge de Rafael Potes.
-6. Squash merge, borrar la rama, verificar el despliegue.
+5. Un compañero deja una revisión con comentarios (rotación).
+6. Rafael Potes revisa, aprueba y hace squash merge. Si Rafael no está disponible, o el PR es de Rafael, lo hace Humberto Llinás.
+7. Se borra la rama y se verifica el despliegue.
 
-### Rotación de revisión
+### Quién aprueba y fusiona
 
-| Autor | Revisor par |
+Solo **Rafael Potes** (principal) o **Humberto Llinás** (alterno) aprueban y fusionan PRs. Son los *code owners* del repositorio: la aprobación de otra persona no habilita el merge.
+
+### Revisión con comentarios (obligatoria)
+
+El enunciado exige que cada integrante tenga **revisiones propias** en al menos dos sprints. Por eso, en cada PR un compañero deja una revisión de tipo **Comment** (no *Approve*) antes de la aprobación final:
+
+| Autor del PR | Comenta |
 |---|---|
 | Juan Camilo | Daniel Méndez |
-| Daniel Méndez | Juan Camilo |
-| Orlando Palma | Humberto Llinás |
-| Humberto Llinás | Orlando Palma |
-| Rafael Potes | Quien tenga menos revisiones esa semana |
+| Daniel Méndez | Orlando Palma |
+| Orlando Palma | Juan Camilo |
+| Humberto Llinás | Juan Camilo, Daniel Méndez u Orlando Palma (quien tenga menos revisiones esa semana) |
+| Rafael Potes | Juan Camilo, Daniel Méndez u Orlando Palma (quien tenga menos revisiones esa semana) |
 
-Objetivo: que cada integrante tenga commits, PRs y revisiones propias en todos los sprints. Tiempo máximo para revisar: 12 horas.
+En GitHub: pestaña **Files changed** → **Review changes** → **Comment**. Debe incluir al menos un comentario concreto (algo que funciona bien, una duda o una mejora). Tiempo máximo: 12 horas.
 
 ## Cómo comentar en una revisión
 

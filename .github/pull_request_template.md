@@ -25,6 +25,7 @@ Plane: CLENA-
 - [ ] Sin secretos ni datos personales.
 - [ ] Documentación actualizada si aplica.
 
-## Revisor par
+## Revisión
 
-@<!-- según la rotación de CONTRIBUTING.md -->
+- Comenta: @<!-- compañero según la rotación de CONTRIBUTING.md -->
+- Aprueba y fusiona: Rafael Potes (alterno: Humberto Llinás)
