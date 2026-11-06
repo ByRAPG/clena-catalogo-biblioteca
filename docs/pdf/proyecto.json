@@ -1,0 +1,17 @@
+{
+  "proyecto": "Consulta Fácil — Catálogo bibliográfico accesible del CLENA",
+  "nombreCorto": "Consulta Fácil · CLENA",
+  "codigo": "P2",
+  "curso": "Desarrollo de Aplicaciones Web Backend · Proyecto Final «Soluciones para el CLENA»",
+  "universidad": "Universidad del Norte",
+  "docente": "Daniel Romero",
+  "equipoOrigen": "Grupo 9 de Introducción a la Ingeniería de Sistemas (Shadia Castro Romero, Derek Pérez, Emiliano Harvey)",
+  "integrantes": [
+    { "nombre": "Rafael Potes Molina", "rol": "Scrum Master · Tech Lead · Release Manager" },
+    { "nombre": "Humberto Llinás Marimón", "rol": "Product Owner · aprobador alterno" },
+    { "nombre": "Juan Camilo Fernández Barrios", "rol": "Development Team" },
+    { "nombre": "Daniel Méndez Aparicio", "rol": "Development Team" },
+    { "nombre": "Orlando Palma", "rol": "Development Team" }
+  ],
+  "ciudad": "Barranquilla"
+}
