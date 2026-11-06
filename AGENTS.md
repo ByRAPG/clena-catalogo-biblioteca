@@ -27,11 +27,11 @@ Estas reglas aplican a personas y agentes de IA. Prevalecen sobre las skills gen
 
 ## GitHub Flow
 
-- `main` protegida: sin push directo; requiere PR, 1 aprobación y CI en verde.
+- `main` protegida: sin push directo; requiere PR, aprobación de un code owner (Rafael Potes o Humberto Llinás) y CI en verde.
 - Ramas: `feat/<issue>-descripcion`, `fix/<issue>-descripcion`, `docs/...`, `test/...`, `chore/...`, `refactor/...`. Partir siempre de `origin/main` actualizado.
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `refactor:`, `docs:`, `chore:`, `ci:`).
 - PR: referencia el Issue (`Closes #n`) y el work item de Plane (`CLENA-n`), describe qué cambia y cómo probarlo.
-- Revisión: primero un compañero (rotación), luego revisión final y merge de Rafael Potes. Squash merge y borrar la rama.
+- Revisión: un compañero deja una revisión con comentarios (rotación en `CONTRIBUTING.md`); luego aprueba y fusiona Rafael Potes (alterno: Humberto Llinás). Solo ellos aprueban. Squash merge y borrar la rama.
 
 ## Estados
 
