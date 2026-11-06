@@ -1,8 +1,8 @@
-# CLENA · Catálogo bibliográfico accesible (P2)
+# Consulta Fácil · Catálogo bibliográfico accesible del CLENA (P2)
+
+> Proyecto **P2** del curso Desarrollo de Aplicaciones Web Backend: «Consulta Fácil, rediseño de la interfaz de consulta bibliotecaria».
 
 Aplicación web para que cualquier visitante de la **Biblioteca del CLENA** (Corporación Luis Eduardo Nieto Arteta, complejo de la Aduana de Barranquilla) encuentre un libro por sí mismo, sepa **dónde está** (sala, sección y estante) y si está **disponible**, desde un computador de la biblioteca o desde su celular escaneando un código QR.
-
-> Nombre provisional del proyecto. Puede cambiar cuando el equipo defina su marca.
 
 ## Problema que resuelve
 
@@ -17,25 +17,24 @@ Problema identificado por el **Grupo 9** de Introducción a la Ingeniería de Si
 - Resultado con ubicación física (sala, sección, estante) y disponibilidad (física o digital).
 - Acceso desde celular por QR y tutorial guiado para la primera búsqueda.
 - Préstamos y alertas de devolución y disponibilidad.
-- Asistente de ayuda guiado (sin IA) que termina contactando a un trabajador del CLENA.
 
-El backlog completo está en [`docs/backlog.md`](docs/backlog.md) y en el tablero del proyecto.
+Las 21 historias de usuario (14 escritas por el Grupo 9 y 7 propuestas por Backend) están en [`docs/backlog.md`](docs/backlog.md) y, como fuente oficial, en los Issues y el tablero de GitHub Projects.
 
 ## Equipo
 
 ### Desarrollo (Desarrollo de Aplicaciones Web Backend, 8.º semestre)
 
-| Integrante | Rol |
-|---|---|
-| Rafael Potes | Scrum Master · Tech Lead · Release Manager (planificación, sprints, arquitectura, CI/CD, revisión final y merge) |
-| Humberto Llinás | Product Owner · revisor de arquitectura y plan · aprobador alterno de PRs |
-| Juan Camilo | Development Team |
-| Daniel Méndez | Development Team |
-| Orlando Palma | Development Team |
+| Integrante | GitHub | Rol |
+|---|---|---|
+| Rafael Potes Molina | [@ByRAPG](https://github.com/ByRAPG) | Scrum Master · Tech Lead · Release Manager (planificación, sprints, arquitectura, CI/CD, revisión final y merge) |
+| Humberto Llinás Marimón | [@lzayrox](https://github.com/lzayrox) | Product Owner · revisor de arquitectura y plan · aprobador alterno de PRs |
+| Juan Camilo Fernández Barrios | [@fjuanc](https://github.com/fjuanc) | Development Team |
+| Daniel Méndez Aparicio | [@danyrpppp](https://github.com/danyrpppp) | Development Team |
+| Orlando Palma | [@OrlandoPalmaUN](https://github.com/OrlandoPalmaUN) | Development Team |
 
 ### Cliente (Grupo 9, Introducción a la Ingeniería de Sistemas)
 
-Shadia Castro (contacto principal) · Derek Pérez · Emiliano Harvey
+Shadia Castro Romero (contacto principal) · Derek Pérez · Emiliano Harvey
 
 Docente: Daniel Romero.
 
@@ -92,7 +91,7 @@ El docente permite usar IA como asistente. El equipo la usa de forma transparent
 - **Qué no se delega:** las decisiones de producto (las toman el Product Owner y el Grupo 9), la aprobación de los Pull Requests y la aceptación de riesgos. Las actas reflejan reuniones reales con su grabación.
 - **Responsabilidad:** quien sube un cambio lo entiende, lo prueba y puede explicarlo y modificarlo en la sustentación. Todo código, con o sin ayuda de IA, pasa por Pull Request, CI, revisión de un compañero y aprobación de Rafael Potes o Humberto Llinás.
 - **Datos:** no se comparten con herramientas de IA datos personales, credenciales ni información del CLENA que no sea pública.
-- **Producto:** la aplicación **no usa IA** en esta etapa. El asistente de ayuda es un flujo guiado determinista (sin costo de API). Un asistente con IA queda como mejora futura.
+- **Producto:** la aplicación **no usa IA** en esta etapa.
 
 ## Datos y privacidad
 

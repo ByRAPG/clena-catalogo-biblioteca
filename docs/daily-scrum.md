@@ -1,6 +1,8 @@
 # Daily Scrum
 
-Lunes, miércoles y viernes, 15 minutos, en Teams y grabada. Cada integrante responde: qué hice, qué haré, qué me bloquea. Se nombran los Issues y PRs.
+Mínimo 3 por semana (lunes, miércoles y un tercer día), 15 minutos, en Teams y grabada. Cada integrante responde: qué hice, qué haré, qué me bloquea. Se nombran los Issues y PRs.
+
+Calendario previsto: lun 9, mié 11, jue 12 · lun 16, mié 18 · lun 23 nov (y el tercer día de la semana del 16 y del 23 que se acuerde).
 
 ## Plantilla
 

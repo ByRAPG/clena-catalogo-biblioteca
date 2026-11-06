@@ -1,4 +1,3 @@
-# Solo los code owners aprueban y fusionan PRs:
-# Rafael Potes (principal) y Humberto Llinás (alterno).
-# Agregar el usuario de GitHub de Humberto en esta línea cuando se conozca.
-* @ByRAPG
+﻿# Solo estos usuarios pueden aprobar PRs (Rafael principal, Humberto alterno)
+* @ByRAPG @lzayrox
+

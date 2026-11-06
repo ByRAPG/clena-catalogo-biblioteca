@@ -1,196 +1,240 @@
-# Product Backlog
+# Product Backlog · Consulta Fácil
 
-> **Estado:** borrador propuesto por Backend para validar con el Grupo 9 en el kickoff (7 nov 2026).
-> El Grupo 9 es el autor oficial de las historias: cada integrante revisa, ajusta y registra como Issue (etiqueta `historia-usuario`) las historias asignadas en la columna **Autor G9**. Backend estima los puntos; la prioridad MoSCoW se acuerda entre Humberto Llinás (PO) y Shadia Castro.
+> **Estado:** versión 2 (6 nov 2026). Las historias HU-01…HU-14 las escribió el Grupo 9 ([issues originales](https://github.com/ImDER3K/clena-laboratorio-sistemas-grupo-9/issues)). Backend las ajustó al formato del enunciado (criterios Dado/Cuando/Entonces) y propuso HU-15…HU-21 para cubrir el alcance mínimo del P2 y los requisitos transversales. **El Grupo 9 valida, corrige y registra** cada historia como Issue en este repositorio (columna **Autor G9**). Backend estima los puntos. Priorizan Humberto Llinás Marimón (PO Backend) y Emiliano Harvey (PO G9).
 
 **Dónde ver el backlog**
 
 | Lugar | Qué hay |
 |---|---|
-| Este archivo | Versión legible y completa |
-| Plane → workspace `clena-library` → proyecto **Catálogo CLENA** → Work items | Descripción detallada, estimación, sprint (Cycles), módulo y dependencias. `HU-n` = `CLENA-n`; `T-01…T-14` = `CLENA-22…35` |
-| GitHub → Issues y Projects del repositorio | Fuente oficial para el docente, cuando el G9 registre las historias |
+| GitHub Issues (`historia-usuario`) y GitHub Projects | **Fuente oficial** para el docente: lo que no esté ahí no se califica |
+| Este archivo | Versión legible para preparar los Issues y consultar rápido |
+| Plane, proyecto `CLENA` | Planificación interna. `HU-n` = `CLENA-n`; `T-01…T-14` = `CLENA-22…35` |
 
-## Usuarios (personas, nombres ficticios)
+## Reglas que cumple este backlog
+
+| Exigencia | Fuente | Cómo se cumple |
+|---|---|---|
+| ≥ 15 historias en Issues que cubran todo el alcance mínimo | Entrega 1 Backend, E2 | 21 historias |
+| «Como… quiero… para…» y ≥ 2 criterios Dado/Cuando/Entonces | E2 · Entrega 1 G9 (2 a 4 criterios) | Cada historia tiene 2 a 4 |
+| Puntos Fibonacci y etiquetas `prioridad:alta/media/baja` | E2 | Columna Pts y Prioridad |
+| MoSCoW con ≥ 8 «Debe tener» | Entrega 1 G9 | 18 «Debe» |
+| Historias transversales: autenticación, roles, accesibilidad, Ley 1581 | E2 | HU-09, HU-18, HU-04, HU-16, HU-17 |
+| Cada integrante del G9 es autor de ≥ 3 | Entrega 1 G9 | 7 por integrante |
+| Validación del G9 | E2 | Comentario «Validada por el Grupo 9» en cada Issue + firma del acta de Inception |
+
+Equivalencia de prioridad: **Debe tener = `prioridad:alta`**, **Debería = `prioridad:media`**, **Podría = `prioridad:baja`**, **No tendrá ahora = `no-ahora`**.
+
+## Usuarios (borrador; el G9 entrega las personas oficiales con fotos de la visita)
 
 | Persona | Perfil | Comodidad con la tecnología | Le frustra hoy | Necesita lograr |
 |---|---|---|---|---|
-| **Doña Carmen, 70** | Jubilada, visita la biblioteca para leer novelas | Baja | No entiende el buscador actual y le da pena pedir ayuda cada vez | Encontrar un libro que recuerda a medias y saber a qué estante ir |
-| **Andrés, 20** | Estudiante universitario | Alta | El sistema exige el título exacto o un código | Encontrar fuentes por tema y copiar la cita |
+| **Doña Carmen, 70** | Jubilada, lee novelas en la biblioteca | Baja | No entiende el buscador actual y le da pena pedir ayuda | Encontrar un libro que recuerda a medias y saber a qué estante ir |
+| **Andrés, 20** | Estudiante universitario | Alta | El sistema exige el título exacto o un código | Buscar por tema desde el celular |
 | **Luisa, 42** | Investigadora de historia local | Media | No sabe si un documento tiene versión digital o está prestado | Filtrar por tema y disponibilidad |
-| **Marta, 35** | Bibliotecaria del CLENA | Media | Repite la misma explicación a cada visitante y lleva préstamos en papel | Mantener el catálogo y los préstamos al día y atender a quien de verdad lo necesita |
+| **Marta, 35** | Bibliotecaria del CLENA | Media | Repite la misma explicación y lleva préstamos en papel | Mantener catálogo y préstamos al día |
 
 ## Resumen
 
-| ID | Historia | MoSCoW | Pts | Sprint | Desarrolla | Autor G9 |
-|---|---|---|---|---|---|---|
-| HU-01 | Buscar por parte del título, autor o tema | Debe | 5 | S1 | Orlando Palma | Shadia |
-| HU-02 | Ver ubicación y disponibilidad del libro | Debe | 3 | S1 | Orlando Palma | Shadia |
-| HU-03 | Búsqueda tolerante a errores y sin tildes | Debe | 5 | S2 | Orlando Palma | Shadia |
-| HU-04 | Filtrar y ordenar resultados | Debe | 3 | S2 | Orlando Palma | Shadia |
-| HU-05 | Inicio de sesión del personal con roles | Debe | 8 | S1 | Juan Camilo | Emiliano |
-| HU-06 | Registrar y editar obras, autores y temas | Debe | 8 | S1 | Daniel Méndez | Emiliano |
-| HU-07 | Gestionar ejemplares y su ubicación | Debe | 5 | S2 | Daniel Méndez | Emiliano |
-| HU-08 | Importar el catálogo desde CSV | Debe | 8 | S2 | Daniel Méndez | Emiliano |
-| HU-09 | Registrar préstamos y devoluciones | Debe | 8 | S2 | Humberto Llinás | Emiliano |
-| HU-10 | Alertas de préstamos por vencer y vencidos | Debe | 5 | S3 | Humberto Llinás | Emiliano |
-| HU-11 | Abrir la búsqueda escaneando un QR | Debe | 2 | S2 | Rafael Potes | Derek |
-| HU-12 | Tutorial guiado en la primera búsqueda | Debe | 5 | S3 | Rafael Potes | Derek |
-| HU-13 | Modo lectura fácil (letra grande, alto contraste) | Debe | 3 | S2 | Rafael Potes | Derek |
-| HU-14 | Cuenta de lector con consentimiento y eliminación | Debe | 5 | S2 | Juan Camilo | Derek |
-| HU-15 | Ver mis préstamos y pedir aviso de disponibilidad | Debería | 5 | S3 | Humberto Llinás | Emiliano |
-| HU-16 | Copiar la cita bibliográfica | Debería | 2 | S3 | Orlando Palma | Shadia |
-| HU-17 | Asistente de ayuda guiado (sin IA) | Debería | 5 | S3 | Juan Camilo | Derek |
-| HU-18 | Pedir que un trabajador se acerque | Debería | 5 | S3 | Juan Camilo | Derek |
-| HU-19 | Mapa de la biblioteca con el estante resaltado | Podría | 8 | S3 si hay capacidad | Daniel Méndez | Derek |
-| HU-20 | Búsquedas sin resultado y más frecuentes | Podría | 3 | S3 | Orlando Palma | Shadia |
-| HU-21 | Asistente conversacional con IA | No tendrá ahora | — | — | — | — |
+| ID | Historia | Origen | MoSCoW | Prioridad | Pts | Sprint | Desarrolla | Autor G9 |
+|---|---|---|---|---|---|---|---|---|
+| HU-01 | Buscar por parte del título | G9 #1 | Debe | alta | 5 | S1 | Orlando Palma | Shadia |
+| HU-02 | Buscar por autor o tema | G9 #2 | Debe | alta | 3 | S1 | Orlando Palma | Shadia |
+| HU-03 | Ver la ubicación del libro | G9 #3 | Debe | alta | 2 | S1 | Orlando Palma | Shadia |
+| HU-04 | Interfaz legible para adultos mayores | G9 #4 | Debe | alta | 3 | S1 | Rafael Potes | Derek |
+| HU-05 | Abrir el catálogo escaneando un QR | G9 #5 | Debe | alta | 2 | S1 | Rafael Potes | Derek |
+| HU-06 | Ver la disponibilidad (física o digital) | G9 #6 | Debe | alta | 3 | S1 | Daniel Méndez | Derek |
+| HU-07 | Mensaje claro si no hay resultados | G9 #7 | Debería | media | 2 | S2 | Orlando Palma | Shadia |
+| HU-08 | Filtrar por categoría o sala | G9 #8 | Debe | alta | 3 | S1 | Orlando Palma | Shadia |
+| HU-09 | Iniciar sesión como bibliotecario | G9 #9 | Debe | alta | 5 | S1 | Juan Camilo Fernández | Emiliano |
+| HU-10 | Registrar un libro nuevo | G9 #10 | Debe | alta | 5 | S1 | Daniel Méndez | Emiliano |
+| HU-11 | Editar ubicación y estado de un libro | G9 #11 | Debe | alta | 3 | S1 | Daniel Méndez | Emiliano |
+| HU-12 | Importar el catálogo desde CSV o Excel | G9 #12 | Debe | alta | 8 | S1 | Humberto Llinás | Emiliano |
+| HU-13 | Búsqueda por voz | G9 #13 | Podría | baja | 3 | S3 | Orlando Palma | Shadia |
+| HU-14 | Reservar un libro desde la app | G9 #14 | Debería | media | 5 | S2 | Juan Camilo Fernández | Derek |
+| HU-15 | Tutorial guiado de la primera búsqueda | Backend | Debe | alta | 5 | S1 | Rafael Potes | Shadia |
+| HU-16 | Crear cuenta de lector con aviso de privacidad | Backend | Debe | alta | 5 | S1 | Juan Camilo Fernández | Derek |
+| HU-17 | Eliminar mi cuenta y mis datos | Backend | Debe | alta | 3 | S2 | Juan Camilo Fernández | Derek |
+| HU-18 | Gestionar cuentas del personal y roles | Backend | Debe | alta | 3 | S1 | Juan Camilo Fernández | Emiliano |
+| HU-19 | Registrar los ejemplares de un libro | Backend | Debe | alta | 3 | S1 | Daniel Méndez | Emiliano |
+| HU-20 | Registrar préstamos y devoluciones | Backend | Debe | alta | 8 | S2 | Humberto Llinás | Emiliano |
+| HU-21 | Alertas de devolución y disponibilidad | Backend | Debe | alta | 5 | S2 | Daniel Méndez | Derek |
 
-14 historias «Debe tener» (mínimo exigido: 8) y 21 en total (mínimo: 12). Autoría G9: Shadia 7, Emiliano 7, Derek 7.
+- 21 historias: 18 «Debe», 2 «Debería», 1 «Podría». Autoría: Shadia 7, Derek 7, Emiliano 7.
+- Sprint 1 (9–13 nov) = el **80 % obligatorio de la Entrega 1**: catálogo y CSV, búsqueda tolerante con filtros, ubicación y disponibilidad, QR y tutorial, login JWT, tres roles, aviso de privacidad, accesibilidad. 58 pts.
+- Sprint 2 (14–19 nov) = el 20 % restante (préstamos y alertas) más reserva, eliminación de cuenta y mensaje sin resultados. 23 pts.
+- Sprint 3 (20–25 nov) = búsqueda por voz si hay capacidad, despliegue estable, manuales, pruebas, aceptación. 3 pts.
 
-Capacidad por sprint: S1 = 24 pts · S2 = 39 pts · S3 = 30 pts (+8 opcional).
+## Qué cambió frente a los Issues originales del G9
+
+| Historia | Cambio propuesto por Backend | Motivo |
+|---|---|---|
+| Todas | Criterios reescritos en formato Dado/Cuando/Entonces | Lo exigen ambos enunciados |
+| HU-01 | Se agrega tolerancia a errores de escritura | Alcance mínimo P2 |
+| HU-03 | Se aclara que la ubicación aparece en el detalle y en la tarjeta | Ubicación por ejemplar |
+| HU-06 | Se agrega disponibilidad **digital** | Alcance mínimo P2 («física o digital») |
+| HU-09 | Se agrega cierre de sesión y renovación de sesión (refresh token) | Requisito transversal JWT |
+| HU-11 | La ubicación y el estado se editan por **ejemplar** | Un libro puede tener varias copias en estantes distintos |
+| HU-12 | CSV obligatorio; Excel se acepta guardándolo como CSV | Alcance mínimo P2 dice CSV |
+| HU-13 | Pasa a «Podría» | No es alcance mínimo; depende del navegador |
+| HU-14 | Pasa a «Debería» y requiere cuenta de lector | No es alcance mínimo; depende de HU-16 |
+| HU-15 a HU-21 | Nuevas | Faltaban en el alcance mínimo o son transversales |
+
+## Sugerencias de Backend (fuera del backlog comprometido)
+
+Ideas que el G9 puede convertir en historia «Podría» o «No tendrá ahora» si les parecen útiles: copiar la cita bibliográfica (mencionada en su informe), mapa de la biblioteca con el estante resaltado (propuesta de Derek el 6 nov), búsquedas más frecuentes y sin resultado para el personal, botón «Necesito ayuda» que avisa a un trabajador y asistente con IA (mejora futura que el G9 descartó por costo). El **chat de atención** del informe del G9 era para la Sala de Internet; ese problema corresponde al proyecto «Buscador CLENA» (P1) y **no** está en el alcance de Consulta Fácil.
 
 ---
 
 ## Historias detalladas
 
-### HU-01 · Buscar por parte del título, autor o tema
-**Como** visitante de la biblioteca **quiero** buscar escribiendo solo una parte del título, del autor o del tema **para** encontrar el libro aunque no recuerde el nombre exacto.
+> Texto listo para copiar en la plantilla «Historia de usuario». El autor G9 puede mejorar la redacción, pero sin quitar criterios.
+
+### HU-01 · Buscar por parte del título
+**Como** visitante de la biblioteca **quiero** buscar un libro escribiendo solo una parte del título **para** encontrarlo aunque no recuerde el nombre exacto.
 
 - Dado que existe «Cien años de soledad», cuando escribo «cien años sole» y presiono Buscar, entonces aparece entre los 3 primeros resultados.
-- Dado que escribo «garcia marquez», cuando presiono Buscar, entonces veo las obras de ese autor.
-- Dado que no hay coincidencias, cuando presiono Buscar, entonces veo un mensaje claro con sugerencias y el botón «Necesito ayuda».
-- Dado que hay muchos resultados, cuando se muestran, entonces aparecen paginados de 10 en 10 con título, autor, tipo y ubicación resumida.
+- Dado que escribo con un error, como «cien años soleda» o «soledda», cuando presiono Buscar, entonces igual aparece «Cien años de soledad».
+- Dado que escribo «SOLEDAD» o «soledád», cuando presiono Buscar, entonces obtengo los mismos resultados que con «soledad».
+- Dado que hay más de 10 resultados, cuando se muestran, entonces aparecen paginados de 10 en 10 en menos de 2 segundos.
 
-### HU-02 · Ver ubicación y disponibilidad
-**Como** visitante **quiero** ver la sala, la sección y el estante del libro y si está disponible **para** ir directo a buscarlo.
+### HU-02 · Buscar por autor o tema
+**Como** estudiante o investigador **quiero** buscar por el nombre del autor o por un tema **para** explorar material relacionado con mi lectura o investigación.
 
-- Dado un resultado, cuando lo abro, entonces veo sala, sección y estante en letra grande.
-- Dado que todos los ejemplares están prestados, cuando abro el detalle, entonces veo «No disponible» y la fecha estimada de devolución.
-- Dado que la obra tiene versión digital, cuando abro el detalle, entonces veo el enlace «Ver versión digital».
+- Dado que escribo «garcia marquez», cuando presiono Buscar, entonces veo las obras de Gabriel García Márquez.
+- Dado que escribo el tema «historia del caribe», cuando presiono Buscar, entonces veo las obras con ese tema.
+- Dado un resultado, cuando lo veo en la lista, entonces muestra el título, el autor y el tema que coincidió.
 
-### HU-03 · Búsqueda tolerante a errores
-**Como** adulto mayor **quiero** que la búsqueda encuentre el libro aunque escriba con errores o sin tildes **para** no frustrarme.
+### HU-03 · Ver la ubicación del libro
+**Como** visitante **quiero** ver la sala, la sección y el estante del libro **para** ir directo a buscarlo sin pedir ayuda.
 
-- Dado que escribo «soledda» o «garsia», cuando busco, entonces obtengo resultados relevantes.
-- Dado que escribo «Bogota» sin tilde, cuando busco, entonces encuentra «Bogotá».
-- Dado que escribo en mayúsculas, minúsculas o mezcla, cuando busco, entonces el resultado es el mismo.
+- Dado un resultado de búsqueda, cuando lo veo en la lista, entonces la tarjeta muestra la sala, la sección y el estante.
+- Dado que abro el detalle de un libro con varios ejemplares, cuando lo leo, entonces veo la ubicación de cada ejemplar en letra grande.
 
-### HU-04 · Filtrar y ordenar
-**Como** estudiante **quiero** filtrar por tema, tipo de material, disponibilidad y formato, y ordenar los resultados **para** llegar rápido a lo que necesito.
+### HU-04 · Interfaz legible para adultos mayores
+**Como** adulto mayor o persona con baja visión **quiero** textos grandes, botones claros y alto contraste **para** consultar sin frustrarme.
 
-- Dado una búsqueda con resultados, cuando marco «Solo disponibles», entonces solo veo obras con al menos un ejemplar disponible.
-- Dado una búsqueda, cuando filtro por tema «Historia», entonces solo veo obras de ese tema.
-- Dado una búsqueda, cuando ordeno por año, entonces los resultados se reordenan sin perder los filtros.
+- Dado cualquier pantalla pública, cuando la abro, entonces el texto principal mide al menos 18 px y el contraste cumple WCAG AA.
+- Dado que activo «Letra más grande» o «Alto contraste», cuando recargo la página, entonces se mantiene mi preferencia.
+- Dado que uso solo el teclado, cuando navego por el buscador y los resultados, entonces llego a todos los botones y veo dónde está el foco.
+- Dado un celular de 360 px de ancho, cuando abro el buscador, entonces nada se corta ni hay que hacer zoom.
 
-### HU-05 · Inicio de sesión del personal con roles
-**Como** personal del CLENA **quiero** iniciar sesión y ver solo las funciones de mi rol **para** proteger el catálogo.
+### HU-05 · Abrir el catálogo escaneando un QR
+**Como** visitante con celular **quiero** escanear un código QR en la entrada o en las salas **para** abrir el catálogo sin escribir direcciones.
 
-- Dado un usuario del personal válido, cuando inicia sesión, entonces entra al panel y su sesión se renueva sin volver a escribir la contraseña mientras siga activo.
-- Dado un usuario público, cuando intenta entrar al panel de administración, entonces el sistema lo impide y lo lleva al inicio.
-- Dado 5 intentos fallidos seguidos, cuando intenta de nuevo, entonces debe esperar unos minutos.
+- Dado el QR impreso, cuando lo escaneo, entonces se abre la página de búsqueda adaptada al celular.
+- Dado el panel del personal, cuando descargo el QR de una sala, entonces obtengo una imagen lista para imprimir que abre el buscador con esa sala filtrada.
+
+### HU-06 · Ver la disponibilidad del libro
+**Como** visitante **quiero** saber si el libro está disponible, prestado o en mantenimiento, y si tiene versión digital, **para** no buscar algo que no está.
+
+- Dado un libro con al menos un ejemplar disponible, cuando lo veo en los resultados, entonces aparece «Disponible» en verde, con texto y no solo color.
+- Dado que todos los ejemplares están prestados o en mantenimiento, cuando lo veo, entonces aparece «No disponible» en naranja con el motivo.
+- Dado un libro con versión digital, cuando abro el detalle, entonces veo el botón «Ver versión digital».
+
+### HU-07 · Mensaje claro si no hay resultados
+**Como** visitante **quiero** un mensaje amable y sugerencias cuando no encuentro nada **para** saber qué hacer.
+
+- Dado que mi búsqueda no tiene coincidencias, cuando presiono Buscar, entonces veo «No encontramos libros con ese término» y sugerencias: revisar la escritura, usar menos palabras o preguntar en el mostrador.
+- Dado que existe un término parecido en el catálogo, cuando no hay resultados, entonces el sistema me pregunta «¿Quisiste decir…?» con un enlace.
+
+### HU-08 · Filtrar por categoría o sala
+**Como** visitante **quiero** filtrar por categoría, sala y disponibilidad **para** explorar el material de un área de mi interés.
+
+- Dado una búsqueda, cuando elijo la categoría «Historia», entonces solo veo libros de esa categoría.
+- Dado una búsqueda, cuando elijo una sala o marco «Solo disponibles», entonces la lista se actualiza sin recargar la página.
+- Dado filtros activos, cuando presiono «Quitar filtros», entonces vuelvo a ver todos los resultados.
+
+### HU-09 · Iniciar sesión como bibliotecario
+**Como** bibliotecario o administrador **quiero** iniciar sesión con usuario y contraseña **para** entrar al panel de gestión del catálogo.
+
+- Dado credenciales válidas, cuando inicio sesión, entonces entro al panel que corresponde a mi rol.
+- Dado una contraseña incorrecta, cuando intento entrar, entonces veo «Correo o contraseña incorrectos» sin revelar cuál falló; tras 5 intentos debo esperar unos minutos.
+- Dado que mi sesión sigue activa, cuando pasan 15 minutos, entonces se renueva sin volver a escribir la contraseña.
 - Dado que cierro sesión, cuando intento volver al panel, entonces debo iniciar sesión otra vez.
 
-### HU-06 · Registrar y editar obras
-**Como** personal **quiero** registrar y editar obras con sus autores y temas **para** mantener el catálogo al día.
+### HU-10 · Registrar un libro nuevo
+**Como** bibliotecario **quiero** registrar un libro con título, autores, temas, categoría y año **para** mantener el catálogo actualizado.
 
-- Dado el formulario de obra, cuando guardo título, autores y temas, entonces la obra aparece en la búsqueda pública.
-- Dado que falta el título, cuando intento guardar, entonces veo un mensaje junto al campo.
-- Dado un autor que ya existe, cuando lo escribo, entonces el sistema lo sugiere en lugar de duplicarlo.
+- Dado el formulario, cuando guardo un libro con sus datos, entonces veo «Libro registrado» y aparece en la búsqueda pública.
+- Dado que falta el título o el autor, cuando intento guardar, entonces veo el error junto al campo y no se guarda.
+- Dado un autor o tema que ya existe, cuando lo escribo, entonces el sistema lo sugiere en lugar de duplicarlo.
 
-### HU-07 · Gestionar ejemplares y ubicación
-**Como** personal **quiero** registrar los ejemplares de cada obra con su sala, sección y estante **para** que los visitantes los encuentren.
+### HU-11 · Editar ubicación y estado de un ejemplar
+**Como** bibliotecario **quiero** cambiar la ubicación o el estado de un ejemplar **para** reflejar reubicaciones o mantenimiento.
 
-- Dado una obra, cuando agrego un ejemplar con su ubicación, entonces el detalle público muestra esa ubicación.
-- Dado un ejemplar, cuando lo cambio de estante, entonces la búsqueda muestra la nueva ubicación de inmediato.
-- Dado que doy de baja un ejemplar, cuando consulto la obra, entonces ya no cuenta como disponible.
+- Dado un ejemplar, cuando cambio su estante y guardo, entonces la búsqueda pública muestra la nueva ubicación de inmediato.
+- Dado un ejemplar, cuando lo marco «En mantenimiento», entonces deja de contar como disponible.
+- Dado un usuario público, cuando intenta editar un ejemplar, entonces el sistema lo impide.
 
-### HU-08 · Importar catálogo desde CSV
-**Como** administrador **quiero** importar el catálogo desde un archivo CSV con reporte de errores **para** no digitarlo a mano.
+### HU-12 · Importar el catálogo desde CSV o Excel
+**Como** administrador **quiero** importar el catálogo desde un archivo CSV (o Excel guardado como CSV) **para** no registrar cada libro a mano.
 
-- Dado un CSV válido de 500 filas, cuando lo importo, entonces se crean o actualizan obras, autores, temas y ejemplares sin duplicados.
-- Dado un CSV con filas inválidas, cuando lo importo, entonces veo un reporte por fila con el error y las filas válidas sí se importan.
-- Dado la pantalla de importación, cuando la abro, entonces puedo descargar una plantilla CSV de ejemplo.
+- Dado un CSV válido de 500 filas, cuando lo importo, entonces se crean o actualizan libros, autores, temas y ejemplares sin duplicados.
+- Dado un CSV con filas incompletas, cuando lo importo, entonces veo un reporte con el número de fila y el error, y las filas válidas sí se importan.
+- Dado la pantalla de importación, cuando la abro, entonces puedo descargar una plantilla de ejemplo.
 
-### HU-09 · Registrar préstamos y devoluciones
-**Como** personal **quiero** registrar préstamos y devoluciones **para** saber qué ejemplares están prestados.
+### HU-13 · Búsqueda por voz
+**Como** adulto mayor **quiero** dictar lo que busco **para** no tener que escribir.
 
-- Dado un ejemplar disponible y un lector registrado, cuando registro el préstamo, entonces el ejemplar queda «Prestado» con la fecha de devolución calculada.
-- Dado un ejemplar prestado, cuando intento prestarlo de nuevo, entonces el sistema lo impide con un mensaje claro.
+- Dado un navegador compatible, cuando presiono el micrófono y digo «cien años de soledad», entonces el texto aparece en la caja y se ejecuta la búsqueda.
+- Dado un navegador sin reconocimiento de voz, cuando abro el buscador, entonces el botón del micrófono no aparece y la búsqueda escrita funciona igual.
+
+### HU-14 · Reservar un libro desde la app
+**Como** lector registrado **quiero** apartar un libro disponible **para** asegurar que esté cuando llegue a la biblioteca.
+
+- Dado un libro con un ejemplar disponible y mi sesión iniciada, cuando presiono «Reservar», entonces veo la confirmación y el plazo para recogerlo (por definir con el CLENA).
+- Dado que vence el plazo sin recogerlo, cuando pasa la fecha, entonces la reserva se cancela y el ejemplar vuelve a estar disponible.
+- Dado mi perfil, cuando lo abro, entonces veo mis reservas activas y puedo cancelarlas.
+
+### HU-15 · Tutorial guiado de la primera búsqueda
+**Como** visitante nuevo **quiero** un recorrido corto la primera vez que uso el buscador **para** aprender sin pedir ayuda.
+
+- Dado que es mi primera visita en este dispositivo, cuando abro el buscador, entonces aparece un recorrido de máximo 4 pasos con letra grande.
+- Dado el tutorial, cuando presiono «Saltar» o termino, entonces no vuelve a aparecer, pero puedo abrirlo desde «¿Cómo buscar?».
+- Dado el tutorial, cuando uso solo el teclado, entonces puedo avanzar y cerrarlo sin mouse.
+
+### HU-16 · Crear cuenta de lector con aviso de privacidad
+**Como** visitante **quiero** crear una cuenta de lector aceptando el aviso de privacidad **para** reservar libros y recibir avisos, sabiendo cómo se usan mis datos (Ley 1581 de 2012).
+
+- Dado el formulario de registro, cuando lo abro, entonces solo me pide nombre, correo y contraseña, y muestra el enlace al aviso de privacidad.
+- Dado que no marco «Acepto el tratamiento de mis datos», cuando intento registrarme, entonces la cuenta no se crea.
+- Dado que acepto, cuando me registro, entonces queda guardada la fecha y la versión del aviso que acepté.
+
+### HU-17 · Eliminar mi cuenta y mis datos
+**Como** lector **quiero** eliminar mi cuenta **para** ejercer mi derecho a que borren mis datos personales.
+
+- Dado mi perfil, cuando presiono «Eliminar mi cuenta» y confirmo con mi contraseña, entonces mis datos personales se borran o anonimizan.
+- Dado una cuenta eliminada, cuando intento iniciar sesión, entonces no puedo entrar.
+- Dado que tengo un préstamo activo, cuando intento eliminar la cuenta, entonces el sistema me pide devolver el libro primero.
+
+### HU-18 · Gestionar cuentas del personal y roles
+**Como** administrador **quiero** crear cuentas del personal y asignar el rol de administrador o personal del CLENA **para** que cada uno vea solo lo que le corresponde.
+
+- Dado el panel de usuarios, cuando creo una cuenta con rol «Personal», entonces esa persona puede gestionar el catálogo pero no los usuarios.
+- Dado una cuenta del personal, cuando la desactivo, entonces ya no puede iniciar sesión.
+- Dado un usuario con rol «Personal» o «Lector», cuando intenta abrir la gestión de usuarios, entonces el sistema lo impide.
+
+### HU-19 · Registrar los ejemplares de un libro
+**Como** bibliotecario **quiero** registrar cada ejemplar de un libro con su código de inventario y su ubicación **para** saber cuántas copias hay y dónde están.
+
+- Dado un libro, cuando agrego un ejemplar con código, sala, sección y estante, entonces el detalle público muestra esa ubicación.
+- Dado un código de inventario que ya existe, cuando intento guardarlo, entonces veo un error y no se duplica.
+- Dado que doy de baja un ejemplar, cuando consulto el libro, entonces ya no cuenta como disponible.
+
+### HU-20 · Registrar préstamos y devoluciones
+**Como** bibliotecario **quiero** registrar préstamos y devoluciones **para** saber qué ejemplares están prestados y a quién.
+
+- Dado un ejemplar disponible y un lector, cuando registro el préstamo, entonces el ejemplar queda «Prestado» con la fecha de devolución calculada.
+- Dado un ejemplar prestado, cuando intento prestarlo otra vez, entonces el sistema lo impide con un mensaje claro.
 - Dado un préstamo activo, cuando registro la devolución, entonces el ejemplar vuelve a «Disponible».
 
-### HU-10 · Alertas de préstamos
-**Como** personal **quiero** ver y recibir alertas de préstamos próximos a vencer y vencidos **para** recuperar el material a tiempo.
+### HU-21 · Alertas de devolución y disponibilidad
+**Como** bibliotecario y como lector **quiero** recibir avisos de préstamos por vencer o vencidos y de libros que vuelven a estar disponibles **para** recuperar el material a tiempo y no volver en vano.
 
 - Dado un préstamo que vence en menos de 48 horas, cuando corre la revisión diaria, entonces el lector con correo recibe un recordatorio y el panel lo marca «Por vencer».
 - Dado un préstamo vencido, cuando abro el panel, entonces aparece primero en la lista de alertas.
-- Dado que la revisión corre dos veces el mismo día, cuando termina, entonces no se envía el mismo correo dos veces.
-
-### HU-11 · Acceso por QR
-**Como** visitante **quiero** escanear un código QR en la sala **para** abrir la búsqueda en mi celular sin instalar nada.
-
-- Dado el QR impreso en la sala, cuando lo escaneo, entonces se abre la página de búsqueda adaptada al celular.
-- Dado el panel del personal, cuando genero el QR de una sala, entonces puedo descargarlo para imprimir.
-
-### HU-12 · Tutorial guiado
-**Como** visitante nuevo **quiero** un tutorial guiado en mi primera búsqueda **para** aprender a usar el sistema sin pedir ayuda.
-
-- Dado que es mi primera visita en este dispositivo, cuando abro el buscador, entonces aparece un recorrido de máximo 4 pasos.
-- Dado el tutorial, cuando presiono «Saltar», entonces no vuelve a aparecer, pero puedo abrirlo desde «¿Cómo buscar?».
-- Dado el tutorial, cuando lo recorro con el teclado, entonces puedo avanzar y cerrarlo sin mouse.
-
-### HU-13 · Modo lectura fácil
-**Como** adulto mayor **quiero** activar letra grande y alto contraste **para** leer cómodamente.
-
-- Dado cualquier pantalla pública, cuando activo «Letra grande», entonces el texto crece sin romper el diseño.
-- Dado que activo «Alto contraste», cuando recargo la página, entonces se mantiene mi preferencia.
-- Dado el modo normal, cuando lo reviso, entonces el texto mínimo es de 16 px y el contraste cumple AA.
-
-### HU-14 · Cuenta de lector con consentimiento
-**Como** lector **quiero** crear una cuenta aceptando el aviso de privacidad y poder eliminarla **para** controlar mis datos (Ley 1581 de 2012).
-
-- Dado que no acepto el aviso de privacidad, cuando intento registrarme, entonces no se crea la cuenta.
-- Dado el registro, cuando lo completo, entonces solo se piden nombre, correo y contraseña.
-- Dado que elimino mi cuenta, cuando confirmo, entonces mis datos personales se borran o anonimizan y no puedo volver a iniciar sesión.
-
-### HU-15 · Mis préstamos y aviso de disponibilidad
-**Como** lector **quiero** ver mis préstamos y pedir que me avisen cuando un libro esté disponible **para** no volver en vano.
-
-- Dado que tengo sesión, cuando abro «Mis préstamos», entonces veo cada préstamo con su fecha de devolución.
-- Dado un libro no disponible, cuando presiono «Avísame», entonces recibo un correo cuando se devuelva un ejemplar.
-
-### HU-16 · Copiar cita bibliográfica
-**Como** estudiante **quiero** copiar la cita bibliográfica del libro **para** usarla en mis trabajos.
-
-- Dado el detalle de una obra, cuando presiono «Copiar cita», entonces se copia en formato APA y veo la confirmación «Cita copiada».
-
-### HU-17 · Asistente de ayuda guiado (sin IA)
-**Como** visitante **quiero** un asistente de ayuda con opciones para tocar **para** resolver mis dudas sin tener que escribir ni esperar al personal.
-
-- Dado cualquier pantalla pública, cuando presiono «Necesito ayuda», entonces se abre un asistente con preguntas frecuentes en botones grandes («No encuentro mi libro», «¿Cómo llego al estante?», «¿Cómo pido un préstamo?»).
-- Dado que elijo una opción, cuando la abro, entonces veo una respuesta corta y paso a paso, y las opciones «Esto me ayudó» o «Hablar con una persona».
-- Dado que el personal edita las preguntas y respuestas desde el panel, cuando guarda, entonces el asistente muestra el contenido nuevo.
-- El asistente no usa IA ni servicios pagos: sigue un árbol de opciones definido por el personal.
-
-### HU-18 · Pedir que un trabajador se acerque
-**Como** visitante **quiero** pedir que un trabajador se acerque a ayudarme **para** no tener que levantarme a buscarlo.
-
-- Dado el asistente, cuando elijo «Hablar con una persona» e indico dónde estoy (equipo o sala), entonces el personal ve la solicitud en su panel con la hora.
-- Dado una solicitud abierta, cuando el personal la marca «En camino», entonces el visitante ve ese estado en su pantalla.
-- Dado una solicitud atendida, cuando el personal la cierra, entonces sale de la lista de pendientes.
-
-### HU-19 · Mapa de la biblioteca
-**Como** visitante **quiero** ver un mapa simple de la biblioteca con el estante resaltado **para** ubicarme sin preguntar.
-
-- Dado el detalle de una obra, cuando presiono «Ver en el mapa», entonces veo el plano de la sala con el estante resaltado y puntos de referencia.
-
-### HU-20 · Búsquedas sin resultado
-**Como** administrador **quiero** ver las búsquedas sin resultado y las más frecuentes **para** decidir qué material adquirir o cómo mejorar el catálogo.
-
-- Dado el panel de administración, cuando abro «Búsquedas», entonces veo las 20 búsquedas más frecuentes y las 20 sin resultado del último mes, sin datos personales.
-
-### HU-21 · Asistente conversacional con IA (No tendrá ahora)
-Mejora futura descartada para esta etapa por costo y complejidad, como propuso el Grupo 9. El asistente guiado (HU-17) se diseña para que pueda reemplazarse después.
+- Dado que pedí «Avísame cuando esté disponible», cuando se devuelve un ejemplar, entonces recibo un correo.
+- Dado que la revisión corre dos veces el mismo día, cuando termina, entonces no se envía el mismo aviso dos veces.
 
 ---
 
@@ -198,17 +242,17 @@ Mejora futura descartada para esta etapa por costo y complejidad, como propuso e
 
 | ID | Trabajo | Sprint | Responsable |
 |---|---|---|---|
-| T-01 | Repositorio, protección de `main`, plantillas, etiquetas, milestones, GitHub Project | Inception | Rafael Potes |
-| T-02 | Esqueleto NestJS con Clean Architecture, config, logs, errores uniformes, Swagger, `/health` | Inception–S1 | Rafael Potes + Juan Camilo |
-| T-03 | Esqueleto React + Vite + Mantine con tema accesible y rutas | Inception–S1 | Orlando Palma |
-| T-04 | docker-compose (PostgreSQL, API, web, Mailpit) | Inception | Rafael Potes |
-| T-05 | GitHub Actions: lint, pruebas, e2e y build en cada PR | Inception–S1 | Rafael Potes |
-| T-06 | Modelo de dominio, diagrama ER, migraciones Prisma, semillas e índices | Inception–S1 | Daniel Méndez |
-| T-07 | Despliegue con URL pública | S1 | Rafael Potes |
-| T-08 | Documento de arquitectura y decisiones (ADR) | Inception–S3 | Rafael Potes (revisa Humberto Llinás) |
+| T-01 | Repositorio, protección de `main`, plantillas, etiquetas, milestones, GitHub Project | S0 | Rafael Potes |
+| T-02 | Esqueleto NestJS con las 4 capas, config, logs, filtro global de errores, Swagger `/docs`, `/api/v1/health`, Prisma y primera migración | S0 | Rafael Potes |
+| T-03 | Esqueleto React + Vite + Mantine con tema accesible, rutas y cliente de la API | S0 | Orlando Palma |
+| T-04 | Infraestructura Docker: `docker compose up` levanta PostgreSQL, backend y frontend sin pasos manuales | S0 | Humberto Llinás |
+| T-05 | GitHub Actions: lint, pruebas y build en cada PR | S0 | Rafael Potes |
+| T-06 | Modelo de datos: diagrama ER (draw.io), migraciones, semillas ficticias e índices → `docs/modelo-datos.pdf` | S0–S1 | Daniel Méndez |
+| T-07 | Despliegue con URL pública | S2 | Rafael Potes |
+| T-08 | Arquitectura C4 niveles 1–3 (draw.io) y decisiones → `docs/arquitectura.pdf` | S0–S1 | Rafael Potes (revisa Humberto) |
 | T-09 | Pruebas e2e y cobertura ≥ 70 % | S2–S3 | Cada responsable de módulo |
 | T-10 | Manual de usuario | S3 | Humberto Llinás |
 | T-11 | Manual de operación y respaldo de base de datos | S3 | Rafael Potes |
-| T-12 | Actas Scrum y evidencias | Continuo | Rafael Potes |
-| T-13 | Swagger completo / colección Postman | S3 | Juan Camilo |
+| T-12 | Actas Scrum, `docs/inception.pdf`, `docs/daily-scrum.pdf`, `docs/evidencias.pdf` | Continuo | Rafael Potes |
+| T-13 | Modelo de dominio: diagrama de clases, reglas, glosario (≥ 10), casos de uso → `docs/modelo-dominio.pdf` | S0–S1 | Juan Camilo Fernández (revisa Humberto) |
 | T-14 | Aviso de privacidad y licencia | S1 | Humberto Llinás |

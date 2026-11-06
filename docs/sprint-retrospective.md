@@ -1,4 +1,4 @@
-# Sprint Retrospective
+﻿# Sprint Retrospective
 
 Después de cada Sprint Review, solo el equipo de Backend, en Teams y grabada.
 
@@ -16,6 +16,6 @@ Métricas: puntos comprometidos / terminados, PRs fusionados, tiempo medio de re
 Seguimiento de acciones de la retro anterior: ...
 ```
 
-## Sprint 1 · mar 10 nov 2026
+## Sprint 1 · vie 13 nov 2026
 
 _Pendiente._

@@ -6,12 +6,13 @@ body:
   - type: markdown
     attributes:
       value: |
-        Escribe la historia desde el punto de vista de quien usa el sistema. Guíate por el borrador en `docs/backlog.md`.
+        Escribe la historia desde el punto de vista de quien usa el sistema. Guíate por `docs/backlog.md`.
+        Al crearla, agrega la etiqueta de prioridad (`prioridad:alta`, `prioridad:media` o `prioridad:baja`) y luego comenta «Validada por el Grupo 9».
   - type: input
     id: rol
     attributes:
       label: Como...
-      description: ¿Quién la necesita? (visitante, adulto mayor, estudiante, personal del CLENA, administrador, lector)
+      description: ¿Quién la necesita? (visitante, adulto mayor, estudiante, bibliotecario, administrador, lector)
       placeholder: visitante de la biblioteca
     validations:
       required: true
@@ -33,7 +34,7 @@ body:
     id: criterios
     attributes:
       label: Criterios de aceptación
-      description: Uno por línea, con el formato Dado / Cuando / Entonces.
+      description: Entre 2 y 4, uno por línea, con el formato Dado / cuando / entonces.
       placeholder: |
         - Dado que existe «Cien años de soledad», cuando escribo «cien años sole», entonces aparece entre los 3 primeros resultados.
     validations:
@@ -49,8 +50,14 @@ body:
         - No tendrá ahora
     validations:
       required: true
+  - type: input
+    id: puntos
+    attributes:
+      label: Puntos (los estima Backend)
+      description: Fibonacci (1, 2, 3, 5, 8, 13).
+      placeholder: "5"
   - type: textarea
     id: notas
     attributes:
       label: Notas o ejemplos del CLENA
-      description: Lo que observaron en la biblioteca, fotos, datos de ejemplo.
+      description: Lo que observaron en la biblioteca, fotos, datos de ejemplo, origen de la historia.

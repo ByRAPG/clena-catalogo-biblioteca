@@ -1,4 +1,4 @@
-# Evidencias
+﻿# Evidencias
 
 Las grabaciones **no se suben al repositorio**. Se guardan en Teams/OneDrive, se comparten con djromero@uninorte.edu.co y se enlazan aquí. La fecha debe coincidir con el acta, los commits y los Issues.
 
@@ -8,4 +8,7 @@ Las grabaciones **no se suben al repositorio**. Se guardan en Teams/OneDrive, se
 | 2026-11-07 | Kickoff y validación del backlog | Backend + G9 | _enlace_ | _pendiente_ |
 | 2026-11-08 | Sprint Planning 1 | Backend (+ G9 invitado) | _enlace_ | [sprint-planning](sprint-planning.md) |
 | 2026-11-09 | Daily Scrum | Backend | _enlace_ | [daily-scrum](daily-scrum.md) |
-| 2026-11-10 | Sprint Review 1 + Retrospectiva | Backend + G9 | _enlace_ | [review](sprint-review.md) · [retro](sprint-retrospective.md) |
+| 2026-11-10 | Review de avance con el G9 | Backend + G9 | _enlace_ | [review](sprint-review.md) |
+| 2026-11-11 | Daily Scrum | Backend | _enlace_ | [daily-scrum](daily-scrum.md) |
+| 2026-11-12 | Daily Scrum | Backend | _enlace_ | [daily-scrum](daily-scrum.md) |
+| 2026-11-13 | Sprint Review 1 + Retrospectiva | Backend + G9 | _enlace_ | [review](sprint-review.md) · [retro](sprint-retrospective.md) |
