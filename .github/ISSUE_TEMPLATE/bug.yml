@@ -1,0 +1,31 @@
+name: Error
+description: Algo que no funciona como dicen sus criterios de aceptación
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: pasos
+    attributes:
+      label: Pasos para reproducirlo
+      placeholder: |
+        1. Ir a ...
+        2. Escribir ...
+        3. Presionar ...
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Qué esperaba y qué pasó
+    validations:
+      required: true
+  - type: input
+    id: entorno
+    attributes:
+      label: Dónde
+      placeholder: URL desplegada, local, navegador, celular
+  - type: textarea
+    id: evidencia
+    attributes:
+      label: Capturas o registro
+      description: No pegues contraseñas, tokens ni datos personales.

@@ -1,0 +1,56 @@
+name: Historia de usuario
+description: Necesidad de un usuario del CLENA (la redacta el Grupo 9)
+title: "HU-XX · "
+labels: ["historia-usuario"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Escribe la historia desde el punto de vista de quien usa el sistema. Guíate por el borrador en `docs/backlog.md`.
+  - type: input
+    id: rol
+    attributes:
+      label: Como...
+      description: ¿Quién la necesita? (visitante, adulto mayor, estudiante, personal del CLENA, administrador, lector)
+      placeholder: visitante de la biblioteca
+    validations:
+      required: true
+  - type: input
+    id: quiero
+    attributes:
+      label: Quiero...
+      placeholder: buscar escribiendo solo una parte del título
+    validations:
+      required: true
+  - type: input
+    id: para
+    attributes:
+      label: Para...
+      placeholder: encontrar el libro aunque no recuerde el nombre exacto
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación
+      description: Uno por línea, con el formato Dado / Cuando / Entonces.
+      placeholder: |
+        - Dado que existe «Cien años de soledad», cuando escribo «cien años sole», entonces aparece entre los 3 primeros resultados.
+    validations:
+      required: true
+  - type: dropdown
+    id: prioridad
+    attributes:
+      label: Prioridad (MoSCoW)
+      options:
+        - Debe tener
+        - Debería tener
+        - Podría tener
+        - No tendrá ahora
+    validations:
+      required: true
+  - type: textarea
+    id: notas
+    attributes:
+      label: Notas o ejemplos del CLENA
+      description: Lo que observaron en la biblioteca, fotos, datos de ejemplo.

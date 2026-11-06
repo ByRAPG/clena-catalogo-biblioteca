@@ -1,0 +1,22 @@
+name: Tarea técnica
+description: Habilitador técnico del equipo de Backend
+title: "T-XX · "
+labels: ["tarea-tecnica"]
+body:
+  - type: input
+    id: plane
+    attributes:
+      label: Work item de Plane
+      placeholder: CLENA-22
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+    validations:
+      required: true
+  - type: textarea
+    id: alcance
+    attributes:
+      label: Alcance y criterios de aceptación
+    validations:
+      required: true

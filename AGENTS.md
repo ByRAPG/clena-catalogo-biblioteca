@@ -1,0 +1,62 @@
+# Instrucciones del repositorio
+
+Estas reglas aplican a personas y agentes de IA. Prevalecen sobre las skills genéricas (`plane-work-management`, `plane-workitem-development`, `collaborative-code-review`).
+
+## Proyecto
+
+- P2 · Catálogo bibliográfico accesible para la Biblioteca del CLENA.
+- Plane: workspace del proyecto, proyecto con identificador `CLENA`.
+- GitHub: este repositorio. GitHub Projects es la evidencia oficial para el docente; Plane es la herramienta de planificación.
+
+## Stack obligatorio (no admite sustituciones)
+
+- Backend: NestJS + TypeScript bajo Clean Architecture. ORM: Prisma.
+- Frontend: React + TypeScript (Vite, Mantine).
+- Base de datos: PostgreSQL 16.
+- Contenedores: Docker y docker-compose.
+
+## Arquitectura
+
+- Módulos por contexto: `iam`, `catalog`, `search`, `loans`, `help`, más `shared`.
+- Capas por módulo: `domain` → `application` → `infrastructure` / `presentation`.
+- `domain` es TypeScript puro: prohibido importar `@nestjs/*`, `@prisma/*` o cualquier librería de infraestructura.
+- Los casos de uso reciben interfaces de repositorio inyectadas por token. Los modelos de Prisma no salen de `infrastructure`; se mapean a entidades de dominio.
+- Controladores solo invocan casos de uso.
+- API versionada en `/api/v1`, Swagger en `/docs`, salud en `/health`.
+- `synchronize`/`db push` prohibido fuera de desarrollo local; siempre migraciones versionadas.
+
+## GitHub Flow
+
+- `main` protegida: sin push directo; requiere PR, 1 aprobación y CI en verde.
+- Ramas: `feat/<issue>-descripcion`, `fix/<issue>-descripcion`, `docs/...`, `test/...`, `chore/...`, `refactor/...`. Partir siempre de `origin/main` actualizado.
+- Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `refactor:`, `docs:`, `chore:`, `ci:`).
+- PR: referencia el Issue (`Closes #n`) y el work item de Plane (`CLENA-n`), describe qué cambia y cómo probarlo.
+- Revisión: primero un compañero (rotación), luego revisión final y merge de Rafael Potes. Squash merge y borrar la rama.
+
+## Estados
+
+| Plane | GitHub Projects |
+|---|---|
+| Backlog | Backlog |
+| Todo | To Do |
+| In Progress | In Progress |
+| Review & Test, Changes Requested | In Review |
+| Done (solo con PR fusionado) | Done |
+| Blocked, Cancelled | Se mantiene la columna y se comenta el motivo |
+
+## Validación requerida antes de pedir revisión
+
+- `npm run lint`, `npm test` y `npm run build` en `backend/` y `frontend/`.
+- `npm run test:e2e` en `backend/` cuando el cambio toca un flujo de la API.
+- Cobertura ≥ 70 % en `domain` y `application`.
+
+## Definition of Done
+
+Ver `docs/definition-of-done.md`.
+
+## Evidencia
+
+- Las fechas de actas deben coincidir con commits, Issues y grabaciones.
+- Las grabaciones no se suben al repositorio: se enlazan en `docs/evidencias.md`.
+- No se suben datos reales del CLENA ni datos personales. Semillas ficticias.
+- Nunca escribir secretos en el código ni en comentarios de Plane o GitHub.

@@ -1,0 +1,38 @@
+name: Feedback del cliente
+description: Observación del Grupo 9 sobre lo que se mostró en una Sprint Review
+title: "Feedback: "
+labels: ["feedback-cliente"]
+body:
+  - type: input
+    id: sprint
+    attributes:
+      label: Sprint y fecha de la review
+      placeholder: Sprint 1 · 10 nov 2026
+    validations:
+      required: true
+  - type: input
+    id: historia
+    attributes:
+      label: Historia relacionada
+      placeholder: "#3 HU-01"
+  - type: textarea
+    id: observacion
+    attributes:
+      label: ¿Qué observaron?
+      description: Qué probaron, qué esperaban y qué pasó.
+    validations:
+      required: true
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: ¿Qué proponen?
+  - type: dropdown
+    id: importancia
+    attributes:
+      label: Importancia
+      options:
+        - Alta, impide usar la función
+        - Media, molesta pero se puede usar
+        - Baja, mejora deseable
+    validations:
+      required: true
