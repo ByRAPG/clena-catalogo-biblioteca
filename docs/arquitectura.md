@@ -4,7 +4,7 @@
 
 ## 1. Contexto
 
-El sistema permite que los visitantes de la Biblioteca del CLENA busquen material, vean su ubicación física y su disponibilidad, y pidan ayuda a un trabajador. El personal mantiene el catálogo, registra préstamos y atiende solicitudes de ayuda.
+El sistema permite que los visitantes de la Biblioteca del CLENA busquen material, vean su ubicación física y su disponibilidad, y completen un tutorial guiado en su primera búsqueda. El personal mantiene el catálogo y registra préstamos y devoluciones.
 
 ```mermaid
 flowchart LR
@@ -53,7 +53,7 @@ flowchart TB
 
 Las dependencias apuntan siempre hacia el dominio.
 
-- **domain**: TypeScript puro. Entidades (`Work`, `Copy`, `Loan`, `HelpRequest`…), value objects (`Isbn`, `ShelfLocation`, `Email`), reglas y errores de dominio. Prohibido importar `@nestjs/*`, `@prisma/*` o librerías externas. Una regla de ESLint lo verifica en CI.
+- **domain**: TypeScript puro. Entidades (`Work`, `Copy`, `Loan`…), value objects (`Isbn`, `ShelfLocation`, `Email`), reglas y errores de dominio. Prohibido importar `@nestjs/*`, `@prisma/*` o librerías externas. Una regla de ESLint lo verifica en CI.
 - **application**: casos de uso (`SearchWorks`, `RegisterLoan`, `ImportCatalog`…) y **puertos**: interfaces que el caso de uso necesita (`WorkRepository`, `Mailer`, `Clock`, `PasswordHasher`). No conoce HTTP ni Prisma.
 - **infrastructure**: adaptadores que implementan los puertos (`PrismaWorkRepository`, `SmtpMailer`, `JwtTokenService`). Los modelos de Prisma se mapean a entidades y no salen de esta capa.
 - **presentation**: controladores REST, DTO con `class-validator`, guards y decoradores de Swagger. Solo llaman casos de uso.
@@ -79,10 +79,10 @@ backend/src/
       infrastructure/  prisma-work.repository.ts, csv/
       presentation/    works.controller.ts, dto/
       catalog.module.ts
-    iam/ search/ loans/ help/
+    iam/ search/ loans/
   shared/              config/, errors/, logging/, prisma/, health/, mail/
 frontend/src/
-  app/ (rutas y layouts)  features/ (search, catalog, loans, help, auth)  shared/ (api, theme, ui)
+  app/ (rutas y layouts)  features/ (search, catalog, loans, auth)  shared/ (api, theme, ui)
 ```
 
 ## 5. Flujo de una petición
@@ -129,15 +129,7 @@ Ejemplo: el personal registra un préstamo.
 
 Meta: < 1 s con 5 000 obras.
 
-## 9. Asistente de ayuda sin IA
-
-- El contenido es un árbol (`FaqNode`: pregunta, respuesta, hijos, orden, activo) editable por el personal.
-- El frontend recorre el árbol con botones grandes. Siempre ofrece «Hablar con una persona».
-- Esa opción crea una `HelpRequest` (ubicación, motivo). El panel del personal la recibe y cambia su estado: `Abierta → En camino → Atendida` (o `Expirada` a los 30 min).
-- El visitante ve el estado por consulta periódica cada 5 s. No se piden datos personales.
-- El caso de uso depende del puerto `HelpContentProvider`, para poder sustituir el árbol por un asistente con IA en el futuro (HU-21) sin cambiar la interfaz.
-
-## 10. Despliegue y entornos
+## 9. Despliegue y entornos
 
 | Entorno | Cómo | Base de datos | Correo |
 |---|---|---|---|
@@ -147,7 +139,7 @@ Meta: < 1 s con 5 000 obras.
 
 Las migraciones se aplican con `prisma migrate deploy` al desplegar. Nunca `db push` fuera de local.
 
-## 11. Decisiones (ADR)
+## 10. Decisiones (ADR)
 
 ### ADR-01 · Prisma como ORM
 - **Contexto:** se necesitan migraciones versionadas y tipado.
@@ -176,16 +168,10 @@ Las migraciones se aplican con `prisma migrate deploy` al desplegar. Nunca `db p
 ### ADR-05 · Despliegue en Render o Railway
 - **Contexto:** se necesita una URL pública sin costo.
 - **Decisión:** plataforma PaaS con PostgreSQL administrado y despliegue desde GitHub.
-- **Alternativas:** VPS propio (más operación), Vercel (no aloja bien la API de larga duración).
+- **Alternativas:** VPS propio (más operación). Vercel es viable solo para el frontend React/Vite, pero no para la API NestJS (servidor de larga duración y conexiones a PostgreSQL); se mantiene Render o Railway para todo para tener una sola URL y un solo despliegue.
 - **Consecuencias:** en la capa gratuita el servicio puede «dormir»; se avisa antes de cada review.
 
-### ADR-06 · Asistente de ayuda determinista
-- **Contexto:** el Grupo 9 descartó el chat; se quiere evitar el costo de APIs de IA.
-- **Decisión:** árbol de opciones editable que termina en una solicitud a un trabajador.
-- **Alternativas:** chatbot con IA (costo, respuestas impredecibles), chat en vivo (requiere personal conectado).
-- **Consecuencias:** respuestas limitadas a lo que el personal escribe; predecible y gratuito.
-
-### ADR-07 · Préstamos registrados por el personal
+### ADR-06 · Préstamos registrados por el personal
 - **Contexto:** el CLENA presta en mostrador.
 - **Decisión:** solo STAFF registra préstamos. La cuenta de lector es opcional y sirve para consultar y recibir avisos.
 - **Consecuencias:** menos datos personales; el lector sin cuenta se registra con datos mínimos y consentimiento.
