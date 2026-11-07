@@ -53,6 +53,12 @@ describe('GET /api/v1/health (e2e)', () => {
     expect(res.body.path).toBe('/api/v1/nope');
   });
 
+  it('responde también en /health sin prefijo (Entrega 1)', async () => {
+    repository.isDatabaseAvailable.mockResolvedValue(true);
+    const res = await request(app.getHttpServer()).get('/health').expect(200);
+    expect(res.body).toMatchObject({ status: 'ok', database: 'up' });
+  });
+
   it('sirve Swagger en /docs', async () => {
     await request(app.getHttpServer()).get('/docs-json').expect(200);
   });

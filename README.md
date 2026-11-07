@@ -63,7 +63,7 @@ docker compose up --build
 - Frontend: http://localhost:5173
 - API: http://localhost:3000/api/v1
 - Swagger: http://localhost:3000/docs
-- Salud: http://localhost:3000/health
+- Salud: http://localhost:3000/api/v1/health (alias `/health` para la Entrega 1)
 
 ## Aplicación desplegada
 
@@ -86,6 +86,19 @@ Pendiente (Sprint 1).
 | [`docs/evidencias.md`](docs/evidencias.md) | Enlaces a grabaciones de Teams por fecha |
 | [`docs/actas/`](docs/actas) | Una acta por reunión |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | GitHub Flow, ramas, commits y revisión |
+
+### Informes de la Entrega 1 (PDF)
+
+Los `.md` son la fuente. Los informes que pide el docente se generan en PDF con `docs/pdf` (portada, índice y números de página; diagramas de draw.io) y se publican en `docs/`.
+
+| Informe | Markdown (fuente) | PDF | Estado |
+|---|---|---|---|
+| Inception | `docs/actas/` y `docs/plan-proyecto.md` | `docs/inception.pdf` | Pendiente (T-12) |
+| Evidencias | `docs/evidencias.md` | `docs/evidencias.pdf` | Pendiente (T-12) |
+| Modelo de dominio | por definir (T-13) | `docs/modelo-dominio.pdf` | Pendiente (T-13) |
+| Modelo de datos | `docs/modelo-datos.md` | `docs/modelo-datos.pdf` | Pendiente (T-06) |
+| Arquitectura (C4 niveles 1 a 3) | `docs/arquitectura.md` | `docs/arquitectura.pdf` | Pendiente (T-08) |
+| Daily Scrum | `docs/daily-scrum.md` | `docs/daily-scrum.pdf` | Pendiente (T-12) |
 
 ## Uso de inteligencia artificial
 
