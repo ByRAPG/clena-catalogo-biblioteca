@@ -18,6 +18,8 @@ Pegue o adjunte siempre:
 - Las reglas de capas de `AGENTS.md`: `domain` es TypeScript puro (sin `@nestjs/*` ni `@prisma/*`), los casos de uso reciben repositorios por interfaz, los controladores solo llaman casos de uso, API en `/api/v1`.
 - El módulo en que trabaja (`iam`, `catalog`, `search`, `loans`) y los archivos vecinos como ejemplo de estilo.
 
+> Para trabajar una tarea de principio a fin, use las plantillas por fase de [\docs/prompts-por-fase.md\](prompts-por-fase.md) (entender, planear, implementar, probar, PR, estados, revisar, cerrar). Los de abajo son prompts sueltos.
+
 ## Prompts que sirven
 
 **Para entender antes de escribir**
