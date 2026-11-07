@@ -13,10 +13,10 @@ Las fuentes de los informes son los `.md` de `docs/`. Este paquete genera, para 
 Desde `docs/pdf/`:
 
 ```powershell
-npm install                          # una sola vez
-npm run diagramas                    # docs/diagramas/*.drawio -> docs/img/*.png
-npm run pdf                          # todos los documentos de documentos.json
-npm run docs                         # diagramas y luego PDF
+pnpm install                          # una sola vez
+pnpm run diagramas                    # docs/diagramas/*.drawio -> docs/img/*.png
+pnpm run pdf                          # todos los documentos de documentos.json
+pnpm run docs                         # diagramas y luego PDF
 node build.mjs arquitectura inception   # solo esos documentos
 node build.mjs arquitectura --fecha "6 de noviembre de 2026" --version 1.1
 node build.mjs --fuente ruta.md --salida ruta.pdf --titulo "Prueba"   # modo de prueba

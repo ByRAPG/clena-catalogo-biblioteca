@@ -1,0 +1,6 @@
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  prisma: true
+  '@parcel/watcher': false
+  '@scarf/scarf': false

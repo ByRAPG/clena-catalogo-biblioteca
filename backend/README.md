@@ -5,10 +5,10 @@ API NestJS + TypeScript + Prisma (PostgreSQL 16) bajo Clean Architecture. Prefij
 ## Cómo correr
 
 ```bash
-npm install                 # también ejecuta prisma generate
+pnpm install                 # también ejecuta prisma generate
 cp ../.env.example .env     # ajusta DATABASE_URL (localhost si corres fuera de Docker)
-npm run prisma:migrate:deploy
-npm run start:dev
+pnpm run prisma:migrate:deploy
+pnpm run start:dev
 ```
 
 Variables validadas al arrancar (zod, `src/shared/config/env.validation.ts`): `PORT`, `DATABASE_URL`, `CORS_ORIGIN`, `LOG_LEVEL`, `JWT_*`. Si falta una obligatoria, la API no inicia.
@@ -16,11 +16,11 @@ Variables validadas al arrancar (zod, `src/shared/config/env.validation.ts`): `P
 ## Probar
 
 ```bash
-npm run lint
-npm test            # unitarias
-npm run test:cov    # cobertura de domain y application (umbral 70 %)
-npm run test:e2e    # supertest, sin base de datos real
-npm run build
+pnpm run lint
+pnpm test            # unitarias
+pnpm run test:cov    # cobertura de domain y application (umbral 70 %)
+pnpm run test:e2e    # supertest, sin base de datos real
+pnpm run build
 ```
 
 ## Capas
