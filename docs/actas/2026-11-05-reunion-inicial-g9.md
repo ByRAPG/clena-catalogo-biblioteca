@@ -1,6 +1,6 @@
 # Acta · Reunión inicial con el Grupo 9
 
-- **Fecha:** viernes 6 de noviembre de 2026
+- **Fecha:** jueves 5 de noviembre de 2026
 - **Medio:** Microsoft Teams (canal General)
 - **Duración:** ~33 minutos
 - **Asistentes Backend:** Rafael Potes, Humberto Llinás (se unió en el minuto 2)
