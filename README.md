@@ -80,6 +80,7 @@ Pendiente (Sprint 1).
 | [`docs/memoria-critica.md`](docs/memoria-critica.md) | Roles, fechas, reglas del docente y decisiones (leer primero) |
 | [`docs/flujo-de-trabajo.md`](docs/flujo-de-trabajo.md) | Ciclo de una tarea y ceremonias, con ejemplo |
 | [`docs/guia-ia.md`](docs/guia-ia.md) | Cómo trabajar con IA y MCP |
+| [`docs/prompts-por-fase.md`](docs/prompts-por-fase.md) | Prompts para copiar y pegar en cada fase de una tarea |
 | [`docs/definition-of-done.md`](docs/definition-of-done.md) | Cuándo una tarea está terminada |
 | [`docs/sprint-planning.md`](docs/sprint-planning.md), [`daily-scrum.md`](docs/daily-scrum.md), [`sprint-review.md`](docs/sprint-review.md), [`sprint-retrospective.md`](docs/sprint-retrospective.md) | Actas de Scrum por sprint |
 | [`docs/evidencias.md`](docs/evidencias.md) | Enlaces a grabaciones de Teams por fecha |

@@ -59,6 +59,7 @@ Ver `docs/definition-of-done.md`.
 - `docs/memoria-critica.md`: roles, fechas, reglas del docente y penalizaciones.
 - `docs/flujo-de-trabajo.md`: ciclo de una tarea y ceremonias.
 - `docs/guia-ia.md`: cómo usar IA y MCP (y qué no hacer).
+- `docs/prompts-por-fase.md`: prompts por fase (entender, planear, implementar, probar, PR, estados, revisión).
 - `docs/backlog.md`: historias y criterios. No inventar requisitos fuera de ahí.
 - Informes en `docs/`: se entregan en PDF con diagramas de draw.io (nunca Mermaid). Ver `docs/pdf/README.md`.
 
