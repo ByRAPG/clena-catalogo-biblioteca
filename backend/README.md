@@ -40,3 +40,9 @@ Los controladores solo llaman casos de uso; los repositorios se inyectan por tok
 ## Base de datos
 
 Solo migraciones versionadas en `prisma/migrations/` (nunca `db push` fuera de local). La migración inicial habilita `pg_trgm` y `unaccent` y crea la tabla mínima `schema_info`; el modelo real llega con T-06.
+
+## Validación de entrada
+
+El `ValidationPipe` global usa `whitelist` y `forbidNonWhitelisted`: si el cliente envía un campo que el DTO no declara, la API responde 400. Declare todos los campos en el DTO.
+
+En producción, `JWT_ACCESS_SECRET` y `JWT_REFRESH_SECRET` deben tener al menos 32 caracteres. `CORS_ORIGIN` admite varios orígenes separados por coma.

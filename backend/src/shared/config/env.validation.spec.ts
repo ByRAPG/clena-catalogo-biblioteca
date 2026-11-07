@@ -13,6 +13,24 @@ describe('validateEnv', () => {
     expect(env.LOG_LEVEL).toBe('info');
   });
 
+  it('rechaza secretos JWT cortos en producción', () => {
+    expect(() => validateEnv({ ...base, NODE_ENV: 'production' })).toThrow(
+      /JWT_ACCESS_SECRET.*32/,
+    );
+  });
+
+  it('acepta secretos JWT largos en producción', () => {
+    const secret = 'x'.repeat(32);
+    expect(() =>
+      validateEnv({
+        ...base,
+        NODE_ENV: 'production',
+        JWT_ACCESS_SECRET: secret,
+        JWT_REFRESH_SECRET: secret,
+      }),
+    ).not.toThrow();
+  });
+
   it('falla si falta DATABASE_URL', () => {
     expect(() => validateEnv({ ...base, DATABASE_URL: undefined })).toThrow(
       /DATABASE_URL/,

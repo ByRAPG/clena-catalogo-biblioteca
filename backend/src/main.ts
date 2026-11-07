@@ -11,7 +11,10 @@ async function bootstrap(): Promise<void> {
 
   app.useLogger(resolveLogLevels(config.get('LOG_LEVEL', { infer: true })));
   app.enableCors({
-    origin: config.get('CORS_ORIGIN', { infer: true }).split(','),
+    origin: config
+      .get('CORS_ORIGIN', { infer: true })
+      .split(',')
+      .map((origin) => origin.trim()),
   });
   configureApp(app);
   app.enableShutdownHooks();
