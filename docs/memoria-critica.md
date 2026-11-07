@@ -73,4 +73,4 @@ Solo Rafael o Humberto aprueban y fusionan (CODEOWNERS). Antes, un compañero de
 - Licencia y aviso de privacidad antes del Sprint 1 (T-14).
 - Confirmar fechas finales con el docente.
 - Check de CI obligatorio en `main` cuando exista T-05.
-- Grabaciones válidas: kickoff 7 nov, review 10 nov, review 13 nov. La del 6 nov no tiene grabación válida.
+- Grabaciones válidas: kickoff 7 nov, review 10 nov, review 13 nov. La del 5 nov no tiene grabación válida.
