@@ -17,7 +17,7 @@ Estas reglas aplican a personas y agentes de IA. Prevalecen sobre las skills gen
 
 ## Arquitectura
 
-- Módulos por contexto: `iam`, `catalog`, `search`, `loans`, `help`, más `shared`.
+- Módulos por contexto: `iam`, `catalog`, `search`, `loans`, más `shared`.
 - Capas por módulo: `domain` → `application` → `infrastructure` / `presentation`.
 - `domain` es TypeScript puro: prohibido importar `@nestjs/*`, `@prisma/*` o cualquier librería de infraestructura.
 - Los casos de uso reciben interfaces de repositorio inyectadas por token. Los modelos de Prisma no salen de `infrastructure`; se mapean a entidades de dominio.
@@ -53,6 +53,17 @@ Estas reglas aplican a personas y agentes de IA. Prevalecen sobre las skills gen
 ## Definition of Done
 
 Ver `docs/definition-of-done.md`.
+
+## Documentos que el agente debe leer
+
+- `docs/memoria-critica.md`: roles, fechas, reglas del docente y penalizaciones.
+- `docs/flujo-de-trabajo.md`: ciclo de una tarea y ceremonias.
+- `docs/guia-ia.md`: cómo usar IA y MCP (y qué no hacer).
+- `docs/prompts-por-fase.md`: prompts por fase (entender, planear, implementar, probar, PR, estados, revisión).
+- `docs/backlog.md`: historias y criterios. No inventar requisitos fuera de ahí.
+- Informes en `docs/`: se entregan en PDF con diagramas de draw.io (nunca Mermaid). Ver `docs/pdf/README.md`.
+
+El producto **no usa IA**. Nunca subir secretos ni datos reales del CLENA.
 
 ## Evidencia
 
