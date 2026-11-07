@@ -1,5 +1,7 @@
 # Cómo contribuir
 
+Antes de empezar lea [`docs/memoria-critica.md`](docs/memoria-critica.md), [`docs/flujo-de-trabajo.md`](docs/flujo-de-trabajo.md) y, si usa IA, [`docs/guia-ia.md`](docs/guia-ia.md).
+
 ## Flujo de trabajo (GitHub Flow)
 
 ```bash
