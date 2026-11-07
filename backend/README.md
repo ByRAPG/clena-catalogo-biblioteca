@@ -1,0 +1,48 @@
+# Backend – Biblioteca CLENA
+
+API NestJS + TypeScript + Prisma (PostgreSQL 16) bajo Clean Architecture. Prefijo `/api/v1`, Swagger en `/docs`, salud en `/api/v1/health`.
+
+## Cómo correr
+
+```bash
+npm install                 # también ejecuta prisma generate
+cp ../.env.example .env     # ajusta DATABASE_URL (localhost si corres fuera de Docker)
+npm run prisma:migrate:deploy
+npm run start:dev
+```
+
+Variables validadas al arrancar (zod, `src/shared/config/env.validation.ts`): `PORT`, `DATABASE_URL`, `CORS_ORIGIN`, `LOG_LEVEL`, `JWT_*`. Si falta una obligatoria, la API no inicia.
+
+## Probar
+
+```bash
+npm run lint
+npm test            # unitarias
+npm run test:cov    # cobertura de domain y application (umbral 70 %)
+npm run test:e2e    # supertest, sin base de datos real
+npm run build
+```
+
+## Capas
+
+```text
+src/
+  modules/{iam,catalog,search,loans}/
+    domain/          TypeScript puro (sin @nestjs/* ni @prisma/*; lo verifica ESLint)
+    application/     casos de uso y puertos (interfaces + token de inyección)
+    infrastructure/  adaptadores (Prisma, etc.)
+    presentation/    controladores, DTO (class-validator), Swagger
+  shared/            config, errors (filtro global), Prisma y health (ejemplo con las 4 capas)
+```
+
+Los controladores solo llaman casos de uso; los repositorios se inyectan por token. Los errores salen como `{ statusCode, error, message, path, timestamp }`.
+
+## Base de datos
+
+Solo migraciones versionadas en `prisma/migrations/` (nunca `db push` fuera de local). La migración inicial habilita `pg_trgm` y `unaccent` y crea la tabla mínima `schema_info`; el modelo real llega con T-06.
+
+## Validación de entrada
+
+El `ValidationPipe` global usa `whitelist` y `forbidNonWhitelisted`: si el cliente envía un campo que el DTO no declara, la API responde 400. Declare todos los campos en el DTO.
+
+En producción, `JWT_ACCESS_SECRET` y `JWT_REFRESH_SECRET` deben tener al menos 32 caracteres. `CORS_ORIGIN` admite varios orígenes separados por coma.
