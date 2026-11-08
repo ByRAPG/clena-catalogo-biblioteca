@@ -1,6 +1,6 @@
-FROM node:lts-alpine AS development
+FROM node:22-alpine AS development
 
-RUN npm install -g corepack && corepack enable pnpm
+RUN corepack enable pnpm
 
 WORKDIR /app
 
