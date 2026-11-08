@@ -98,7 +98,7 @@ Ejemplo: el personal registra un préstamo.
 
 ## 6. API
 
-- Prefijo `/api/v1`. Documentación Swagger en `/docs`. Salud en `/health` (incluye chequeo de base de datos).
+- Prefijo `/api/v1`. Documentación Swagger en `/docs` (el enunciado la pide ahí). Salud en `/api/v1/health` (incluye chequeo de base de datos), con alias `/health` sin prefijo que pide la Entrega 1. El healthcheck de Docker usa `/api/v1/health`.
 - Formato de error único:
 
 ```json

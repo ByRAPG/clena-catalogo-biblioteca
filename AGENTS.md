@@ -22,7 +22,7 @@ Estas reglas aplican a personas y agentes de IA. Prevalecen sobre las skills gen
 - `domain` es TypeScript puro: prohibido importar `@nestjs/*`, `@prisma/*` o cualquier librería de infraestructura.
 - Los casos de uso reciben interfaces de repositorio inyectadas por token. Los modelos de Prisma no salen de `infrastructure`; se mapean a entidades de dominio.
 - Controladores solo invocan casos de uso.
-- API versionada en `/api/v1`, Swagger en `/docs`, salud en `/health`.
+- API versionada en `/api/v1`, Swagger en `/docs`, salud en `/api/v1/health` (alias `/health`).
 - `synchronize`/`db push` prohibido fuera de desarrollo local; siempre migraciones versionadas.
 
 ## GitHub Flow
