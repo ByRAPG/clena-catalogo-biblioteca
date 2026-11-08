@@ -2,6 +2,11 @@
 
 API NestJS + TypeScript + Prisma (PostgreSQL 16) bajo Clean Architecture. Prefijo `/api/v1`, Swagger en `/docs`, salud en `/api/v1/health`.
 
+## Requisitos
+
+- Node.js 22 y pnpm 12.18.0 (versión fijada en `packageManager`). Activa pnpm una sola vez con `corepack enable`; si falla por permisos, usa `corepack enable --install-directory <carpeta en tu PATH>`.
+- Usa siempre `pnpm`. No ejecutes `npm install`: crearía un `package-lock.json` que no se versiona.
+
 ## Cómo correr
 
 ```bash

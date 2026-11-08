@@ -81,7 +81,7 @@ Equivalencia de prioridad: **Debe tener = `prioridad:alta`**, **Debería = `prio
 
 ## Sugerencias de Backend (fuera del backlog comprometido)
 
-Ideas que el G9 puede convertir en historia «Podría» o «No tendrá ahora» si les parecen útiles: copiar la cita bibliográfica (mencionada en su informe), mapa de la biblioteca con el estante resaltado (propuesta de Derek el 5 nov), búsquedas más frecuentes y sin resultado para el personal, botón «Necesito ayuda» que avisa a un trabajador y asistente con IA (mejora futura que el G9 descartó por costo). El **chat de atención** del informe del G9 era para la Sala de Internet; ese problema corresponde al proyecto «Buscador CLENA» (P1) y **no** está en el alcance de Consulta Fácil.
+Ideas que el G9 puede convertir en historia «Podría» o «No tendrá ahora» si les parecen útiles: copiar la cita bibliográfica (mencionada en su informe), mapa de la biblioteca con el estante resaltado (propuesta de Derek en la reunión del 3 nov), búsquedas más frecuentes y sin resultado para el personal, botón «Necesito ayuda» que avisa a un trabajador y asistente con IA (mejora futura que el G9 descartó por costo). El **chat de atención** del informe del G9 era para la Sala de Internet; ese problema corresponde al proyecto «Buscador CLENA» (P1) y **no** está en el alcance de Consulta Fácil.
 
 ---
 
