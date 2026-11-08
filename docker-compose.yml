@@ -1,8 +1,11 @@
 services:
   db:
+    container_name: clena-db
     image: postgres:16
-    env_file:
-      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
@@ -14,9 +17,14 @@ services:
       retries: 10
 
   backend:
-    build: ./backend
+    container_name: clena-backend
+    build: 
+      context: ./backend
+      target: development
     env_file:
       - .env
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
     ports:
       - "3000:3000"
     volumes:
@@ -27,7 +35,10 @@ services:
         condition: service_healthy
   
   frontend:
-    build: ./frontend
+    container_name: clena-frontend
+    build: 
+      context: ./frontend
+      target: development
     env_file:
       - .env
     ports:
@@ -38,6 +49,7 @@ services:
       - ./frontend/vite.config.ts:/app/vite.config.ts
 
   mailpit:
+    container_name: clena-mailpit
     image: axllent/mailpit:latest
     ports:
       - "1025:1025"

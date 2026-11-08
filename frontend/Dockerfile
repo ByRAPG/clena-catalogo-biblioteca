@@ -1,4 +1,4 @@
-FROM node:lts-alpine
+FROM node:lts-alpine AS development
 
 RUN npm install -g corepack && corepack enable pnpm
 
@@ -13,3 +13,7 @@ COPY . .
 EXPOSE 5173
 
 CMD ["pnpm", "dev", "--host", "0.0.0.0"]
+
+FROM development AS build
+
+RUN pnpm run build

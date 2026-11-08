@@ -1,4 +1,4 @@
-FROM node:lts-alpine
+FROM node:lts-alpine AS development
 
 RUN npm install -g corepack && corepack enable pnpm
 
@@ -13,4 +13,8 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "pnpm run prisma:migrate:deploy && pnpm run start:dev"]
+CMD ["sh", "-c", "pnpm run prisma:migrate:deploy && pnpm run prisma:seed && pnpm run start:dev"]
+
+FROM development AS build
+
+RUN pnpm run build

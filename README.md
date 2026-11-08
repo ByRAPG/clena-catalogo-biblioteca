@@ -53,17 +53,24 @@ Detalle y decisiones en [`docs/arquitectura.md`](docs/arquitectura.md).
 
 ## Cómo levantar el proyecto
 
-> Se completa en el Sprint 1 cuando exista el esqueleto del código.
+Para desarrollo local necesitas Docker y Docker Compose. Desde la raíz del repositorio:
 
 ```bash
 cp .env.example .env
 docker compose up --build
 ```
 
+El archivo `.env` contiene valores de ejemplo para desarrollo. Ajusta las credenciales locales y no lo subas al repositorio. Compose construye la URL del backend con `POSTGRES_USER`, `POSTGRES_PASSWORD` y `POSTGRES_DB`; usa caracteres alfanuméricos en estos valores para que la URL sea válida. Una vez inicializado el volumen de PostgreSQL, cambiar estas variables no modifica las credenciales ni la base ya existentes.
+
 - Frontend: http://localhost:5173
 - API: http://localhost:3000/api/v1
 - Swagger: http://localhost:3000/docs
 - Salud: http://localhost:3000/api/v1/health (alias `/health` para la Entrega 1)
+- Mailpit: http://localhost:8025; SMTP disponible para los contenedores en `mailpit:1025`.
+
+El backend aplica las migraciones y ejecuta una semilla técnica ficticia al arrancar. Los datos de PostgreSQL persisten en el volumen `postgres_data` al reiniciar los contenedores. Para detener los servicios, usa `docker compose down`; el volumen se conserva.
+
+Para validar el código, ejecuta `pnpm run lint`, `pnpm test` y `pnpm run build` en `backend/` y `frontend/`. La cobertura del backend se comprueba con `pnpm run test:cov`.
 
 ## Aplicación desplegada
 
