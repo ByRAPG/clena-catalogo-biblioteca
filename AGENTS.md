@@ -46,8 +46,8 @@ Estas reglas aplican a personas y agentes de IA. Prevalecen sobre las skills gen
 
 ## Validación requerida antes de pedir revisión
 
-- `npm run lint`, `npm test` y `npm run build` en `backend/` y `frontend/`.
-- `npm run test:e2e` en `backend/` cuando el cambio toca un flujo de la API.
+- `pnpm run lint`, `pnpm test` y `pnpm run build` en `backend/` y `frontend/`.
+- `pnpm run test:e2e` en `backend/` cuando el cambio toca un flujo de la API.
 - Cobertura ≥ 70 % en `domain` y `application`.
 
 ## Definition of Done

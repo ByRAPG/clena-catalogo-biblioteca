@@ -175,3 +175,9 @@ Las migraciones se aplican con `prisma migrate deploy` al desplegar. Nunca `db p
 - **Contexto:** el CLENA presta en mostrador.
 - **Decisión:** solo STAFF registra préstamos. La cuenta de lector es opcional y sirve para consultar y recibir avisos.
 - **Consecuencias:** menos datos personales; el lector sin cuenta se registra con datos mínimos y consentimiento.
+
+### ADR-07 · pnpm como gestor de paquetes
+- **Contexto:** el docente indicó que el proyecto usa pnpm.
+- **Decisión:** pnpm en `backend/`, `frontend/` y `docs/pdf/`, con la versión fijada en `packageManager` de cada `package.json` y `pnpm-lock.yaml` versionado. El CI usa `pnpm/action-setup` e `install --frozen-lockfile`.
+- **Alternativas:** npm (descartada por la indicación del docente).
+- **Consecuencias:** cada integrante activa Corepack una vez (`corepack enable`) y nunca ejecuta `npm install` (crearía `package-lock.json`). Los scripts de instalación de dependencias se aprueban en `pnpm-workspace.yaml` (`allowBuilds`); Prisma los necesita para generar su cliente. Los Dockerfile usan `corepack enable` y `pnpm install --frozen-lockfile`.

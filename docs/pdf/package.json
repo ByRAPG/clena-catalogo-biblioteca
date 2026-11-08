@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "clena-docs-pdf",
   "version": "1.0.0",
   "private": true,
@@ -7,12 +7,13 @@
   "scripts": {
     "pdf": "node build.mjs",
     "diagramas": "node diagramas.mjs",
-    "docs": "npm run diagramas && npm run pdf"
+    "docs": "pnpm run diagramas && pnpm run pdf"
   },
   "dependencies": {
     "marked": "^18.1.3",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^6.5.438",
     "playwright-core": "^1.65.0"
-  }
+  },
+  "packageManager": "pnpm@12.18.0"
 }

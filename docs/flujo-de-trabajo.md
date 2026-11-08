@@ -27,7 +27,7 @@ Equivalencia: `HU-n` = work item `CLENA-n` en Plane. `T-01…T-14` = `CLENA-22�
    ```bash
    git commit -m "feat(search): busca por coincidencia parcial del título"
    ```
-5. **Probar** en local: `npm run lint`, `npm test` y `npm run build` en `backend/` y `frontend/`.
+5. **Probar** en local: `pnpm run lint`, `pnpm test` y `pnpm run build` en `backend/` y `frontend/`.
 6. **Abrir el PR**:
    ```bash
    git push -u origin feat/12-busqueda-parcial

@@ -63,7 +63,7 @@ Fase 3: implementar el plan aprobado (opción <X>) de la tarea <CLENA-n>.
 ```text
 Fase 4: verificar antes de hacer commit.
 
-1. Ejecuta en backend/ y/o frontend/: npm run lint, npm test, npm run build y, si toqué la API, npm run test:e2e. Muéstrame la salida real; no afirmes que pasaron si no los corriste.
+1. Ejecuta en backend/ y/o frontend/: pnpm run lint, pnpm test, pnpm run build y, si toqué la API, pnpm run test:e2e. Muéstrame la salida real; no afirmes que pasaron si no los corriste.
 2. Revisa la cobertura de domain y application (meta ≥ 70 %).
 3. Autorrevisión del diff contra docs/definition-of-done.md: capas, DTO validados, errores en formato uniforme, sin secretos ni datos reales, Swagger actualizado.
 4. Revisa seguridad: validación de entrada, autorización por rol, datos personales mínimos (Ley 1581), dependencias nuevas.
