@@ -6,15 +6,28 @@
 
 El sistema permite que los visitantes de la Biblioteca del CLENA busquen material, vean su ubicación física y su disponibilidad, y completen un tutorial guiado en su primera búsqueda. El personal mantiene el catálogo y registra préstamos y devoluciones.
 
-```mermaid
-flowchart LR
-  V[Visitante<br/>computador o celular] -->|HTTPS| WEB[Frontend React]
-  P[Personal del CLENA] -->|HTTPS| WEB
-  WEB -->|REST /api/v1| API[API NestJS]
-  API --> DB[(PostgreSQL 16)]
-  API -->|SMTP| MAIL[Correo<br/>Mailpit en local]
-  QR[QR impreso en sala] -.abre.-> WEB
-```
+
+### Nivel 1 · Contexto
+
+![Figura 1. Contexto del sistema Consulta Fácil (C4 nivel 1)](img/c4-1-contexto.png)
+
+Dos tipos de personas usan el sistema: el visitante, que busca y consulta, y el personal del CLENA, que mantiene el catálogo y los préstamos. El único sistema externo es el servicio de correo para las alertas. El QR impreso en sala solo abre la web.
+
+### Nivel 2 · Contenedores
+
+![Figura 2. Contenedores de Consulta Fácil (C4 nivel 2)](img/c4-2-contenedores.png)
+
+| Contenedor | Tecnología | Responsabilidad |
+|---|---|---|
+| Aplicación web | React + TypeScript + Vite + Mantine | Interfaz accesible; consume la API REST |
+| API REST | NestJS + TypeScript + Prisma | Reglas de negocio, autenticación JWT y roles, correo |
+| Base de datos | PostgreSQL 16 + `pg_trgm` + `unaccent` | Persistencia y búsqueda tolerante |
+
+### Nivel 3 · Componentes de la API
+
+![Figura 3. Componentes de la API REST (C4 nivel 3)](img/c4-3-componentes.png)
+
+Los controladores solo invocan casos de uso de los módulos (`iam`, `catalog`, `search`, `loans`). Los módulos dependen del dominio y nunca al revés; la infraestructura implementa los puertos que el dominio y la aplicación declaran. La sección 4 detalla las capas.
 
 ## 2. Stack
 
@@ -43,13 +56,12 @@ Cada módulo es un contexto del negocio con sus propias capas.
 
 ## 4. Capas y regla de dependencia
 
-```mermaid
-flowchart TB
-  PRES[presentation<br/>controladores, DTO, guards] --> APP[application<br/>casos de uso, puertos]
-  INFRA[infrastructure<br/>Prisma, JWT, SMTP, CSV] --> APP
-  APP --> DOM[domain<br/>entidades, value objects, reglas]
-  INFRA --> DOM
-```
+| Capa | Depende de | Contiene |
+|---|---|---|
+| `presentation` | `application` | Controladores, DTO, guards |
+| `infrastructure` | `application`, `domain` | Prisma, JWT, SMTP, CSV |
+| `application` | `domain` | Casos de uso y puertos |
+| `domain` | nada | Entidades, value objects y reglas |
 
 Las dependencias apuntan siempre hacia el dominio.
 
