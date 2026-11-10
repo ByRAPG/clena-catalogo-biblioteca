@@ -32,7 +32,7 @@ Correspondencia: historia `HU-n` = work item `CLENA-n` en Plane. Habilitadores `
 |---|---|---|---|
 | **Sprint 0 · Inception** | vie 6 – dom 8 nov | Backlog validado por el G9, base técnica (`docker compose up` con `/health` y `/docs`), CI, borradores de dominio, datos y arquitectura | Reunión inicial (mar 3) · **Kickoff con el G9** (sáb 7) · Planning S1 (dom 8) |
 | **Sprint 1** | lun 9 – vie 13 nov | **80 % del alcance mínimo de punta a punta**: catálogo y CSV, búsqueda tolerante con filtros, ubicación y disponibilidad, QR y tutorial, login JWT, 3 roles, aviso de privacidad. Informes PDF. Tag `entrega-1` | Daily (lun 9) · **Review de avance con el G9 (mar 10)** · Daily (mié 11) · Daily (jue 12) · Review + Retro S1 (vie 13, tarde) |
-| **Sprint 2** | sáb 14 – jue 19 nov | Préstamos y alertas, reserva, eliminar cuenta, mensaje sin resultados, pruebas e2e, despliegue con URL | Planning (sáb 14) · Daily (lun 16, mié 18) · Review + Retro con el G9 (jue 19) |
+| **Sprint 2** | sáb 14 – jue 19 nov | Préstamos y alertas, reserva, eliminar cuenta, mensaje sin resultados, pruebas e2e | Planning (sáb 14) · Daily (lun 16, mié 18) · Review + Retro con el G9 (jue 19) |
 | **Sprint 3** | vie 20 – mié 25 nov | Pulir, cobertura ≥ 70 %, búsqueda por voz si hay capacidad, manuales, release `v1.0.0`, acta de aceptación | Planning (vie 20) · Daily (lun 23) · Review final + Retro (mar 24) · Entrega (mié 25) |
 
 Mínimo 3 dailies por semana (lun, mié y un tercer día). Cada acta nombra Issues y PRs concretos y tiene la misma fecha que la grabación.
@@ -45,8 +45,8 @@ Mínimo 3 dailies por semana (lun, mié y un tercer día). Cada acta nombra Issu
 |---|---|---|---|
 | Sprint 0 | — | T-01, T-02, T-03, T-04, T-05; borradores de T-06, T-08, T-13 | — |
 | Sprint 1 | HU-01, 02, 03, 04, 05, 06, 08, 09, 10, 11, 12, 15, 16, 18, 19 | T-06, T-08, T-12, T-13, T-14 | 58 |
-| Sprint 2 | HU-07, 14, 17, 20, 21 | T-07, T-09 | 23 |
-| Sprint 3 | HU-13 (si hay capacidad) | T-09, T-10, T-11 | 3 |
+| Sprint 2 | HU-07, 14, 17, 20, 21 | T-09 | 23 |
+| Sprint 3 | HU-13 (si hay capacidad) | T-07 (despliegue), T-09, T-10, T-11 | 3 |
 
 El Sprint 1 es grande porque el docente exige el 80 % al 13 nov. Por eso las historias se reparten para que los cinco trabajen en paralelo desde el lunes 9 y el esqueleto (Sprint 0) debe quedar listo el domingo 8.
 

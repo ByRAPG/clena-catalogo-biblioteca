@@ -4,9 +4,9 @@ Una sección por sprint. Se completa el día del Planning, con la grabación enl
 
 ## Sprint 1 · 9 – 13 nov 2026
 
-- **Fecha y hora:** dom 8 nov 2026, _hh:mm_
-- **Asistentes:** _
-- **Grabación:** _enlace_
+- **Fecha y hora:** lun 9 nov 2026, 6:00 p.m., Teams, unos 5 minutos (reprogramado: el dom 8 nov no se hizo por falta de disponibilidad de los integrantes)
+- **Asistentes:** Rafael Potes, Humberto Llinás, Juan Camilo Fernández, Daniel Méndez. Ausente: Orlando Palma
+- **Grabación:** en [`evidencias.md`](evidencias.md). Acta: [`actas/2026-11-09-sprint-planning-1.md`](actas/2026-11-09-sprint-planning-1.md)
 - **Objetivo del sprint:** el 80 % del alcance mínimo de punta a punta, para la Entrega 1 del vie 13 nov (9:00 am): catálogo con CSV, búsqueda tolerante con filtros, ubicación y disponibilidad, QR y tutorial, login JWT, tres roles y aviso de privacidad.
 - **Capacidad:** 58 pts
 
@@ -29,12 +29,12 @@ Una sección por sprint. Se completa el día del Planning, con la grabación enl
 | #_ | HU-12 Importar el catálogo desde CSV | 8 | Humberto Llinás |
 | #_ | T-06, T-08, T-13, T-14, T-12 | — | Daniel, Rafael, Juan Camilo, Humberto |
 
-**Acuerdos:** _
+**Acuerdos:** ver el [acta](actas/2026-11-09-sprint-planning-1.md). Riesgo declarado: 58 puntos en cinco días; si algo no llega se prioriza lo clasificado como Debe.
 
 ## Sprint 2 · 14 – 19 nov 2026
 
-_Pendiente. Previsto: HU-07, HU-14, HU-17, HU-20, HU-21, T-07, T-09._
+_Pendiente. Previsto: HU-07, HU-14, HU-17, HU-20, HU-21, T-09._
 
 ## Sprint 3 · 20 – 25 nov 2026
 
-_Pendiente. Previsto: HU-13 si hay capacidad, T-09, T-10, T-11, cierre y aceptación._
+_Pendiente. Previsto: HU-13 si hay capacidad, T-07 (despliegue con URL), T-09, T-10, T-11, cierre y aceptación._

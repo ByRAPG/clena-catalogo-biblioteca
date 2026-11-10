@@ -80,7 +80,7 @@ Para validar el código, ejecuta `pnpm run lint`, `pnpm test` y `pnpm run build`
 
 ## Aplicación desplegada
 
-Pendiente (Sprint 1).
+Pendiente: el despliegue con URL pública (T-07) se hace en el Sprint 3.
 
 ## Documentación
 
@@ -110,7 +110,7 @@ Los `.md` son la fuente. Los informes que pide el docente se generan en PDF con 
 | Evidencias | `docs/evidencias.md` | `docs/evidencias.pdf` | Pendiente (T-12) |
 | Modelo de dominio | por definir (T-13) | `docs/modelo-dominio.pdf` | Pendiente (T-13) |
 | Modelo de datos | `docs/modelo-datos.md` | `docs/modelo-datos.pdf` | Pendiente (T-06) |
-| Arquitectura (C4 niveles 1 a 3) | `docs/arquitectura.md` | `docs/arquitectura.pdf` | Pendiente (T-08) |
+| Arquitectura (C4 niveles 1 a 3) | `docs/arquitectura.md` | `docs/arquitectura.pdf` | Listo (T-08) |
 | Daily Scrum | `docs/daily-scrum.md` | `docs/daily-scrum.pdf` | Pendiente (T-12) |
 
 ## Uso de inteligencia artificial
