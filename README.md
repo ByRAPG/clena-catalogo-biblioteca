@@ -133,12 +133,12 @@ Los `.md` son la fuente. Los informes que pide el docente se generan en PDF con 
 
 | Informe | Markdown (fuente) | PDF | Estado |
 |---|---|---|---|
-| Inception | `docs/actas/` y `docs/plan-proyecto.md` | `docs/inception.pdf` | Pendiente (T-12) |
-| Evidencias | `docs/evidencias.md` | `docs/evidencias.pdf` | Pendiente (T-12) |
+| Inception | `docs/inception.md` | `docs/inception.pdf` | Listo |
+| Evidencias | `docs/evidencias.md` | `docs/evidencias.pdf` | Listo |
 | Modelo de dominio | por definir (T-13) | `docs/modelo-dominio.pdf` | Pendiente (T-13) |
 | Modelo de datos | `docs/modelo-datos.md` | `docs/modelo-datos.pdf` | Pendiente (T-06) |
 | Arquitectura (C4 niveles 1 a 3) | `docs/arquitectura.md` | `docs/arquitectura.pdf` | Listo (T-08) |
-| Daily Scrum | `docs/daily-scrum.md` | `docs/daily-scrum.pdf` | Pendiente (T-12) |
+| Daily Scrum | `docs/daily-scrum.md` | `docs/daily-scrum.pdf` | Listo |
 
 ## Uso de inteligencia artificial
 
