@@ -83,3 +83,17 @@ html[data-alto-contraste='true'] .salto-al-contenido {
   background: #ffff00;
   color: #000;
 }
+
+html[data-alto-contraste='true'] .tutorial-cerrar {
+  background: #000;
+  color: #ffff00;
+}
+
+html[data-alto-contraste='true'] .tutorial-cerrar:hover {
+  background: #333;
+}
+
+html[data-alto-contraste='true'] .tutorial-cerrar:focus {
+  outline: 2px solid #ffff00;
+  outline-offset: 2px;
+}

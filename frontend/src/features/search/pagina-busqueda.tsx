@@ -1,4 +1,5 @@
 import { Stack, Text, Title } from '@mantine/core'
+import { TutorialBusqueda } from '../tutorial/tutorial-busqueda'
 
 /**
  * Pantalla pública de búsqueda. El campo, los filtros y los resultados llegan
@@ -12,6 +13,7 @@ export function PaginaBusqueda() {
         Busque un libro por título, autor o tema y vea en qué sala, sección y
         estante está.
       </Text>
+      <TutorialBusqueda />
     </Stack>
   )
 }
