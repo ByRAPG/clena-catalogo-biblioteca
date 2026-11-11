@@ -1,0 +1,4 @@
+titulo,autor,tema,isbn,clasificacion,anio,editorial,categoria,sala,seccion,estante,codigo_ejemplar,estado,url_digital
+La biblioteca de las mareas,Elena Marquesina Duarte,Novela marina;Ficción caribeña,9789990000011,863,2019,Editorial Ejemplo,Literatura,Sala General,Narrativa,N-01,PLANTILLA-0001,DISPONIBLE,
+Mapas imaginarios del Caribe,Tomás Arrecife Soler;Inés Corales Vega,Historia del Caribe;Cartografía,9789990000028,972.9,2021,Ediciones Ficticias,Historia,Sala Caribe,Historia del Caribe,C-01,PLANTILLA-0002,PRESTADO,https://example.org/biblioteca-digital/mapas-imaginarios
+Guía de ejemplo para importar,Autor de Prueba,Referencia,,025.3,2024,Editorial Ejemplo,Referencia,Sala General,Referencia,R-01,PLANTILLA-0003,MANTENIMIENTO,
