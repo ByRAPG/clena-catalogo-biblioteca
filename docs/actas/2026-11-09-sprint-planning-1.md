@@ -1,6 +1,6 @@
 # Acta · Sprint Planning 1 y Daily Scrum 1 (Backend)
 
-- **Fecha:** lunes 9 de noviembre de 2026, noche (la grabación empieza a las 6:57 p.m. hora de Colombia); duración unos 5 minutos
+- **Fecha:** lunes 9 de noviembre de 2026, noche (la grabación empieza a las 6:57 p.m. hora de Colombia; el nombre del archivo de Teams, `20261109_235728`, está en UTC); duración unos 5 minutos
 - **Medio:** Microsoft Teams (canal General), **grabada**. Enlace en [`evidencias.md`](../evidencias.md).
 - **Asistentes:** Rafael Potes (Scrum Master, modera), Humberto Llinás, Juan Camilo Fernández, Daniel Méndez
 - **Ausente:** Orlando Palma
@@ -20,7 +20,7 @@ Se fijó el alcance del Sprint 1 (9 al 13 de noviembre): el 80 % obligatorio de 
 | Rafael Potes | HU-04, HU-05, HU-15 y el PR de documentación con la guía visual (Issue #54) | por abrir | PR de documentación el martes 10 antes de las 8 p.m.; PR de historias el miércoles |
 | Orlando Palma (ausente) | T-03 (frontend base), HU-01, 02, 03, 07, 08, 13 | por definir | Ver «Contingencia» |
 
-Aclaración sobre las asignaciones de la grabación: Humberto cita T-10 y HU-20, y Juan Camilo cita HU-14, 16, 17 y 18; coinciden con el reparto registrado en Plane y GitHub.
+Aclaración sobre las asignaciones de la grabación: Humberto cita T-10 y HU-20, y Juan Camilo cita HU-14, 16, 17 y 18; coinciden con el reparto registrado en Plane y GitHub. HU-07, 13, 14, 17, 20, 21 y T-10 son asignaciones anticipadas: no pertenecen al Sprint 1, sino a los Sprints 2 y 3, como indica `backlog.md`.
 
 ## Daily Scrum 1
 

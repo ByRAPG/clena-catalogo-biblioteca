@@ -4,7 +4,7 @@ Una sección por sprint. Se completa el día del Planning, con la grabación enl
 
 ## Sprint 1 · 9 – 13 nov 2026
 
-- **Fecha y hora:** lun 9 nov 2026, 6:00 p.m., Teams, unos 5 minutos (reprogramado: el dom 8 nov no se hizo por falta de disponibilidad de los integrantes)
+- **Fecha y hora:** lun 9 nov 2026, 6:57 p.m. (hora de Colombia; la grabación de Teams lleva la hora en UTC, 23:57), Teams, unos 5 minutos (reprogramado: el dom 8 nov no se hizo por falta de disponibilidad de los integrantes)
 - **Asistentes:** Rafael Potes, Humberto Llinás, Juan Camilo Fernández, Daniel Méndez. Ausente: Orlando Palma
 - **Grabación:** en [`evidencias.md`](evidencias.md). Acta: [`actas/2026-11-09-sprint-planning-1.md`](actas/2026-11-09-sprint-planning-1.md)
 - **Objetivo del sprint:** el 80 % del alcance mínimo de punta a punta, para la Entrega 1 del vie 13 nov (9:00 am): catálogo con CSV, búsqueda tolerante con filtros, ubicación y disponibilidad, QR y tutorial, login JWT, tres roles y aviso de privacidad.

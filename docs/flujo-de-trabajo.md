@@ -45,7 +45,7 @@ Equivalencia: `HU-n` = work item `CLENA-n` en Plane. `T-01…T-14` = `CLENA-22�
 |---|---|
 | 1 | Lee el Issue #32 (HU-05): dos criterios sobre el QR de entrada y el QR por sala |
 | 2 | Mueve la tarjeta a In Progress; en Plane, CLENA-5 a In Progress |
-| 3 | `git switch -c feat/17-qr-acceso` |
+| 3 | `git switch -c feat/32-qr-acceso` |
 | 4 | Crea `qr-code.generator.ts` en `infrastructure`, el caso de uso `GenerateRoomQr` en `application` y el endpoint `GET /api/v1/rooms/:id/qr` |
 | 5 | Escribe la prueba unitaria del caso de uso y corre lint, test y build |
 | 6 | Abre el PR «feat(catalog): genera el QR por sala» con `Closes #32` y `CLENA-5` |
