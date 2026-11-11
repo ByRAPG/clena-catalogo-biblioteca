@@ -112,3 +112,8 @@ export function conParametros(
   const cadena = busqueda.toString()
   return cadena.length > 0 ? `${ruta}?${cadena}` : ruta
 }
+
+/** URL absoluta de un recurso de la API (p. ej. una imagen descargable). */
+export function urlAbsoluta(ruta: string): string {
+  return `${apiUrl}${ruta}`
+}
