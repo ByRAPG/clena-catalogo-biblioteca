@@ -4,7 +4,7 @@
  * respeta además el tamaño que la persona configure en su navegador.
  */
 :root {
-  font-size: 18px;
+  font-size: 112.5%; /* 18 px sobre los 16 px por defecto; respeta el tamaño configurado en el navegador */
 }
 
 body {
