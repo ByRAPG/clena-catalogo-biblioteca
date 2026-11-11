@@ -7,11 +7,424 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Tabla mínima del esqueleto (T-02). El modelo de datos real se define en T-06.
+// Modelo de datos del catálogo (T-06). Punto de partida: docs/modelo-datos.md.
+// Reglas que Prisma no puede expresar (índices únicos parciales, función
+// normalize_text) viven en la migración SQL 20261110000000_modelo_catalogo.
+//
+// Convención de normalización: los campos `normalized_name` y `search_text`
+// los mantiene la aplicación con `normalizeText` (src/shared/domain/normalize-text.ts):
+// minúsculas, sin tildes y con espacios colapsados.
+
+// ---------------------------------------------------------------------------
+// Enumeraciones
+// ---------------------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  STAFF
+  READER
+
+  @@map("role")
+}
+
+enum MaterialType {
+  LIBRO
+  REVISTA
+  DOCUMENTO
+  MAPA
+  OTRO
+
+  @@map("material_type")
+}
+
+enum WorkFormat {
+  FISICO
+  DIGITAL
+  AMBOS
+
+  @@map("work_format")
+}
+
+enum CopyStatus {
+  DISPONIBLE
+  PRESTADO
+  MANTENIMIENTO
+  BAJA
+
+  @@map("copy_status")
+}
+
+enum ReservationStatus {
+  ACTIVA
+  RECOGIDA
+  CANCELADA
+  VENCIDA
+
+  @@map("reservation_status")
+}
+
+enum NotificationType {
+  POR_VENCER
+  VENCIDO
+
+  @@map("notification_type")
+}
+
+// ---------------------------------------------------------------------------
+// Tabla del esqueleto (T-02)
+// ---------------------------------------------------------------------------
+
 model SchemaInfo {
   id        Int      @id @default(autoincrement())
   note      String
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("schema_info")
+}
+
+// ---------------------------------------------------------------------------
+// IAM
+// ---------------------------------------------------------------------------
+
+model User {
+  id             String    @id @default(uuid()) @db.Uuid
+  // Siempre en minúsculas (lo normaliza la aplicación). Al anonimizar se
+  // sustituye por un valor único no identificable.
+  email          String    @unique
+  passwordHash   String    @map("password_hash")
+  fullName       String    @map("full_name")
+  role           Role      @default(READER)
+  active         Boolean   @default(true)
+  // HU-09: 5 intentos fallidos => lockedUntil en el futuro.
+  failedLogins   Int       @default(0) @map("failed_logins")
+  lockedUntil    DateTime? @map("locked_until") @db.Timestamptz(3)
+  // HU-16: aviso de privacidad aceptado (Ley 1581).
+  privacyVersion String?   @map("privacy_version")
+  consentAt      DateTime? @map("consent_at") @db.Timestamptz(3)
+  // HU-17: cuenta eliminada/anonimizada; ya no puede iniciar sesión.
+  anonymizedAt   DateTime? @map("anonymized_at") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  refreshTokens   RefreshToken[]
+  reader          Reader?
+  loansRegistered Loan[]
+  importJobs      ImportJob[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  // Hash (SHA-256) del token; nunca se guarda el token en claro.
+  tokenHash String    @unique @map("token_hash")
+  // Familia de rotación: reutilizar un token revocado revoca toda la familia.
+  familyId  String    @map("family_id") @db.Uuid
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+// Persona que toma libros prestados o reserva. Puede existir sin cuenta
+// (registrada por el personal) o vinculada a un User con rol READER.
+model Reader {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String?   @unique @map("user_id") @db.Uuid
+  fullName       String    @map("full_name")
+  documentId     String?   @map("document_id")
+  email          String?
+  phone          String?
+  privacyVersion String?   @map("privacy_version")
+  consentAt      DateTime? @map("consent_at") @db.Timestamptz(3)
+  // HU-17: se anonimizan los datos personales y se conservan los préstamos.
+  anonymizedAt   DateTime? @map("anonymized_at") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user               User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  loans              Loan[]
+  reservations       Reservation[]
+  availabilityAlerts AvailabilityAlert[]
+
+  @@index([documentId])
+  @@map("readers")
+}
+
+// ---------------------------------------------------------------------------
+// Catálogo
+// ---------------------------------------------------------------------------
+
+model Category {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  normalizedName String   @unique @map("normalized_name")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  works Work[]
+
+  @@map("categories")
+}
+
+model Work {
+  id             String       @id @default(uuid()) @db.Uuid
+  title          String
+  subtitle       String?
+  year           Int?
+  publisher      String?
+  isbn           String?      @unique
+  // Clasificación (MARC21 082), p. ej. Dewey.
+  classification String?
+  categoryId     String?      @map("category_id") @db.Uuid
+  materialType   MaterialType @default(LIBRO) @map("material_type")
+  format         WorkFormat   @default(FISICO)
+  digitalUrl     String?      @map("digital_url")
+  // Título y subtítulo normalizados (sin tildes, minúsculas). Índice trigram.
+  searchText     String       @default("") @map("search_text")
+  // Borrado lógico: la búsqueda pública filtra deleted_at IS NULL.
+  deletedAt      DateTime?    @map("deleted_at") @db.Timestamptz(3)
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  category           Category?           @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  authors            WorkAuthor[]
+  subjects           WorkSubject[]
+  copies             Copy[]
+  reservations       Reservation[]
+  availabilityAlerts AvailabilityAlert[]
+
+  @@index([categoryId])
+  @@index([year])
+  @@index([deletedAt])
+  @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin, map: "works_search_text_trgm_idx")
+  @@map("works")
+}
+
+model Author {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  normalizedName String   @unique @map("normalized_name")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  works WorkAuthor[]
+
+  @@index([normalizedName(ops: raw("gin_trgm_ops"))], type: Gin, map: "authors_normalized_name_trgm_idx")
+  @@map("authors")
+}
+
+model Subject {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  normalizedName String   @unique @map("normalized_name")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  works WorkSubject[]
+
+  @@index([normalizedName(ops: raw("gin_trgm_ops"))], type: Gin, map: "subjects_normalized_name_trgm_idx")
+  @@map("subjects")
+}
+
+// Relación N:M obra-autor con orden (position 0 = autor principal, MARC 100).
+model WorkAuthor {
+  workId   String @map("work_id") @db.Uuid
+  authorId String @map("author_id") @db.Uuid
+  position Int    @default(0)
+
+  work   Work   @relation(fields: [workId], references: [id], onDelete: Cascade)
+  author Author @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@id([workId, authorId])
+  @@index([authorId])
+  @@map("work_authors")
+}
+
+model WorkSubject {
+  workId    String @map("work_id") @db.Uuid
+  subjectId String @map("subject_id") @db.Uuid
+
+  work    Work    @relation(fields: [workId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  @@id([workId, subjectId])
+  @@index([subjectId])
+  @@map("work_subjects")
+}
+
+// ---------------------------------------------------------------------------
+// Ubicación y ejemplares
+// ---------------------------------------------------------------------------
+
+model Room {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  // Plano SVG opcional (HU-19).
+  mapSvg    String?  @map("map_svg")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  sections Section[]
+
+  @@map("rooms")
+}
+
+model Section {
+  id        String   @id @default(uuid()) @db.Uuid
+  roomId    String   @map("room_id") @db.Uuid
+  name      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  room    Room    @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  shelves Shelf[]
+
+  @@unique([roomId, name])
+  @@map("sections")
+}
+
+model Shelf {
+  id           String   @id @default(uuid()) @db.Uuid
+  sectionId    String   @map("section_id") @db.Uuid
+  code         String
+  // Identificador del elemento en el plano SVG (HU-19).
+  mapElementId String?  @map("map_element_id")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  section Section @relation(fields: [sectionId], references: [id], onDelete: Restrict)
+  copies  Copy[]
+
+  @@unique([sectionId, code])
+  @@map("shelves")
+}
+
+// Ejemplar físico. La disponibilidad de la obra se deriva de sus ejemplares:
+// hay al menos uno DISPONIBLE (y sin reserva activa).
+model Copy {
+  id            String     @id @default(uuid()) @db.Uuid
+  workId        String     @map("work_id") @db.Uuid
+  shelfId       String     @map("shelf_id") @db.Uuid
+  inventoryCode String     @unique @map("inventory_code")
+  status        CopyStatus @default(DISPONIBLE)
+  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  work         Work          @relation(fields: [workId], references: [id], onDelete: Restrict)
+  shelf        Shelf         @relation(fields: [shelfId], references: [id], onDelete: Restrict)
+  loans        Loan[]
+  reservations Reservation[]
+
+  @@index([workId, status])
+  @@index([shelfId])
+  @@map("copies")
+}
+
+// ---------------------------------------------------------------------------
+// Préstamos, reservas y avisos (Sprint 2)
+// ---------------------------------------------------------------------------
+
+// Un ejemplar solo puede tener un préstamo activo (returned_at IS NULL):
+// índice único parcial `loans_active_copy_key` en la migración.
+model Loan {
+  id         String    @id @default(uuid()) @db.Uuid
+  copyId     String    @map("copy_id") @db.Uuid
+  readerId   String    @map("reader_id") @db.Uuid
+  // Personal que registró el préstamo; se conserva el préstamo si se borra el usuario.
+  staffId    String?   @map("staff_id") @db.Uuid
+  loanedAt   DateTime  @default(now()) @map("loaned_at") @db.Timestamptz(3)
+  dueAt      DateTime  @map("due_at") @db.Timestamptz(3)
+  returnedAt DateTime? @map("returned_at") @db.Timestamptz(3)
+
+  copy          Copy           @relation(fields: [copyId], references: [id], onDelete: Restrict)
+  reader        Reader         @relation(fields: [readerId], references: [id], onDelete: Restrict)
+  staff         User?          @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  notifications Notification[]
+
+  @@index([copyId])
+  @@index([readerId])
+  @@index([staffId])
+  @@index([dueAt])
+  @@map("loans")
+}
+
+// Reserva de un ejemplar disponible (HU-14). Una sola reserva ACTIVA por
+// ejemplar: índice único parcial `reservations_active_copy_key` en la migración.
+model Reservation {
+  id         String            @id @default(uuid()) @db.Uuid
+  workId     String            @map("work_id") @db.Uuid
+  copyId     String            @map("copy_id") @db.Uuid
+  readerId   String            @map("reader_id") @db.Uuid
+  status     ReservationStatus @default(ACTIVA)
+  reservedAt DateTime          @default(now()) @map("reserved_at") @db.Timestamptz(3)
+  // Plazo para recoger el libro (por definir con el CLENA).
+  expiresAt  DateTime          @map("expires_at") @db.Timestamptz(3)
+  resolvedAt DateTime?         @map("resolved_at") @db.Timestamptz(3)
+
+  work   Work   @relation(fields: [workId], references: [id], onDelete: Restrict)
+  copy   Copy   @relation(fields: [copyId], references: [id], onDelete: Restrict)
+  reader Reader @relation(fields: [readerId], references: [id], onDelete: Restrict)
+
+  @@index([workId])
+  @@index([copyId])
+  @@index([readerId])
+  @@index([status, expiresAt])
+  @@map("reservations")
+}
+
+// Recordatorios de préstamo (HU-21). Único por préstamo y tipo: la revisión
+// diaria puede correr dos veces sin duplicar el aviso.
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  loanId    String           @map("loan_id") @db.Uuid
+  type      NotificationType
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  sentAt    DateTime?        @map("sent_at") @db.Timestamptz(3)
+  error     String?
+
+  loan Loan @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  @@unique([loanId, type])
+  @@map("notifications")
+}
+
+// «Avísame cuando esté disponible» (HU-21). `notified_at` evita el doble envío;
+// solo puede haber una solicitud pendiente por lector y obra (índice parcial
+// `availability_alerts_pending_key` en la migración).
+model AvailabilityAlert {
+  id         String    @id @default(uuid()) @db.Uuid
+  readerId   String    @map("reader_id") @db.Uuid
+  workId     String    @map("work_id") @db.Uuid
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  notifiedAt DateTime? @map("notified_at") @db.Timestamptz(3)
+
+  reader Reader @relation(fields: [readerId], references: [id], onDelete: Cascade)
+  work   Work   @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@index([readerId])
+  @@index([workId, notifiedAt])
+  @@map("availability_alerts")
+}
+
+// ---------------------------------------------------------------------------
+// Importación CSV (HU-12)
+// ---------------------------------------------------------------------------
+
+model ImportJob {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  fileName  String   @map("file_name")
+  created   Int      @default(0)
+  updated   Int      @default(0)
+  failed    Int      @default(0)
+  // [{ "row": 12, "error": "falta el título" }]
+  errors    Json?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@map("import_jobs")
 }
