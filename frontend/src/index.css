@@ -1,5 +1,26 @@
+/*
+ * Tamaño base del texto: 18 px (HU-04). Mantine convierte sus tamaños a rem,
+ * así que subir el rem base agranda toda la interfaz de forma proporcional y
+ * respeta además el tamaño que la persona configure en su navegador.
+ */
+:root {
+  font-size: 18px;
+}
+
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
-  font-size: 18px;
+}
+
+/* El enlace de salto solo se ve cuando recibe el foco con el teclado. */
+.salto-al-contenido {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  background: #fff;
+}
+
+.salto-al-contenido:focus {
+  left: 0;
 }
