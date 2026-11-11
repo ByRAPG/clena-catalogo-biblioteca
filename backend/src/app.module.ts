@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { validateEnv } from './shared/config/env.validation';
+import { SearchModule } from './modules/search/search.module';
 import { SharedModule } from './shared/shared.module';
 
 @Module({
@@ -11,6 +12,7 @@ import { SharedModule } from './shared/shared.module';
       validate: validateEnv,
     }),
     SharedModule,
+    SearchModule,
   ],
 })
 export class AppModule {}
