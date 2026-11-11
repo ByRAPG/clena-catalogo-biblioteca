@@ -1,5 +1,7 @@
 import { Anchor, Box, Container, Group, Title } from '@mantine/core'
 import { Link, Outlet } from 'react-router-dom'
+import { AccesibilidadProvider } from '../features/accessibility/accesibilidad-provider'
+import { ControlesAccesibilidad } from '../features/accessibility/controles-accesibilidad'
 
 /**
  * Marco común de las pantallas públicas. El enlace «Saltar al contenido» es
@@ -7,7 +9,7 @@ import { Link, Outlet } from 'react-router-dom'
  */
 export function Layout() {
   return (
-    <>
+    <AccesibilidadProvider>
       <Anchor href="#contenido" className="salto-al-contenido">
         Saltar al contenido
       </Anchor>
@@ -27,9 +29,13 @@ export function Layout() {
         </Container>
       </Box>
 
+      <Container size="lg" py="xs">
+        <ControlesAccesibilidad />
+      </Container>
+
       <Container component="main" id="contenido" size="lg" py="xl">
         <Outlet />
       </Container>
-    </>
+    </AccesibilidadProvider>
   )
 }
