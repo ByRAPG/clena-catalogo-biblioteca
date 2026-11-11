@@ -15,7 +15,7 @@
 | Informes | `docs/*.md` → PDF con [`docs/pdf/`](pdf/README.md); diagramas en draw.io (`docs/diagramas/`) | El docente solo califica PDF con diagramas como imagen |
 | Reuniones | Microsoft Teams, grabadas, compartidas con djromero@uninorte.edu.co | Evidencia de ceremonias |
 
-Correspondencia: historia `HU-n` = work item `CLENA-n` en Plane. Habilitadores `T-01…T-14` = `CLENA-22…35`.
+Correspondencia: historia `HU-n` = work item `CLENA-n` en Plane. Habilitadores `T-01…T-19` = `CLENA-22…40`.
 
 ## Fechas que manda el docente
 
@@ -44,9 +44,9 @@ Mínimo 3 dailies por semana (lun, mié y un tercer día). Cada acta nombra Issu
 | Sprint | Historias | Habilitadores | Puntos |
 |---|---|---|---|
 | Sprint 0 | — | T-01, T-02, T-03, T-04, T-05; borradores de T-06, T-08, T-13 | — |
-| Sprint 1 | HU-01, 02, 03, 04, 05, 06, 08, 09, 10, 11, 12, 15, 16, 18, 19 | T-06, T-08, T-12, T-13, T-14 | 58 |
-| Sprint 2 | HU-07, 14, 17, 20, 21 | T-09 | 23 |
-| Sprint 3 | HU-13 (si hay capacidad) | T-07 (despliegue), T-09, T-10, T-11 | 3 |
+| Sprint 1 | HU-01, 02, 03, 04, 05, 06, 08, 09, 10, 11, 12, 15, 16, 18, 19 | T-06, T-08, T-12, T-13, T-14, T-15, T-16, T-17 | 58 |
+| Sprint 2 | HU-07, 14, 17, 20, 21 | T-09, T-18 | 23 |
+| Sprint 3 | HU-13 (si hay capacidad) | T-07 y T-19 (despliegue), T-09, T-10, T-11 | 3 |
 
 El Sprint 1 es grande porque el docente exige el 80 % al 13 nov. Por eso las historias se reparten para que los cinco trabajen en paralelo desde el lunes 9 y el esqueleto (Sprint 0) debe quedar listo el domingo 8.
 
@@ -57,7 +57,7 @@ El Sprint 1 es grande porque el docente exige el 80 % al 13 nov. Por eso las his
 | Rafael Potes Molina | Scrum Master · Tech Lead · Release Manager · aprobador principal | T-02 esqueleto backend, T-05 CI, HU-04, HU-05, HU-15, T-08 arquitectura, actas | T-07 despliegue, T-11 manual de operación | Quien tenga menos revisiones esa semana |
 | Humberto Llinás Marimón | Product Owner · revisor de arquitectura y plan · aprobador alterno | **T-04 infraestructura Docker**, HU-12 importación CSV, T-14 aviso de privacidad | HU-20 préstamos, T-10 manual de usuario | Quien tenga menos revisiones esa semana |
 | Juan Camilo Fernández Barrios | Development Team | HU-09 login, HU-16 registro con consentimiento, HU-18 roles, T-13 modelo de dominio | HU-14 reserva, HU-17 eliminar cuenta | Daniel Méndez |
-| Daniel Méndez Aparicio | Development Team | T-06 modelo de datos, HU-06, HU-10, HU-11, HU-19 | HU-21 alertas | Orlando Palma |
+| Daniel Méndez Aparicio | Development Team | T-06 diagrama entidad-relación y `modelo-datos.pdf` (el esquema, la migración y la semilla los asumió Rafael Potes el 10 nov), HU-06, HU-10, HU-11, HU-19 | HU-21 alertas | Orlando Palma |
 | Orlando Palma | Development Team | T-03 esqueleto frontend, HU-01, HU-02, HU-03, HU-08 | HU-07, HU-13 | Juan Camilo Fernández |
 
 Solo Rafael Potes (principal) o Humberto Llinás (alterno) aprueban y fusionan. Antes, un compañero deja una revisión de tipo **Comment**. Así cada integrante tiene en cada entrega **un commit, un PR propio y una revisión de un PR ajeno**, que el docente exige (sin eso, la nota individual baja hasta 90 %).

@@ -21,7 +21,7 @@ Plane: CLENA-
 - [ ] Pruebas unitarias nuevas y e2e si toca la API.
 - [ ] `lint`, `test`, `build` en verde localmente.
 - [ ] Swagger actualizado.
-- [ ] Accesibilidad revisada (teclado, 16 px, contraste) si hay interfaz pública.
+- [ ] Accesibilidad revisada (teclado, 18 px, contraste) si hay interfaz pública.
 - [ ] Sin secretos ni datos personales.
 - [ ] Documentación actualizada si aplica.
 

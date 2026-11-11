@@ -29,7 +29,7 @@ Las 21 historias de usuario (14 escritas por el Grupo 9 y 7 propuestas por Backe
 | Rafael Potes Molina | [@ByRAPG](https://github.com/ByRAPG) | Scrum Master · Tech Lead · Release Manager (planificación, sprints, arquitectura, CI/CD, revisión final y merge) |
 | Humberto Llinás Marimón | [@lzayrox](https://github.com/lzayrox) | Product Owner · revisor de arquitectura y plan · aprobador alterno de PRs |
 | Juan Camilo Fernández Barrios | [@fjuanc](https://github.com/fjuanc) | Development Team |
-| Daniel Méndez Aparicio | [@danyrpppp](https://github.com/danyrpppp) | Development Team |
+| Daniel Méndez Aparicio | [@danimendeztv-source](https://github.com/danimendeztv-source) | Development Team |
 | Orlando Palma | [@OrlandoPalmaUN](https://github.com/OrlandoPalmaUN) | Development Team |
 
 ### Cliente (Grupo 9, Introducción a la Ingeniería de Sistemas)
