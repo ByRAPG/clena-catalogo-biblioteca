@@ -8,7 +8,7 @@
 |---|---|
 | GitHub Issues (`historia-usuario`) y GitHub Projects | **Fuente oficial** para el docente: lo que no esté ahí no se califica |
 | Este archivo | Versión legible para preparar los Issues y consultar rápido |
-| Plane, proyecto `CLENA` | Planificación interna. `HU-n` = `CLENA-n`; `T-01…T-14` = `CLENA-22…35` |
+| Plane, proyecto `CLENA` | Planificación interna. `HU-n` = `CLENA-n`; `T-01…T-19` = `CLENA-22…40` |
 
 ## Reglas que cumple este backlog
 
@@ -247,12 +247,17 @@ Ideas que el G9 puede convertir en historia «Podría» o «No tendrá ahora» s
 | T-03 | Esqueleto React + Vite + Mantine con tema accesible, rutas y cliente de la API | S0 | Orlando Palma |
 | T-04 | Infraestructura Docker: `docker compose up` levanta PostgreSQL, backend y frontend sin pasos manuales | S0 | Humberto Llinás |
 | T-05 | GitHub Actions: lint, pruebas y build en cada PR | S0 | Rafael Potes |
-| T-06 | Modelo de datos: diagrama ER (draw.io), migraciones, semillas ficticias e índices → `docs/modelo-datos.pdf` | S0–S1 | Daniel Méndez |
-| T-07 | Despliegue con URL pública | S2 | Rafael Potes |
+| T-06 | Modelo de datos: diagrama ER (draw.io), migraciones, semillas ficticias e índices → `docs/modelo-datos.pdf` | S0–S1 | Rafael Potes (esquema, migración y semilla) · Daniel Méndez (diagrama ER y PDF) |
+| T-07 | Despliegue con URL pública | S3 | Rafael Potes |
 | T-08 | Arquitectura C4 niveles 1–3 (draw.io) y decisiones → `docs/arquitectura.pdf` | S0–S1 | Rafael Potes (revisa Humberto) |
-| T-09 | Pruebas e2e y cobertura ≥ 70 % | S2–S3 | Cada responsable de módulo |
+| T-09 | Pruebas e2e y cobertura ≥ 70 % | S2–S3 | Rafael Potes (cada responsable prueba su módulo) |
 | T-10 | Manual de usuario | S3 | Humberto Llinás |
 | T-11 | Manual de operación y respaldo de base de datos | S3 | Rafael Potes |
 | T-12 | Actas Scrum, `docs/inception.pdf`, `docs/daily-scrum.pdf`, `docs/evidencias.pdf` | Continuo | Rafael Potes |
 | T-13 | Modelo de dominio: diagrama de clases, reglas, glosario (≥ 10), casos de uso → `docs/modelo-dominio.pdf` | S0–S1 | Juan Camilo Fernández (revisa Humberto) |
 | T-14 | Aviso de privacidad y licencia | S1 | Humberto Llinás |
+| T-15 | Migrar el gestor de paquetes a pnpm (#24) | S1 | Rafael Potes |
+| T-16 | Sincronizar la documentación con el estado real (#54) | S1 | Rafael Potes |
+| T-17 | Semilla y plantilla CSV con datos ficticios, compatible con MARC21 (#55) | S1 | Rafael Potes (lista de libros: Daniel Méndez) |
+| T-18 | Seguridad: Helmet, límite de peticiones, Secret scanning, Dependabot y CodeQL (#57) | S2 | Por asignar |
+| T-19 | Imagen de producción y despliegue con URL, apoya a T-07 (#58) | S3 | Por asignar |

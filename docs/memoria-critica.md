@@ -1,6 +1,6 @@
 # Memoria crítica del proyecto
 
-> Lo que no se puede olvidar. Si algo contradice este archivo, gana este archivo (salvo que el docente indique lo contrario por escrito). Actualizada: 7 nov 2026.
+> Lo que no se puede olvidar. Si algo contradice este archivo, gana este archivo (salvo que el docente indique lo contrario por escrito). Actualizada: 10 nov 2026.
 
 ## 1. Proyecto
 
@@ -15,7 +15,7 @@
 | Rafael Potes Molina | `ByRAPG` | Scrum Master · Tech Lead · Release Manager · **aprobador principal** (planifica, revisa al final y fusiona) |
 | Humberto Llinás Marimón | `lzayrox` | **Product Owner** de Backend · revisor de arquitectura y plan · **aprobador alterno** · infraestructura Docker (T-04) |
 | Juan Camilo Fernández Barrios | `fjuanc` | Development Team |
-| Daniel Méndez Aparicio | `danyrpppp` | Development Team |
+| Daniel Méndez Aparicio | `danimendeztv-source` | Development Team |
 | Orlando Palma | `OrlandoPalmaUN` | Development Team |
 | Shadia Castro Romero | `shadiacas-creator` | Grupo 9 · contacto principal |
 | Derek Pérez | `ImDER3K` | Grupo 9 |
@@ -27,8 +27,8 @@ Solo Rafael o Humberto aprueban y fusionan (CODEOWNERS). Antes, un compañero de
 
 | Fecha | Qué |
 |---|---|
-| 6–8 nov | Sprint 0 · Inception (kickoff sáb 7, Planning sáb/dom 8) |
-| 9–13 nov | Sprint 1. Review de avance con el G9 el **mar 10**. Dailies 9, 11 y 12 |
+| 6–8 nov | Sprint 0 · Inception (kickoff sáb 7). El Planning previsto para el dom 8 se reprogramó por falta de disponibilidad |
+| 9–13 nov | Sprint 1. Sprint Planning 1 + daily 1 el **lun 9**. Review de avance con el G9 el **mar 10**. Dailies 11 y 12 |
 | mié 11 nov | Entrega 1 del Grupo 9 |
 | **vie 13 nov, 9:00 am** | **Entrega 1 de Backend** (tag `entrega-1`) |
 | 14–19 nov | Sprint 2 |
@@ -60,17 +60,20 @@ Solo Rafael o Humberto aprueban y fusionan (CODEOWNERS). Antes, un compañero de
 ## 6. Decisiones tomadas
 
 - **Stack:** NestJS (Clean Architecture) + Prisma, React + Vite + Mantine, PostgreSQL 16 con `pg_trgm` y `unaccent`, Docker, Mailpit en local.
-- **Backlog:** 21 historias (HU-01…14 del G9, HU-15…21 de Backend) y 14 habilitadores técnicos (T-01…14). En Plane, `HU-n` = `CLENA-n` y `T-01…14` = `CLENA-22…35`.
+- **Backlog:** 21 historias (HU-01…14 del G9, HU-15…21 de Backend) y 19 habilitadores técnicos (T-01…19). En Plane, `HU-n` = `CLENA-n` y `T-01…19` = `CLENA-22…40`.
 - **Fuente oficial:** GitHub Issues, Milestones y Projects. Plane es planificación interna.
 - **GitHub:** repo público, squash merge, ramas borradas al fusionar, `main` protegida.
 - **Licencia:** MIT (propuesta del equipo; confirmar con el CLENA).
 - **Chat de atención:** fuera del alcance. Pertenece a la Sala de Internet (P1). Mapa, cita y analítica son solo sugerencias.
 - **IA:** permitida como asistente en el desarrollo. El producto **no usa IA**.
-- **Datos:** solo semillas ficticias hasta tener autorización escrita del CLENA.
+- **Datos:** solo semillas ficticias hasta tener autorización escrita del CLENA. El CLENA no entregó información (9 nov), así que la semilla y la plantilla CSV son ficticias o de dominio público (T-17, Issue #55). Nunca se copia el catálogo actual del CLENA.
+- **Alcance del Sprint 1 (10 nov):** se mantienen los 58 puntos con orden de corte: 1) modelo de datos y semilla (T-06, T-17); 2) HU-01, 02, 03, 06, 09, 10, 19 y 12; 3) HU-04, 08, 11, 18, 16, 05 y 15. Lo que no esté completo el jue 12 a las 12:00 m. no se muestra el 13 y pasa al Sprint 2.
+- **T-06 (10 nov):** Rafael Potes asume el esquema, la migración y la semilla; Daniel Méndez conserva el diagrama entidad-relación y `modelo-datos.pdf`.
+- **Despliegue (T-07, T-19):** Sprint 3. **Cobertura ≥ 70 % (T-09):** Sprints 2 y 3, responsable Rafael Potes. El 80 % de la Entrega 1 son funcionalidades de punta a punta, no cobertura.
 
 ## 7. Pendientes críticos
 
-- Licencia y aviso de privacidad antes del Sprint 1 (T-14).
+- Aviso de privacidad en el Sprint 1 (T-14). Licencia MIT ya en el repositorio; el CLENA no respondió, queda como decisión del equipo.
 - Confirmar fechas finales con el docente.
 - Check de CI obligatorio en `main` cuando exista T-05.
 - Grabaciones válidas: kickoff 7 nov, review 10 nov, review 13 nov. La reunión inicial del 3 nov no tiene grabación (solo transcripción); su acta se redactó el 7 nov porque es anterior al repositorio (6 nov).

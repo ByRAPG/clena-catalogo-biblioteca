@@ -21,7 +21,7 @@ Una historia o tarea está **terminada** solo si cumple todo lo siguiente.
 ## API e interfaz
 - [ ] Endpoints nuevos documentados en Swagger (`/docs`) con ejemplos y códigos de respuesta.
 - [ ] Errores en el formato uniforme.
-- [ ] Pantallas públicas: usables con teclado, texto ≥ 16 px, contraste AA, se ven bien desde 360 px de ancho.
+- [ ] Pantallas públicas: usables con teclado, texto ≥ 18 px, contraste AA, se ven bien desde 360 px de ancho.
 
 ## Revisión y cierre
 - [ ] PR con `Closes #<issue>` y `CLENA-<n>`, descripción, cómo probar y capturas si hay interfaz.
