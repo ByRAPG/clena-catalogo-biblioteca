@@ -13,6 +13,13 @@ describe('validateEnv', () => {
     expect(env.LOG_LEVEL).toBe('info');
   });
 
+  it('PUBLIC_WEB_URL tiene valor por defecto y exige http(s)', () => {
+    expect(validateEnv(base).PUBLIC_WEB_URL).toBe('http://localhost:5173');
+    expect(() =>
+      validateEnv({ ...base, PUBLIC_WEB_URL: 'ftp://clena.local' }),
+    ).toThrow(/PUBLIC_WEB_URL/);
+  });
+
   it('rechaza secretos JWT cortos en producción', () => {
     expect(() => validateEnv({ ...base, NODE_ENV: 'production' })).toThrow(
       /JWT_ACCESS_SECRET.*32/,
