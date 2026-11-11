@@ -28,7 +28,7 @@ Solo Rafael o Humberto aprueban y fusionan (CODEOWNERS). Antes, un compañero de
 | Fecha | Qué |
 |---|---|
 | 6–8 nov | Sprint 0 · Inception (kickoff sáb 7). El Planning previsto para el dom 8 se reprogramó por falta de disponibilidad |
-| 9–13 nov | Sprint 1. Sprint Planning 1 + daily 1 el **lun 9**. Review de avance con el G9 el **mar 10**. Dailies 11 y 12 |
+| 9–13 nov | Sprint 1. Sprint Planning 1 + daily 1 el **lun 9**. Review de avance con el G9 el **mar 10**. Dailies 11 y 12 (canceladas el 11 nov: el seguimiento diario pasa a ser por escrito; las ceremonias grabadas son Planning y Review) |
 | mié 11 nov | Entrega 1 del Grupo 9 |
 | **vie 13 nov, 9:00 am** | **Entrega 1 de Backend** (tag `entrega-1`) |
 | 14–19 nov | Sprint 2 |
@@ -76,4 +76,4 @@ Solo Rafael o Humberto aprueban y fusionan (CODEOWNERS). Antes, un compañero de
 - Aviso de privacidad en el Sprint 1 (T-14). Licencia MIT ya en el repositorio; el CLENA no respondió, queda como decisión del equipo.
 - Confirmar fechas finales con el docente.
 - Check de CI obligatorio en `main` cuando exista T-05.
-- Grabaciones válidas: kickoff 7 nov, review 10 nov, review 13 nov. La reunión inicial del 3 nov no tiene grabación (solo transcripción); su acta se redactó el 7 nov porque es anterior al repositorio (6 nov).
+- Grabaciones válidas: kickoff 7 nov, review 10 nov, review 13 nov. La reunión inicial del 3 nov sí tiene grabación (localizada el 11 nov, enlazada en `evidencias.md`); su acta se redactó el 7 nov a partir de la transcripción porque es anterior al repositorio (6 nov).

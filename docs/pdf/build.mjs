@@ -242,7 +242,7 @@ async function renderizar(html, opciones) {
 }
 
 // ---------- Generación de un documento ----------
-async function generar({ archivoMd, salida, titulo, version, fecha, proy, css }) {
+async function generar({ archivoMd, salida, titulo, version, fecha, proy, css, horizontal }) {
   const rel = path.relative(process.cwd(), archivoMd);
   const nombreMd = rel.startsWith('..') ? archivoMd : rel;
   const md = fs.readFileSync(archivoMd, 'utf8').replace(/^\uFEFF/, '');
@@ -266,6 +266,7 @@ async function generar({ archivoMd, salida, titulo, version, fecha, proy, css })
     const cuerpo = `<div class="reserva"></div>${indiceHtml(encabezados, paginas)}${contenido}`;
     cuerpoPdf = await renderizar(documentoHtml(css, cuerpo), {
       displayHeaderFooter: true,
+      landscape: Boolean(horizontal),
       headerTemplate: header,
       footerTemplate: footer,
     });
@@ -333,6 +334,7 @@ async function main() {
         salida: path.join(DOCS, `${d.id}.pdf`),
         titulo: opts.titulo ?? d.titulo,
         version: opts.version ?? d.version,
+        horizontal: d.horizontal,
         fecha,
         proy,
         css,
