@@ -4,7 +4,7 @@
  * respeta además el tamaño que la persona configure en su navegador.
  */
 :root {
-  font-size: 18px;
+  font-size: 112.5%; /* 18 px sobre los 16 px por defecto; respeta el tamaño configurado en el navegador */
 }
 
 body {
@@ -23,4 +23,63 @@ body {
 
 .salto-al-contenido:focus {
   left: 0;
+}
+
+/*
+ * Letra más grande (HU-04): sube la escala raíz de 18 px (112,5 %) a 21,6 px
+ * (135 %). Todo está en rem, así que la interfaz crece de forma proporcional.
+ */
+html[data-letra-grande='true'] {
+  font-size: 135%;
+}
+
+/* Nada debe cortarse a 360 px: el texto largo se parte en vez de desbordar. */
+body {
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Alto contraste (HU-04): texto y fondo con relación >= 7:1 (AAA).
+ * Blanco sobre negro 21:1; amarillo #ffff00 sobre negro 19,6:1; negro sobre
+ * amarillo 19,6:1; enlaces celeste #7fd0ff sobre negro 12,6:1.
+ */
+html[data-alto-contraste='true'][data-mantine-color-scheme] {
+  --mantine-color-body: #000;
+  --mantine-color-text: #fff;
+  --mantine-color-dimmed: #e6e6e6;
+  --mantine-color-anchor: #7fd0ff;
+  --mantine-color-default-border: #fff;
+  --mantine-color-default: #000;
+  --mantine-color-default-color: #fff;
+  --mantine-color-default-hover: #333;
+  --mantine-color-placeholder: #d9d9d9;
+}
+
+html[data-alto-contraste='true'] body {
+  background: #000;
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] header {
+  background: #000 !important;
+  border-bottom: 2px solid #fff;
+}
+
+html[data-alto-contraste='true'] .mantine-Button-root {
+  border: 2px solid #ffff00;
+  --button-bg: #000 !important;
+  --button-hover: #333 !important;
+  --button-color: #ffff00 !important;
+}
+
+html[data-alto-contraste='true'] .mantine-Button-root[aria-pressed='true'],
+html[data-alto-contraste='true'] .mantine-Button-root[data-variant='filled'] {
+  --button-bg: #ffff00 !important;
+  --button-hover: #fff !important;
+  --button-color: #000 !important;
+}
+
+html[data-alto-contraste='true'] .salto-al-contenido {
+  background: #ffff00;
+  color: #000;
 }
