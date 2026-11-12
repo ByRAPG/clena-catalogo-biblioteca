@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SesionProvider } from '../features/auth/sesion-provider'
+import type { Rol } from '../features/auth/sesion-context'
 import { CLAVE_TUTORIAL_VISTO } from '../features/tutorial/tutorial-visto'
 import { theme } from '../shared/theme/theme'
 import { Rutas } from './rutas'
@@ -19,11 +20,39 @@ function pintar(ruta: string) {
   )
 }
 
+/** Nunca responde: deja a la pantalla en su estado de carga. */
+const enEspera = () => new Promise<Response>(() => {})
+
+/**
+ * `POST /auth/refresh` decide si hay sesión al cargar la página. Con `rol`
+ * responde una sesión recuperada; sin él responde 401, que es lo que recibe
+ * quien solo viene a consultar el catálogo.
+ */
+function simularApi(rol?: Rol) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((entrada: string) => {
+      if (!entrada.includes('/auth/refresh')) return enEspera()
+      if (rol === undefined) {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({ statusCode: 401, message: 'Sesión no válida' }),
+            { status: 401, headers: { 'Content-Type': 'application/json' } },
+          ),
+        )
+      }
+      return Promise.resolve(
+        Response.json({
+          accessToken: 'jwt-de-prueba',
+          usuario: { nombre: 'Persona de Prueba', rol },
+        }),
+      )
+    }),
+  )
+}
+
 beforeEach(() => {
-  // Estas pruebas comprueban el mapa de rutas, no las pantallas: la API queda
-  // sin responder a propósito, para que cada pantalla se vea en su estado de
-  // carga y la prueba no dependa de datos.
-  vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => {})))
+  simularApi()
   localStorage.setItem(CLAVE_TUTORIAL_VISTO, 'true')
 })
 
@@ -40,13 +69,6 @@ describe('Rutas del catálogo', () => {
     pintar('/obras/a1b2c3d4-0000-4000-8000-000000000001')
 
     expect(screen.getByText('Cargando la obra…')).toBeDefined()
-  })
-
-  it('envía a ingresar cuando se abre la gestión sin sesión', () => {
-    pintar('/gestion')
-
-    expect(screen.getByRole('heading', { name: 'Ingresar' })).toBeDefined()
-    expect(screen.queryByText('Gestión del catálogo')).toBeNull()
   })
 
   it('muestra un mensaje claro en una ruta inexistente', () => {
@@ -68,5 +90,54 @@ describe('Rutas del catálogo', () => {
     const { container } = pintar('/')
 
     expect(container.querySelector('main#contenido')).not.toBeNull()
+  })
+})
+
+describe('Guard de las rutas del personal', () => {
+  it('espera a que termine la renovación antes de decidir', () => {
+    // Con el refresh aún en vuelo no se puede saber si hay sesión: redirigir
+    // aquí sacaría de /gestion a alguien que sí tiene permiso.
+    vi.stubGlobal('fetch', vi.fn(enEspera))
+    pintar('/gestion')
+
+    expect(screen.getByText('Comprobando su sesión…')).toBeDefined()
+    expect(screen.queryByRole('heading', { name: 'Ingresar' })).toBeNull()
+  })
+
+  it('envía a ingresar cuando se abre la gestión sin sesión', async () => {
+    pintar('/gestion')
+
+    expect(await screen.findByRole('heading', { name: 'Ingresar' })).toBeDefined()
+    expect(screen.queryByText('Gestión del catálogo')).toBeNull()
+  })
+
+  it('envía a sin-permiso cuando el rol no alcanza', async () => {
+    simularApi('READER')
+    pintar('/gestion')
+
+    expect(
+      await screen.findByRole('heading', { name: 'No tiene permiso' }),
+    ).toBeDefined()
+    expect(screen.queryByText('Gestión del catálogo')).toBeNull()
+    // No es un problema de identidad, así que no debe mandar a ingresar.
+    expect(screen.queryByRole('heading', { name: 'Ingresar' })).toBeNull()
+  })
+
+  it('deja entrar a la gestión con el rol STAFF', async () => {
+    simularApi('STAFF')
+    pintar('/gestion')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Gestión del catálogo' }),
+    ).toBeDefined()
+  })
+
+  it('deja entrar a la gestión con el rol ADMIN', async () => {
+    simularApi('ADMIN')
+    pintar('/gestion')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Gestión del catálogo' }),
+    ).toBeDefined()
   })
 })
