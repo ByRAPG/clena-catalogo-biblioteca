@@ -49,7 +49,8 @@ function apiFalsa(registro: () => Response) {
   })
 }
 
-const campo = (nombre: RegExp) => screen.getByLabelText(nombre)
+const campo = (nombre: RegExp) =>
+  screen.getByLabelText(nombre, { selector: 'input, textarea' })
 const escribir = (nombre: RegExp, valor: string) =>
   fireEvent.change(campo(nombre), { target: { value: valor } })
 const llamadasA = (fetchMock: ReturnType<typeof apiFalsa>, ruta: string) =>
