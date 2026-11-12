@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, conParametros, peticion, type Paginado } from './client'
+import {
+  ApiError,
+  apiUrl,
+  conParametros,
+  peticion,
+  urlAbsoluta,
+  type Paginado,
+} from './client'
 
 interface Obra {
   id: string
@@ -103,5 +110,11 @@ describe('conParametros', () => {
 
   it('deja la ruta igual si no hay parámetros útiles', () => {
     expect(conParametros('/obras', { q: undefined })).toBe('/obras')
+  })
+})
+
+describe('urlAbsoluta', () => {
+  it('antepone la URL base de la API a la ruta', () => {
+    expect(urlAbsoluta('/rooms/qr')).toBe(`${apiUrl}/rooms/qr`)
   })
 })

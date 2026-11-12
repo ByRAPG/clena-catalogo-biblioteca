@@ -19,6 +19,9 @@ export const envSchema = z
     PORT: z.coerce.number().int().positive().default(3000),
     DATABASE_URL: z.string().min(1),
     CORS_ORIGIN: z.string().default('http://localhost:5173'),
+    PUBLIC_WEB_URL: z
+      .url({ protocol: /^https?$/ })
+      .default('http://localhost:5173'),
     LOG_LEVEL: z.enum(LOG_LEVELS).default('info'),
     JWT_ACCESS_SECRET: z.string().min(1),
     JWT_ACCESS_TTL: z.string().default('15m'),
