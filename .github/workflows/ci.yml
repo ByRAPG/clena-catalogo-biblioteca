@@ -32,6 +32,23 @@ jobs:
     needs: detectar
     if: needs.detectar.outputs.backend == 'true'
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: clena_test
+          POSTGRES_PASSWORD: clena_test
+          POSTGRES_DB: clena_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://clena_test:clena_test@localhost:5432/clena_test?schema=public
+      E2E_DATABASE_URL: postgresql://clena_test:clena_test@localhost:5432/clena_test?schema=public
     defaults:
       run:
         working-directory: backend
@@ -46,8 +63,11 @@ jobs:
           cache: pnpm
           cache-dependency-path: backend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - run: pnpm run prisma:migrate:deploy
+      - run: pnpm run prisma:seed
       - run: pnpm run lint
-      - run: pnpm test
+      - run: pnpm test --coverage --runInBand
+      - run: pnpm run test:e2e --runInBand
       - run: pnpm run build
 
   frontend:
