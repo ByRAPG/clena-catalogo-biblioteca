@@ -25,7 +25,8 @@ function json(cuerpo: unknown, estado = 200): Response {
 }
 
 function imagen(): Response {
-  return new Response(new Blob(['png'], { type: 'image/png' }), {
+  // Cuerpo en texto: el Blob de jsdom no sirve como cuerpo del Response de Node.
+  return new Response('png', {
     status: 200,
     headers: { 'Content-Type': 'image/png' },
   })
