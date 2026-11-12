@@ -1,8 +1,9 @@
 import { MantineProvider } from '@mantine/core'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SesionProvider } from '../features/auth/sesion-provider'
+import { CLAVE_TUTORIAL_VISTO } from '../features/tutorial/tutorial-visto'
 import { theme } from '../shared/theme/theme'
 import { Rutas } from './rutas'
 
@@ -18,6 +19,14 @@ function pintar(ruta: string) {
   )
 }
 
+beforeEach(() => {
+  // Estas pruebas comprueban el mapa de rutas, no las pantallas: la API queda
+  // sin responder a propósito, para que cada pantalla se vea en su estado de
+  // carga y la prueba no dependa de datos.
+  vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => {})))
+  localStorage.setItem(CLAVE_TUTORIAL_VISTO, 'true')
+})
+
 describe('Rutas del catálogo', () => {
   it('muestra la búsqueda en la ruta pública inicial', () => {
     pintar('/')
@@ -27,10 +36,10 @@ describe('Rutas del catálogo', () => {
     ).toBeDefined()
   })
 
-  it('muestra el detalle de la obra con su identificador', () => {
-    pintar('/obras/42')
+  it('abre el detalle de la obra en /obras/:id', () => {
+    pintar('/obras/a1b2c3d4-0000-4000-8000-000000000001')
 
-    expect(screen.getByText('Obra solicitada: 42')).toBeDefined()
+    expect(screen.getByText('Cargando la obra…')).toBeDefined()
   })
 
   it('envía a ingresar cuando se abre la gestión sin sesión', () => {
