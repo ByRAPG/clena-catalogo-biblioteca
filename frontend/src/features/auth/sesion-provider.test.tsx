@@ -1,5 +1,7 @@
+import { StrictMode, useEffect } from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { olvidarRenovacionCompartida } from './renovacion-compartida'
 import { useSesion } from './sesion-context'
 import { SesionProvider } from './sesion-provider'
 
@@ -33,6 +35,9 @@ function sinSesion() {
 }
 
 beforeEach(() => {
+  // La renovación en curso vive en el módulo, así que una prueba que deja la
+  // petición sin responder se la heredaría a la siguiente.
+  olvidarRenovacionCompartida()
   sessionStorage.clear()
   localStorage.clear()
 })
@@ -95,6 +100,37 @@ describe('SesionProvider', () => {
     pintar()
 
     expect(screen.getByText('recuperando')).toBeDefined()
+  })
+
+  it('con StrictMode renueva una sola vez, aunque el efecto corra dos', async () => {
+    // El refresh token es de un solo uso: dos peticiones con la misma cookie
+    // hacen que el backend tome la segunda por reuso y revoque la familia.
+    const simulada = vi.fn().mockResolvedValue(respuestaDeSesion())
+    vi.stubGlobal('fetch', simulada)
+
+    let montajes = 0
+    function Sonda() {
+      useEffect(() => {
+        montajes += 1
+      }, [])
+      return null
+    }
+
+    render(
+      <StrictMode>
+        <SesionProvider>
+          <Sonda />
+          <Testigo />
+        </SesionProvider>
+      </StrictMode>,
+    )
+
+    await screen.findByText('Marta Bibliotecaria · STAFF')
+
+    // Si `montajes` fuera 1, StrictMode no estaría duplicando el efecto y la
+    // prueba pasaría sin comprobar nada.
+    expect(montajes).toBeGreaterThan(1)
+    expect(simulada).toHaveBeenCalledTimes(1)
   })
 
   it('deja la sesión abierta tras iniciar sesión con correo y contraseña', async () => {

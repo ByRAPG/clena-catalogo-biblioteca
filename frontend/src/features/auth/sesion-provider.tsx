@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { renovarSesionCompartida } from './renovacion-compartida'
 import {
   cerrarSesionEnApi,
   iniciarSesionEnApi,
-  renovarSesionEnApi,
   type RespuestaDeSesion,
 } from './sesion.api'
 import { SesionContext, type Sesion } from './sesion-context'
@@ -37,22 +37,28 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   const [intentoHecho, setIntentoHecho] = useState(false)
 
   useEffect(() => {
-    const controlador = new AbortController()
+    // Sin `AbortController`: el refresh token es de un solo uso, así que una
+    // petición abortada a medias igual pudo llegar al backend y gastar la
+    // cookie. La deduplicación la hace `renovarSesionCompartida`, que con
+    // `StrictMode` devuelve la misma promesa a los dos montajes.
+    let activo = true
 
-    renovarSesionEnApi(controlador.signal)
+    renovarSesionCompartida()
       .then((respuesta) => {
-        if (controlador.signal.aborted) return
+        if (!activo) return
         setSesion(aSesion(respuesta))
         setIntentoHecho(true)
       })
       .catch(() => {
         // Sin cookie válida no hay sesión que recuperar: es lo esperado para
         // quien solo viene a consultar el catálogo.
-        if (controlador.signal.aborted) return
+        if (!activo) return
         setIntentoHecho(true)
       })
 
-    return () => controlador.abort()
+    return () => {
+      activo = false
+    }
   }, [])
 
   const iniciarSesion = useCallback(

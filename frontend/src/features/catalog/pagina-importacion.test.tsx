@@ -1,7 +1,8 @@
 import { MantineProvider } from '@mantine/core'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { olvidarRenovacionCompartida } from '../auth/renovacion-compartida'
 import { SesionProvider } from '../auth/sesion-provider'
 import { theme } from '../../shared/theme/theme'
 import { Rutas } from '../../app/rutas'
@@ -56,6 +57,10 @@ function pintar(
     </MantineProvider>,
   )
 }
+
+beforeEach(() => {
+  olvidarRenovacionCompartida()
+})
 
 afterEach(() => {
   vi.unstubAllGlobals()

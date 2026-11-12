@@ -2,6 +2,7 @@ import { MantineProvider } from '@mantine/core'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { olvidarRenovacionCompartida } from '../features/auth/renovacion-compartida'
 import { SesionProvider } from '../features/auth/sesion-provider'
 import type { Rol } from '../features/auth/sesion-context'
 import { CLAVE_TUTORIAL_VISTO } from '../features/tutorial/tutorial-visto'
@@ -52,6 +53,9 @@ function simularApi(rol?: Rol) {
 }
 
 beforeEach(() => {
+  // Vive en el módulo: la prueba que deja la renovación en vuelo se la
+  // heredaría a las siguientes.
+  olvidarRenovacionCompartida()
   simularApi()
   localStorage.setItem(CLAVE_TUTORIAL_VISTO, 'true')
 })
