@@ -32,9 +32,7 @@ function run(error: Error) {
   } as unknown as ArgumentsHost;
   new IamErrorsFilter().catch(
     error as
-      | InvalidCredentialsError
-      | InvalidRefreshTokenError
-      | AccountLockedError,
+      InvalidCredentialsError | InvalidRefreshTokenError | AccountLockedError,
     host,
   );
   return sent;

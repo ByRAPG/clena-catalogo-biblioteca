@@ -25,9 +25,7 @@ export class IamErrorsFilter implements ExceptionFilter {
 
   catch(
     exception:
-      | InvalidCredentialsError
-      | InvalidRefreshTokenError
-      | AccountLockedError,
+      InvalidCredentialsError | InvalidRefreshTokenError | AccountLockedError,
     host: ArgumentsHost,
   ): void {
     if (exception instanceof AccountLockedError) {
