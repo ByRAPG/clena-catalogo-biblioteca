@@ -23,13 +23,13 @@ Se hicieron dos reuniones con el Grupo 9 en Microsoft Teams. Cada una tiene su a
 
 | Fecha | Reunión | Asistentes de Backend | Asistentes del Grupo 9 | Grabación | Acta |
 |---|---|---|---|---|---|
-| Martes 3 de noviembre de 2026 | Reunión inicial (unos 33 minutos) | Rafael Potes, Humberto Llinás | Shadia Castro, Derek Pérez, Emiliano Harvey | No hay grabación; solo la transcripción automática de Teams | [acta](actas/2026-11-03-reunion-inicial-g9.md) |
+| Martes 3 de noviembre de 2026 | Reunión inicial (unos 33 minutos) | Rafael Potes, Humberto Llinás | Shadia Castro, Derek Pérez, Emiliano Harvey | [Grabación en Teams](evidencias.md), localizada el 11 de noviembre; el acta se redactó el 7 de noviembre a partir de la transcripción automática | [acta](actas/2026-11-03-reunion-inicial-g9.md) |
 | Sábado 7 de noviembre de 2026, 6:35 p.m. | Kickoff y validación del backlog (unos 9 minutos) | Rafael Potes, Humberto Llinás | Emiliano Harvey, Shadia Castro | Sí, enlazada en [`evidencias.md`](evidencias.md) | [acta](actas/2026-11-07-kickoff-g9.md) |
 
 Aclaraciones de fechas, para que el informe sea coherente con el historial del repositorio:
 
 - El repositorio se creó el 6 de noviembre de 2026. La reunión inicial del 3 de noviembre es anterior, por lo que su acta se redactó el 7 de noviembre a partir de la transcripción y no tiene commits asociados al 3 de noviembre.
-- La reunión inicial no se grabó. La primera reunión con grabación válida es el kickoff del 7 de noviembre. Ese vacío se declara y no se oculta.
+- La reunión inicial sí se grabó; la grabación se localizó el 11 de noviembre y está enlazada en `evidencias.md`. El acta se redactó el 7 de noviembre a partir de la transcripción automática, y esa fecha se declara y no se oculta.
 - En el kickoff estuvieron ausentes Derek Pérez (Grupo 9) y Juan Camilo Fernández, Orlando Palma y Daniel Méndez (Backend). Emiliano Harvey se comprometió a avisar a sus compañeros.
 
 ### 2.1 Contexto recibido del Grupo 9
@@ -313,8 +313,8 @@ Hitos fijos:
 |---|---|---|
 | 9 de noviembre | Sprint Planning 1 y Daily Scrum 1 | Realizado ([acta](actas/2026-11-09-sprint-planning-1.md)) |
 | 10 de noviembre | Review de avance con el Grupo 9 | Realizada ([acta](actas/2026-11-10-review-avance-g9.md)) |
-| 11 de noviembre | Daily Scrum 2 (6:00 p.m.); PR del Sprint 1 abiertos con CI en verde (8:00 p.m.); entrega 1 del Grupo 9 | Previsto |
-| 12 de noviembre | Congelación (12:00 m.); Daily Scrum 3 (6:00 p.m.) | Previsto |
+| 11 de noviembre | Daily Scrum 2 (cancelada el 11 nov; seguimiento por escrito); PR del Sprint 1 abiertos con CI en verde (8:00 p.m.); entrega 1 del Grupo 9 | Previsto |
+| 12 de noviembre | Congelación (12:00 m.); Daily Scrum 3 (cancelada el 11 nov; seguimiento por escrito) | Previsto |
 | 13 de noviembre, 9:00 a. m. | Entrega 1 de Backend (tag `entrega-1`) | Previsto |
 | 25 de noviembre | Entrega final, si el docente no la cambia | Por confirmar |
 

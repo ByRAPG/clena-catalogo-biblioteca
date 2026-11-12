@@ -4,5 +4,5 @@
   { "id": "modelo-datos", "fuente": "../modelo-datos.md", "titulo": "Modelo de datos", "version": "1.0" },
   { "id": "arquitectura", "fuente": "../arquitectura.md", "titulo": "Arquitectura (modelo C4)", "version": "1.0" },
   { "id": "daily-scrum", "fuente": "../daily-scrum.md", "titulo": "Daily Scrum", "version": "1.0" },
-  { "id": "evidencias", "fuente": "../evidencias.md", "titulo": "Evidencias", "version": "1.0" }
+  { "id": "evidencias", "fuente": "../evidencias.md", "titulo": "Evidencias", "version": "1.0", "horizontal": true }
 ]

@@ -6,7 +6,7 @@
 - **Duración:** unos 33 minutos
 - **Asistentes Backend:** Rafael Potes (minuto 0), Humberto Llinás (se unió hacia el minuto 2)
 - **Asistentes Grupo 9:** Shadia Castro, Derek Pérez, Emiliano Harvey (intervino desde el minuto 7)
-- **Grabación:** no existe grabación de esta reunión; solo la transcripción automática de Teams. Rafael lo reconoce hacia el minuto 32. Se propuso grabar una recapitulación (ver [`evidencias.md`](../evidencias.md)). La primera reunión con grabación válida es el kickoff del 7 nov ([acta](2026-11-07-kickoff-g9.md)).
+- **Grabación:** la grabación de Teams de esta reunión sí existe y se localizó el 11 de noviembre; está enlazada en [`evidencias.md`](../evidencias.md). El acta se redactó el 7 de noviembre a partir de la transcripción automática de Teams. La primera reunión con el backlog validado es el kickoff del 7 nov ([acta](2026-11-07-kickoff-g9.md)).
 
 ## Temas tratados
 

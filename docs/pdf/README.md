@@ -22,6 +22,8 @@ node build.mjs arquitectura --fecha "6 de noviembre de 2026" --version 1.1
 node build.mjs --fuente ruta.md --salida ruta.pdf --titulo "Prueba"   # modo de prueba
 ```
 
+Un documento con `"horizontal": true` en `documentos.json` se genera con el cuerpo en orientación horizontal (la portada sigue vertical), útil para tablas anchas.
+
 Si una fuente de `documentos.json` no existe, se omite con un aviso (salvo que se pida por id). Si algún documento tiene errores, el resto se genera y el comando termina con código 1.
 
 ## Reglas

@@ -2,11 +2,11 @@
 
 ## Propósito y reglas
 
-Este informe reúne las actas del Daily Scrum del equipo de Backend de Consulta Fácil. Cada Daily se hace en Microsoft Teams, queda grabado y su enlace está en [`evidencias.md`](evidencias.md). Cada integrante responde tres preguntas: qué hizo, qué hará y qué lo bloquea. Las respuestas nombran los Issues y los Pull Requests concretos.
+Este informe reúne las actas del Daily Scrum del equipo de Backend de Consulta Fácil. Cada Daily que se hace en Microsoft Teams queda grabado y su enlace está en [`evidencias.md`](evidencias.md). Desde el 11 de noviembre de 2026 no hay más Daily sincrónicas en este sprint (ver «Decisión del 11 de noviembre de 2026»). Cada integrante responde tres preguntas: qué hizo, qué hará y qué lo bloquea. Las respuestas nombran los Issues y los Pull Requests concretos.
 
 Reglas del equipo:
 
-- Mínimo tres Daily por semana, de unos 15 minutos. El enunciado de la Entrega 1 admite como alternativa una Sprint Review semanal grabada.
+- Se acordó en el Sprint Planning 1 un mínimo de tres Daily por semana, de unos 15 minutos; el 11 de noviembre se cambió por seguimiento escrito. El enunciado de la Entrega 1 admite como alternativa una Sprint Review semanal grabada.
 - La fecha de cada acta coincide con la grabación, los Issues y los commits. Lo que no ha ocurrido se marca como **Previsto** y no lleva contenido.
 - Los Issues #28 a #48 son las historias HU-01 a HU-21 (HU-n corresponde al Issue #(n + 27)). Los Issues #5 a #18 y #24 son los habilitadores T-01 a T-15 en orden; T-17 es el Issue #55. La lista completa está en [`backlog.md`](backlog.md).
 
@@ -16,11 +16,11 @@ Reglas del equipo:
 |---|---|---|---|
 | Lunes 9 de noviembre | Sprint Planning 1 y Daily Scrum 1 | Realizado | 6:57 p.m. (inicio de la grabación) |
 | Martes 10 de noviembre | Review de avance con el Grupo 9 (no es Daily) | Realizada | 8:38 p.m. |
-| Miércoles 11 de noviembre | Daily Scrum 2 | **Previsto** | 6:00 p.m. |
-| Jueves 12 de noviembre | Daily Scrum 3 | **Previsto** | 6:00 p.m. |
+| Miércoles 11 de noviembre | Daily Scrum 2 | **Cancelada (decisión del 11 nov)** | 6:00 p.m. (acordada en el Planning) |
+| Jueves 12 de noviembre | Daily Scrum 3 | **Cancelada (decisión del 11 nov)** | 6:00 p.m. (acordada en el Planning) |
 | Viernes 13 de noviembre | Sprint Review 1 y Retrospectiva | **Previsto** | por confirmar |
 
-Hasta el 10 de noviembre de 2026 solo se ha realizado el Daily Scrum 1. La Review de avance del martes 10 cuenta como evidencia adicional de la semana, pero no se presenta como Daily; su acta está en [`actas/2026-11-10-review-avance-g9.md`](actas/2026-11-10-review-avance-g9.md).
+Solo se realizó el Daily Scrum 1. La Review de avance del martes 10 cuenta como evidencia adicional de la semana, pero no se presenta como Daily; su acta está en [`actas/2026-11-10-review-avance-g9.md`](actas/2026-11-10-review-avance-g9.md).
 
 ## Plantilla de acta
 
@@ -70,39 +70,23 @@ En la grabación, Humberto, Juan Camilo y Daniel no dijeron qué habían hecho; 
 
 **Rotación de revisiones:** Juan Camilo revisa a Daniel, Daniel a Orlando y Orlando a Juan Camilo.
 
-### 11 de noviembre de 2026 · Sprint 1 · Daily Scrum 2
+### Decisión del 11 de noviembre de 2026
 
-**Previsto.** Todavía no ocurre. Se mantiene en blanco hasta que se haga y se grabe.
+El equipo no hará más Daily Scrum sincrónicas en este sprint. Las ceremonias en reunión grabada son el Sprint Planning y la Sprint Review, y el seguimiento diario se hace por escrito en los Issues, los Pull Requests, el GitHub Project y el chat del equipo. La Daily 2 del 11 de noviembre y la Daily 3 del 12 de noviembre, acordadas en el Sprint Planning 1, quedan canceladas.
 
-- **Hora prevista:** 6:00 p.m., Microsoft Teams (acordado en el Sprint Planning 1).
-- **Grabación:** pendiente. Se enlazará en [`evidencias.md`](evidencias.md).
-- **Asistentes:** por registrar.
-- **Punto de control ya acordado:** a las 8:00 p.m. del mismo día deben estar abiertos los PR del Sprint 1 con CI en verde.
+**Seguimiento por escrito del 11 de noviembre**
 
-| Integrante | Qué hice | Qué haré | Bloqueos |
-|---|---|---|---|
-| Humberto Llinás | Por registrar | Por registrar | Por registrar |
-| Juan Camilo Fernández | Por registrar | Por registrar | Por registrar |
-| Daniel Méndez | Por registrar | Por registrar | Por registrar |
-| Rafael Potes | Por registrar | Por registrar | Por registrar |
-| Orlando Palma | Por registrar | Por registrar | Por registrar |
-
-### 12 de noviembre de 2026 · Sprint 1 · Daily Scrum 3
-
-**Previsto.** Todavía no ocurre. Se mantiene en blanco hasta que se haga y se grabe.
-
-- **Hora prevista:** 6:00 p.m., Microsoft Teams (acordado en el Sprint Planning 1).
-- **Grabación:** pendiente. Se enlazará en [`evidencias.md`](evidencias.md).
-- **Asistentes:** por registrar.
-- **Punto de control ya acordado:** congelación a las 12:00 m. de ese día; lo que no esté completo no se muestra el viernes 13 y pasa al Sprint 2.
-
-| Integrante | Qué hice | Qué haré | Bloqueos |
-|---|---|---|---|
-| Humberto Llinás | Por registrar | Por registrar | Por registrar |
-| Juan Camilo Fernández | Por registrar | Por registrar | Por registrar |
-| Daniel Méndez | Por registrar | Por registrar | Por registrar |
-| Rafael Potes | Por registrar | Por registrar | Por registrar |
-| Orlando Palma | Por registrar | Por registrar | Por registrar |
+| Hecho verificable en el repositorio | Detalle |
+|---|---|
+| PR #56 fusionado | Documentación y actas; aprobado por Humberto Llinás |
+| PR #59 fusionado | T-03, base del frontend (Orlando Palma); aprobado por Humberto Llinás. Se fusionó con observaciones de las dos revisiones sin resolver, que quedaron en el Issue #66 |
+| PR #60 fusionado | T-06 y T-17, modelo de datos y semilla; aprobado por Humberto Llinás |
+| PR #61 fusionado | API de búsqueda; aprobado por Humberto Llinás |
+| PR #62 fusionado | Inception y Daily; aprobado por Humberto Llinás |
+| PR #63 fusionado | HU-04; aprobado por Humberto Llinás |
+| PR #64 fusionado | HU-15; aprobado por Humberto Llinás |
+| PR #65 abierto | API del QR (HU-05) |
+| Issue #66 abierto | Asignado a Orlando Palma: sesión según ADR-03 y observaciones pendientes del PR #59 |
 
 ## Calendario previsto de los siguientes Daily
 
