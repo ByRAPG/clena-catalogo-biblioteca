@@ -3,10 +3,6 @@ import { Link, Outlet } from 'react-router-dom'
 import { AccesibilidadProvider } from '../features/accessibility/accesibilidad-provider'
 import { ControlesAccesibilidad } from '../features/accessibility/controles-accesibilidad'
 
-/**
- * Marco común de las pantallas públicas. El enlace «Saltar al contenido» es
- * requisito de accesibilidad: aparece al tabular y lleva directo al <main>.
- */
 export function Layout() {
   return (
     <AccesibilidadProvider>
@@ -22,9 +18,14 @@ export function Layout() {
                 Biblioteca del CLENA
               </Anchor>
             </Title>
-            <Anchor component={Link} to="/ingresar" c="white">
-              Ingresar
-            </Anchor>
+            <Group>
+              <Anchor component={Link} to="/gestion" c="white">
+                Gestión
+              </Anchor>
+              <Anchor component={Link} to="/ingresar" c="white">
+                Ingresar
+              </Anchor>
+            </Group>
           </Group>
         </Container>
       </Box>
@@ -35,6 +36,11 @@ export function Layout() {
 
       <Container component="main" id="contenido" size="lg" py="xl">
         <Outlet />
+      </Container>
+      <Container component="footer" size="lg" py="md">
+        <Anchor component={Link} to="/privacidad">
+          Aviso de privacidad
+        </Anchor>
       </Container>
     </AccesibilidadProvider>
   )

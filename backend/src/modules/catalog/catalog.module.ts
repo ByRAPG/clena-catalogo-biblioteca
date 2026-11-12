@@ -8,10 +8,37 @@ import { PUBLIC_WEB_URL } from './application/public-web-url';
 import { PrismaRoomRepository } from './infrastructure/prisma-room.repository';
 import { QrCodeLibGenerator } from './infrastructure/qr-code.generator';
 import { RoomsController } from './presentation/rooms.controller';
+import { ImportCatalogUseCase } from './application/use-cases/import-catalog.use-case';
+import { GetImportTemplateUseCase } from './application/use-cases/get-import-template.use-case';
+import {
+  CATALOG_CSV_READER,
+  CATALOG_IMPORT_REPOSITORY,
+  IMPORT_AUTHENTICATOR,
+  IMPORT_JOB_REPOSITORY,
+  IMPORT_TEMPLATE_READER,
+} from './application/tokens';
+import { CatalogCsvReader } from './infrastructure/csv/catalog-csv.reader';
+import { FileImportTemplateReader } from './infrastructure/csv/file-import-template.reader';
+import { PrismaCatalogImportRepository } from './infrastructure/persistence/prisma-catalog-import.repository';
+import { PrismaImportJobRepository } from './infrastructure/persistence/prisma-import-job.repository';
+import { PendingIamAuthenticator } from './infrastructure/security/pending-iam.authenticator';
+import { ImportCatalogController } from './presentation/import-catalog.controller';
+import { ImportAdminGuard } from './presentation/guards/import-admin.guard';
 
 @Module({
-  controllers: [RoomsController],
+  controllers: [RoomsController, ImportCatalogController],
   providers: [
+    ImportCatalogUseCase,
+    GetImportTemplateUseCase,
+    ImportAdminGuard,
+    { provide: CATALOG_CSV_READER, useClass: CatalogCsvReader },
+    {
+      provide: CATALOG_IMPORT_REPOSITORY,
+      useClass: PrismaCatalogImportRepository,
+    },
+    { provide: IMPORT_JOB_REPOSITORY, useClass: PrismaImportJobRepository },
+    { provide: IMPORT_TEMPLATE_READER, useClass: FileImportTemplateReader },
+    { provide: IMPORT_AUTHENTICATOR, useClass: PendingIamAuthenticator },
     GenerateRoomQr,
     GenerateEntranceQr,
     { provide: ROOM_REPOSITORY, useClass: PrismaRoomRepository },

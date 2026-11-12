@@ -78,6 +78,33 @@ El backend aplica las migraciones y ejecuta una semilla técnica ficticia al arr
 
 Para validar el código, ejecuta `pnpm run lint`, `pnpm test` y `pnpm run build` en `backend/` y `frontend/`. La cobertura del backend se comprueba con `pnpm run test:cov`.
 
+## Importación CSV (HU-12)
+
+La pantalla está en `/gestion/importar` y requiere una sesión con rol ADMIN. Permite descargar la plantilla existente, seleccionar un CSV UTF-8 separado por comas de hasta 1 MB e importar las filas válidas aunque otras tengan errores. El reporte muestra el resultado de cada fila y totales de ejemplares creados, actualizados y fallidos.
+
+La API ofrece `GET /api/v1/catalog/imports/template` y `POST /api/v1/catalog/imports`. El POST recibe JSON con `fileName` y `content`; el usuario se obtiene de la autenticación y nunca del archivo o del cuerpo de la solicitud. Las cabeceras deben coincidir con `backend/prisma/data/plantilla-catalogo.csv`; los autores y temas se separan con `;`. Los números del reporte corresponden a líneas del archivo; si una celda contiene saltos de línea, se indica la línea final del registro.
+
+Cada fila se guarda en una transacción independiente. Se reutilizan obras por ISBN y ejemplares por código de inventario. Sin ISBN, se conserva la obra del ejemplar existente; para nuevas obras importadas se deriva una identidad de título, autores normalizados, año, editorial y clasificación. Esto evita duplicados al repetir el mismo archivo sin fusionar automáticamente obras preexistentes de otras fuentes. Las celdas opcionales vacías borran el valor correspondiente al actualizar; las listas de autores y temas reemplazan las relaciones actuales de la obra.
+
+El historial `ImportJob` conserva el administrador, nombre del archivo, totales y errores. Un fallo de infraestructura interrumpe el proceso y conserva las filas ya confirmadas; no debe interpretarse como una reversión de toda la carga.
+
+La autenticación está pendiente de HU-09 por decisión de integración: el token `IMPORT_AUTHENTICATOR` exige una implementación de `IImportAuthenticator` que valide el access token y devuelva un usuario activo. El adaptador provisional rechaza el acceso; no hay tokens de demostración aceptados por la aplicación. Las pruebas e2e sustituyen únicamente ese puerto para verificar el flujo real con PostgreSQL.
+
+Para probarlo en Docker:
+
+```bash
+docker compose exec backend pnpm run lint
+docker compose exec backend pnpm test --runInBand
+docker compose exec backend pnpm run test:cov --runInBand
+docker compose exec backend sh -c 'E2E_DATABASE_URL="$DATABASE_URL" pnpm run test:e2e --runInBand'
+docker compose exec backend pnpm run build
+docker compose exec frontend pnpm run lint
+docker compose exec frontend pnpm test
+docker compose exec frontend pnpm run build
+```
+
+Las pruebas e2e de importación crean una base temporal, aplican las migraciones versionadas y la eliminan al terminar. La conexión de pruebas debe permitir crear bases de datos. Las pruebas de búsqueda y QR leen la semilla ficticia de la base indicada en `E2E_DATABASE_URL`. No se vacía la base configurada.
+
 ## Aplicación desplegada
 
 Pendiente: el despliegue con URL pública (T-07) se hace en el Sprint 3.
@@ -126,8 +153,8 @@ El docente permite usar IA como asistente. El equipo la usa de forma transparent
 ## Datos y privacidad
 
 - Las semillas de demostración son ficticias. No se publican datos reales del CLENA sin autorización escrita.
-- El sistema cumple la Ley 1581 de 2012: aviso de privacidad, consentimiento explícito, datos mínimos y opción de eliminar la cuenta.
+- El aviso provisional está en `/privacidad` y en [`docs/aviso-privacidad.md`](docs/aviso-privacidad.md). La integración de aceptación expresa y registro de versión/fecha depende de IAM (HU-16); la eliminación de cuentas depende de HU-17. El responsable institucional y el canal de contacto requieren confirmación antes de tratar datos reales.
 
 ## Licencia
 
-Por definir con el CLENA y la universidad antes de la entrega final.
+El repositorio contiene una licencia MIT propuesta por el equipo. Su confirmación con el CLENA y la universidad está pendiente; no cubre automáticamente datos bibliográficos, archivos digitales ni otros contenidos de terceros.
