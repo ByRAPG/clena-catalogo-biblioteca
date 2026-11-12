@@ -1,6 +1,13 @@
 import { Alert, Button, Loader, Stack, Text, Title } from '@mantine/core'
 import { useCallback, useEffect, useState } from 'react'
 import { peticion, urlAbsoluta } from '../../shared/api/client'
+import { useSesion } from '../auth/sesion-context'
+import {
+  guardarArchivo,
+  mensajeDeFalloQr,
+  nombreDeArchivoQr,
+  obtenerQrDeSala,
+} from './descargar-qr'
 
 interface Sala {
   id: string
@@ -17,10 +24,41 @@ const ALTO_MINIMO = 44
 /**
  * Descarga de los códigos QR para imprimir (HU-05): el de la entrada y uno por
  * sala, que abre el buscador con esa sala filtrada.
+ *
+ * El QR de entrada es público y se baja con un enlace. El de cada sala exige
+ * sesión del personal (HU-09), así que se pide con el token y luego se entrega
+ * al navegador como archivo.
  */
 export function SeccionCodigosQr() {
   const [estado, setEstado] = useState<Estado>({ tipo: 'cargando' })
   const [intento, setIntento] = useState(0)
+  const { sesion } = useSesion()
+  const [descargando, setDescargando] = useState<string | null>(null)
+  const [falloDeDescarga, setFalloDeDescarga] = useState<{
+    salaId: string
+    mensaje: string
+  } | null>(null)
+
+  async function descargar(sala: Sala) {
+    if (descargando !== null) return
+    setFalloDeDescarga(null)
+    if (sesion === null) {
+      setFalloDeDescarga({
+        salaId: sala.id,
+        mensaje: 'Ingrese con su cuenta para descargar el código.',
+      })
+      return
+    }
+    setDescargando(sala.id)
+    try {
+      const imagen = await obtenerQrDeSala(sala.id, sesion.token)
+      guardarArchivo(imagen, nombreDeArchivoQr(sala.name))
+    } catch (causa: unknown) {
+      setFalloDeDescarga({ salaId: sala.id, mensaje: mensajeDeFalloQr(causa) })
+    } finally {
+      setDescargando(null)
+    }
+  }
 
   const reintentar = useCallback(() => {
     setEstado({ tipo: 'cargando' })
@@ -88,15 +126,23 @@ export function SeccionCodigosQr() {
         <Stack gap="sm" component="ul" p={0} m={0} style={{ listStyle: 'none' }}>
           {estado.salas.map((sala) => (
             <li key={sala.id}>
-              <Button
-                component="a"
-                href={urlAbsoluta(`/rooms/${sala.id}/qr`)}
-                download
-                variant="light"
-                mih={ALTO_MINIMO}
-              >
-                Descargar QR de {sala.name}
-              </Button>
+              <Stack gap="xs" align="flex-start">
+                <Button
+                  type="button"
+                  variant="light"
+                  mih={ALTO_MINIMO}
+                  loading={descargando === sala.id}
+                  disabled={descargando !== null && descargando !== sala.id}
+                  onClick={() => void descargar(sala)}
+                >
+                  Descargar QR de {sala.name}
+                </Button>
+                {falloDeDescarga?.salaId === sala.id && (
+                  <Text role="alert" c="red.9">
+                    {falloDeDescarga.mensaje}
+                  </Text>
+                )}
+              </Stack>
             </li>
           ))}
         </Stack>
