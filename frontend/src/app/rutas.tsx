@@ -3,6 +3,7 @@ import { PaginaIngreso } from '../features/auth/pagina-ingreso'
 import { PaginaDetalleObra } from '../features/catalog/pagina-detalle-obra'
 import { PaginaGestion } from '../features/catalog/pagina-gestion'
 import { PaginaImportacion } from '../features/catalog/pagina-importacion'
+import { PaginaRegistrarLibro } from '../features/catalog/pagina-registrar-libro'
 import { PaginaPrivacidad } from '../features/privacy/pagina-privacidad'
 import { PaginaBusqueda } from '../features/search/pagina-busqueda'
 import { Layout } from './layout'
@@ -22,6 +23,14 @@ export function Rutas() {
           element={
             <RutaProtegida roles={['ADMIN']}>
               <PaginaImportacion />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="gestion/registrar-libro"
+          element={
+            <RutaProtegida roles={['ADMIN', 'STAFF']}>
+              <PaginaRegistrarLibro />
             </RutaProtegida>
           }
         />
