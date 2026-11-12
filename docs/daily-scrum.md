@@ -79,7 +79,7 @@ El equipo no hará más Daily Scrum sincrónicas en este sprint. Las ceremonias 
 | Hecho verificable en el repositorio | Detalle |
 |---|---|
 | PR #56 fusionado | Documentación y actas; aprobado por Humberto Llinás |
-| PR #59 fusionado | T-03, base del frontend (Orlando Palma); aprobado por Humberto Llinás |
+| PR #59 fusionado | T-03, base del frontend (Orlando Palma); aprobado por Humberto Llinás. Se fusionó con observaciones de las dos revisiones sin resolver, que quedaron en el Issue #66 |
 | PR #60 fusionado | T-06 y T-17, modelo de datos y semilla; aprobado por Humberto Llinás |
 | PR #61 fusionado | API de búsqueda; aprobado por Humberto Llinás |
 | PR #62 fusionado | Inception y Daily; aprobado por Humberto Llinás |
