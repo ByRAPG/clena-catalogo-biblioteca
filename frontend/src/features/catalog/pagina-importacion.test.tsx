@@ -133,7 +133,7 @@ describe('Importación CSV', () => {
 
   it('envía al ingreso cuando no hay sesión', () => {
     pintar(null)
-    expect(screen.getByRole('heading', { name: 'Ingresar' })).toBeDefined()
+    expect(screen.getByRole('heading', { name: 'Iniciar sesión' })).toBeDefined()
   })
 
   it('muestra el aviso de privacidad sin sesión y explica el consentimiento pendiente', () => {

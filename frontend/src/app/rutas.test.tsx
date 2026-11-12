@@ -36,7 +36,7 @@ describe('Rutas del catálogo', () => {
   it('envía a ingresar cuando se abre la gestión sin sesión', () => {
     pintar('/gestion')
 
-    expect(screen.getByRole('heading', { name: 'Ingresar' })).toBeDefined()
+    expect(screen.getByRole('heading', { name: 'Iniciar sesión' })).toBeDefined()
     expect(screen.queryByText('Gestión del catálogo')).toBeNull()
   })
 

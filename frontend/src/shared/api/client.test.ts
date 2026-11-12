@@ -72,6 +72,27 @@ describe('peticion', () => {
     })
   })
 
+  it('incluye cookies y lee Retry-After de la respuesta', async () => {
+    const simulada = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({ statusCode: 429, message: 'Cuenta bloqueada' }),
+        { status: 429, headers: { 'Retry-After': '90' } },
+      ),
+    )
+    vi.stubGlobal('fetch', simulada)
+
+    const error = await peticion('/auth/login', { metodo: 'POST' }).catch(
+      (causa: unknown) => causa,
+    )
+    const [, opciones] = simulada.mock.calls[0] as [string, RequestInit]
+
+    expect(opciones.credentials).toBe('include')
+    expect(error).toMatchObject({
+      statusCode: 429,
+      retryAfterSeconds: 90,
+    })
+  })
+
   it('une los mensajes cuando la validación devuelve una lista', async () => {
     vi.stubGlobal(
       'fetch',

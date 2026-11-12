@@ -28,12 +28,19 @@ interface CuerpoDeError {
 export class ApiError extends Error {
   readonly statusCode: number
   readonly ruta: string
+  readonly retryAfterSeconds: number | null
 
-  constructor(mensaje: string, statusCode: number, ruta: string) {
+  constructor(
+    mensaje: string,
+    statusCode: number,
+    ruta: string,
+    retryAfterSeconds: number | null = null,
+  ) {
     super(mensaje)
     this.name = 'ApiError'
     this.statusCode = statusCode
     this.ruta = ruta
+    this.retryAfterSeconds = retryAfterSeconds
   }
 
   /** true si la causa fue la red o el servidor caído, no una respuesta HTTP. */
@@ -76,6 +83,7 @@ export async function peticion<T>(
       method: metodo,
       headers: cabeceras,
       body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
+      credentials: 'include',
       signal,
     })
   } catch {
@@ -89,10 +97,18 @@ export async function peticion<T>(
 
   if (!respuesta.ok) {
     const cuerpoDeError = (datos ?? {}) as CuerpoDeError
+    const retryAfter = respuesta.headers.get('Retry-After')
+    const retryAfterSeconds =
+      retryAfter !== null && /^\d+$/.test(retryAfter)
+        ? Number(retryAfter)
+        : null
     throw new ApiError(
       mensajeDeError(cuerpoDeError, respuesta.status),
       cuerpoDeError.statusCode ?? respuesta.status,
       cuerpoDeError.path ?? ruta,
+      retryAfterSeconds !== null && Number.isSafeInteger(retryAfterSeconds)
+        ? retryAfterSeconds
+        : null,
     )
   }
 
