@@ -15,6 +15,10 @@ async function bootstrap(): Promise<void> {
       .get('CORS_ORIGIN', { infer: true })
       .split(',')
       .map((origin) => origin.trim()),
+    // El navegador solo envía la cookie del refresh token si el CORS lo permite.
+    credentials: true,
+    // Sin esto el frontend no puede leer Retry-After en la respuesta 429.
+    exposedHeaders: ['Retry-After'],
   });
   configureApp(app);
   app.enableShutdownHooks();

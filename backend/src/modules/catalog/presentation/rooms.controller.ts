@@ -6,20 +6,27 @@ import {
   ParseUUIDPipe,
   Res,
   UseFilters,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiProduces,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { GenerateEntranceQr } from '../application/generate-entrance-qr.use-case';
 import { GenerateRoomQr } from '../application/generate-room-qr.use-case';
 import { QrImage } from '../application/qr-image';
+import { JwtAuthGuard } from '../../iam/presentation/guards/jwt-auth.guard';
+import { Roles } from '../../iam/presentation/guards/roles.decorator';
+import { RolesGuard } from '../../iam/presentation/guards/roles.guard';
 import { CatalogErrorsFilter } from './catalog-errors.filter';
 
 const PNG_BODY = {
@@ -50,8 +57,10 @@ export class RoomsController {
     this.send(res, await this.entranceQr.execute());
   }
 
-  // TODO(HU-09 #36): proteger con roles STAFF y ADMIN cuando exista el guard
   @Get(':id/qr')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('STAFF', 'ADMIN')
+  @ApiBearerAuth()
   @Header('Cache-Control', 'no-store')
   @ApiOperation({
     summary: 'Descargar el QR de una sala',
@@ -62,6 +71,8 @@ export class RoomsController {
   @ApiProduces('image/png')
   @ApiOkResponse(PNG_BODY)
   @ApiBadRequestResponse({ description: 'El id no es un UUID' })
+  @ApiUnauthorizedResponse({ description: 'Sesión ausente o inválida' })
+  @ApiForbiddenResponse({ description: 'Solo personal y administradores' })
   @ApiNotFoundResponse({ description: 'La sala no existe' })
   async room(
     @Param('id', ParseUUIDPipe) id: string,

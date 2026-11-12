@@ -21,11 +21,13 @@ import { CatalogCsvReader } from './infrastructure/csv/catalog-csv.reader';
 import { FileImportTemplateReader } from './infrastructure/csv/file-import-template.reader';
 import { PrismaCatalogImportRepository } from './infrastructure/persistence/prisma-catalog-import.repository';
 import { PrismaImportJobRepository } from './infrastructure/persistence/prisma-import-job.repository';
-import { PendingIamAuthenticator } from './infrastructure/security/pending-iam.authenticator';
+import { IamImportAuthenticator } from './infrastructure/security/iam-import.authenticator';
+import { IamModule } from '../iam/iam.module';
 import { ImportCatalogController } from './presentation/import-catalog.controller';
 import { ImportAdminGuard } from './presentation/guards/import-admin.guard';
 
 @Module({
+  imports: [IamModule],
   controllers: [RoomsController, ImportCatalogController],
   providers: [
     ImportCatalogUseCase,
@@ -38,7 +40,7 @@ import { ImportAdminGuard } from './presentation/guards/import-admin.guard';
     },
     { provide: IMPORT_JOB_REPOSITORY, useClass: PrismaImportJobRepository },
     { provide: IMPORT_TEMPLATE_READER, useClass: FileImportTemplateReader },
-    { provide: IMPORT_AUTHENTICATOR, useClass: PendingIamAuthenticator },
+    { provide: IMPORT_AUTHENTICATOR, useClass: IamImportAuthenticator },
     GenerateRoomQr,
     GenerateEntranceQr,
     { provide: ROOM_REPOSITORY, useClass: PrismaRoomRepository },

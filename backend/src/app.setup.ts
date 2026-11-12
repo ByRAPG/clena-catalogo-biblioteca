@@ -1,4 +1,5 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { json } from 'express';
@@ -9,6 +10,8 @@ export const API_PREFIX = 'api/v1';
 
 export function configureApp(app: INestApplication): void {
   app.use(json({ limit: '2mb' }));
+  // Lee la cookie del refresh token (req.cookies).
+  app.use(cookieParser());
   app.setGlobalPrefix(API_PREFIX);
   app.useGlobalPipes(
     new ValidationPipe({

@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { configureApp } from '../src/app.setup';
 import { CatalogModule } from '../src/modules/catalog/catalog.module';
+import { ACCESS_TOKEN_VERIFIER } from '../src/modules/iam/application/ports/access-token-verifier';
 import { SearchModule } from '../src/modules/search/search.module';
 import { SharedModule } from '../src/shared/shared.module';
 
@@ -17,6 +18,17 @@ const describeDb = databaseUrl ? describe : describe.skip;
 jest.setTimeout(60000);
 
 const PNG_SIGNATURE = Buffer.from('89504e470d0a1a0a', 'hex');
+
+// Verificador falso: el QR por sala exige sesión de STAFF o ADMIN (HU-09).
+const fakeVerifier = {
+  verifyAccessToken: async (token: string) => {
+    if (token === 'test-staff') return { userId: 'u1', role: 'STAFF' as const };
+    if (token === 'test-reader')
+      return { userId: 'u2', role: 'READER' as const };
+    return null;
+  },
+};
+const STAFF = 'Bearer test-staff';
 
 const binary = (
   res: request.Response,
@@ -40,7 +52,10 @@ describeDb('QR de acceso (e2e, PostgreSQL real)', () => {
         SearchModule,
         CatalogModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(ACCESS_TOKEN_VERIFIER)
+      .useValue(fakeVerifier)
+      .compile();
     app = moduleRef.createNestApplication();
     configureApp(app);
     await app.init();
@@ -70,6 +85,7 @@ describeDb('QR de acceso (e2e, PostgreSQL real)', () => {
     const room = rooms.body.data[0] as { id: string; name: string };
     const res = await http()
       .get(`/api/v1/rooms/${room.id}/qr`)
+      .set('Authorization', STAFF)
       .buffer(true)
       .parse(binary)
       .expect(200);
@@ -85,7 +101,20 @@ describeDb('QR de acceso (e2e, PostgreSQL real)', () => {
   it('una sala inexistente responde 404 y un id inválido 400', async () => {
     await http()
       .get('/api/v1/rooms/00000000-0000-4000-8000-000000000000/qr')
+      .set('Authorization', STAFF)
       .expect(404);
-    await http().get('/api/v1/rooms/no-uuid/qr').expect(400);
+    await http()
+      .get('/api/v1/rooms/no-uuid/qr')
+      .set('Authorization', STAFF)
+      .expect(400);
+  });
+
+  it('el QR de una sala exige sesión: sin token 401 y como lector 403', async () => {
+    const id = '00000000-0000-4000-8000-000000000000';
+    await http().get(`/api/v1/rooms/${id}/qr`).expect(401);
+    await http()
+      .get(`/api/v1/rooms/${id}/qr`)
+      .set('Authorization', 'Bearer test-reader')
+      .expect(403);
   });
 });
