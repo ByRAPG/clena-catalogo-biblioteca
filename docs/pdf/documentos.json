@@ -1,6 +1,6 @@
 [
   { "id": "inception", "fuente": "../inception.md", "titulo": "Inception", "version": "1.0" },
-  { "id": "modelo-dominio", "fuente": "../modelo-dominio.md", "titulo": "Modelo de dominio", "version": "1.0" },
+  { "id": "modelo-dominio", "fuente": "../modelo-dominio.md", "titulo": "Modelo de dominio", "version": "1.0", "horizontal": true },
   { "id": "modelo-datos", "fuente": "../modelo-datos.md", "titulo": "Modelo de datos", "version": "1.0" },
   { "id": "arquitectura", "fuente": "../arquitectura.md", "titulo": "Arquitectura (modelo C4)", "version": "1.0" },
   { "id": "daily-scrum", "fuente": "../daily-scrum.md", "titulo": "Daily Scrum", "version": "1.0" },
