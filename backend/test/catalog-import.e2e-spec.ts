@@ -52,6 +52,7 @@ describe('Importación CSV con PostgreSQL (e2e)', () => {
     execFileSync('pnpm', ['exec', 'prisma', 'migrate', 'deploy'], {
       env: { ...process.env },
       stdio: 'pipe',
+      shell: process.platform === 'win32',
     });
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
