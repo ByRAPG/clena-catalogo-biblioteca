@@ -3,11 +3,10 @@ import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PrismaClient } from '@prisma/client';
+import { hash } from 'argon2';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.setup';
-import { IMPORT_AUTHENTICATOR } from '../src/modules/catalog/application/tokens';
-import type { IImportAuthenticator } from '../src/modules/catalog/application/ports/import-authenticator';
 import { PrismaService } from '../src/shared/infrastructure/prisma.service';
 
 const HEADER =
@@ -37,16 +36,9 @@ describe('Importación CSV con PostgreSQL (e2e)', () => {
   let database: PrismaService;
   let adminClient: PrismaClient;
   let userId: string;
+  const accessTokens = new Map<string, string>();
   let originalDatabaseUrl: string | undefined;
   const databaseName = `clena_import_test_${randomUUID().replaceAll('-', '')}`;
-  const authenticator: IImportAuthenticator = {
-    async authenticate(token) {
-      if (token === 'test-admin') return { userId, role: 'ADMIN' };
-      if (token === 'test-staff') return { userId, role: 'STAFF' };
-      if (token === 'test-reader') return { userId, role: 'READER' };
-      return null;
-    },
-  };
 
   beforeAll(async () => {
     originalDatabaseUrl = process.env.DATABASE_URL;
@@ -60,24 +52,36 @@ describe('Importación CSV con PostgreSQL (e2e)', () => {
     execFileSync('pnpm', ['exec', 'prisma', 'migrate', 'deploy'], {
       env: { ...process.env },
       stdio: 'pipe',
+      shell: process.platform === 'win32',
     });
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-      .overrideProvider(IMPORT_AUTHENTICATOR)
-      .useValue(authenticator)
-      .compile();
+    const moduleRef = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
     app = moduleRef.createNestApplication();
     configureApp(app);
     await app.init();
     database = app.get(PrismaService);
-    const user = await database.user.create({
-      data: {
-        email: 'admin@example.org',
-        fullName: 'Administrador ficticio',
-        passwordHash: 'not-a-password',
-        role: 'ADMIN',
-      },
-    });
-    userId = user.id;
+    const password = randomUUID();
+    const passwordHash = await hash(password);
+    for (const role of ['ADMIN', 'STAFF', 'READER'] as const) {
+      const email = `${role.toLowerCase()}@example.org`;
+      const user = await database.user.create({
+        data: {
+          email,
+          fullName: `Usuario ficticio ${role}`,
+          passwordHash,
+          role,
+        },
+      });
+      if (role === 'ADMIN') userId = user.id;
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/auth/login')
+        .send({ email, password })
+        .expect(200);
+      expect(response.body.accessToken).toEqual(expect.any(String));
+      expect(response.body.usuario.rol).toBe(role);
+      accessTokens.set(role, response.body.accessToken as string);
+    }
   }, 60000);
 
   afterAll(async () => {
@@ -95,7 +99,7 @@ describe('Importación CSV con PostgreSQL (e2e)', () => {
   function importCsv(content: string) {
     return request(app.getHttpServer())
       .post('/api/v1/catalog/imports')
-      .set('Authorization', 'Bearer test-admin')
+      .set('Authorization', `Bearer ${accessTokens.get('ADMIN')}`)
       .send({ fileName: 'catalogo.csv', content });
   }
 
@@ -110,30 +114,40 @@ describe('Importación CSV con PostgreSQL (e2e)', () => {
     expect(response.text).toContain(HEADER);
   });
 
-  it('rechaza usuarios anónimos, tokens inválidos y roles sin permiso', async () => {
+  it('rechaza usuarios anónimos', async () => {
     await request(app.getHttpServer())
       .post('/api/v1/catalog/imports')
-      .send({})
+      .send({ fileName: 'catalogo.csv', content: HEADER })
       .expect(401);
-    for (const [token, status] of [
-      ['invalid', 401],
-      ['test-staff', 403],
-      ['test-reader', 403],
-    ] as const) {
-      await request(app.getHttpServer())
-        .post('/api/v1/catalog/imports')
-        .set('Authorization', `Bearer ${token}`)
-        .send({})
-        .expect(status);
-    }
     expect(await database.importJob.count()).toBe(0);
   });
+
+  it('rechaza un token inválido', async () => {
+    await request(app.getHttpServer())
+      .post('/api/v1/catalog/imports')
+      .set('Authorization', 'Bearer invalid')
+      .send({ fileName: 'catalogo.csv', content: HEADER })
+      .expect(401);
+    expect(await database.importJob.count()).toBe(0);
+  });
+
+  it.each(['STAFF', 'READER'])(
+    'rechaza el rol %s con sesión real',
+    async (role) => {
+      await request(app.getHttpServer())
+        .post('/api/v1/catalog/imports')
+        .set('Authorization', `Bearer ${accessTokens.get(role)}`)
+        .send({ fileName: 'catalogo.csv', content: HEADER })
+        .expect(403);
+      expect(await database.importJob.count()).toBe(0);
+    },
+  );
 
   it('rechaza un archivo inválido y un userId enviado por el cliente', async () => {
     await importCsv('cabecera incorrecta').expect(400);
     await request(app.getHttpServer())
       .post('/api/v1/catalog/imports')
-      .set('Authorization', 'Bearer test-admin')
+      .set('Authorization', `Bearer ${accessTokens.get('ADMIN')}`)
       .send({ fileName: 'catalogo.csv', content: HEADER, userId: randomUUID() })
       .expect(400);
     expect(await database.importJob.count()).toBe(0);
