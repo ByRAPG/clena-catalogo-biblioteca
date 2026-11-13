@@ -13,7 +13,6 @@ import { GetImportTemplateUseCase } from './application/use-cases/get-import-tem
 import {
   CATALOG_CSV_READER,
   CATALOG_IMPORT_REPOSITORY,
-  IMPORT_AUTHENTICATOR,
   IMPORT_JOB_REPOSITORY,
   IMPORT_TEMPLATE_READER,
 } from './application/tokens';
@@ -21,10 +20,8 @@ import { CatalogCsvReader } from './infrastructure/csv/catalog-csv.reader';
 import { FileImportTemplateReader } from './infrastructure/csv/file-import-template.reader';
 import { PrismaCatalogImportRepository } from './infrastructure/persistence/prisma-catalog-import.repository';
 import { PrismaImportJobRepository } from './infrastructure/persistence/prisma-import-job.repository';
-import { IamImportAuthenticator } from './infrastructure/security/iam-import.authenticator';
 import { IamModule } from '../iam/iam.module';
 import { ImportCatalogController } from './presentation/import-catalog.controller';
-import { ImportAdminGuard } from './presentation/guards/import-admin.guard';
 import { RegisterWorkUseCase } from './application/use-cases/register-work.use-case';
 import { SuggestCatalogTermsUseCase } from './application/use-cases/suggest-catalog-terms.use-case';
 import { WORK_REGISTRATION_REPOSITORY } from './application/ports/work-registration.repository';
@@ -43,7 +40,6 @@ import { CatalogWorksController } from './presentation/catalog-works.controller'
   providers: [
     ImportCatalogUseCase,
     GetImportTemplateUseCase,
-    ImportAdminGuard,
     { provide: CATALOG_CSV_READER, useClass: CatalogCsvReader },
     {
       provide: CATALOG_IMPORT_REPOSITORY,
@@ -51,7 +47,6 @@ import { CatalogWorksController } from './presentation/catalog-works.controller'
     },
     { provide: IMPORT_JOB_REPOSITORY, useClass: PrismaImportJobRepository },
     { provide: IMPORT_TEMPLATE_READER, useClass: FileImportTemplateReader },
-    { provide: IMPORT_AUTHENTICATOR, useClass: IamImportAuthenticator },
     RegisterWorkUseCase,
     SuggestCatalogTermsUseCase,
     {

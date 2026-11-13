@@ -7,6 +7,7 @@ import {
   HttpCode,
   Post,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -15,7 +16,6 @@ import {
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiServiceUnavailableResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -23,8 +23,10 @@ import { ImportCatalogUseCase } from '../application/use-cases/import-catalog.us
 import { GetImportTemplateUseCase } from '../application/use-cases/get-import-template.use-case';
 import type { ImportCatalogReport } from '../application/dto/import-catalog-report';
 import { InvalidCsvError } from '../domain/errors/invalid-csv.error';
-import { ImportAdminGuard } from './guards/import-admin.guard';
-import type { ImportRequest } from './guards/import-admin.guard';
+import { JwtAuthGuard } from '../../iam/presentation/guards/jwt-auth.guard';
+import type { AuthenticatedRequest } from '../../iam/presentation/guards/jwt-auth.guard';
+import { Roles } from '../../iam/presentation/guards/roles.decorator';
+import { RolesGuard } from '../../iam/presentation/guards/roles.guard';
 import { ImportCatalogDto } from './dto/import-catalog.dto';
 import { ImportCatalogReportDto } from './dto/import-catalog-report.dto';
 
@@ -50,7 +52,8 @@ export class ImportCatalogController {
 
   @Post()
   @HttpCode(200)
-  @UseGuards(ImportAdminGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Importar filas válidas y reportar errores por fila',
@@ -63,18 +66,16 @@ export class ImportCatalogController {
   @ApiBadRequestResponse({ description: 'Archivo inválido' })
   @ApiUnauthorizedResponse({ description: 'Sesión ausente o inválida' })
   @ApiForbiddenResponse({ description: 'Solo administradores' })
-  @ApiServiceUnavailableResponse({
-    description: 'Integración con IAM pendiente',
-  })
   async import(
     @Body() dto: ImportCatalogDto,
-    @Req() request: ImportRequest,
+    @Req() request: AuthenticatedRequest,
   ): Promise<ImportCatalogReport> {
+    if (!request.auth) throw new UnauthorizedException('Debe iniciar sesión');
     try {
       return await this.importCatalog.execute(
         dto.content,
         dto.fileName,
-        request.importPrincipal.userId,
+        request.auth.userId,
       );
     } catch (error: unknown) {
       if (error instanceof InvalidCsvError)
