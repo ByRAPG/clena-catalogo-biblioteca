@@ -36,7 +36,7 @@ function pintar(sesion: Sesion | null = PERSONAL) {
   return render(
     <MantineProvider theme={theme} env="test" defaultColorScheme="light">
       <SesionContext.Provider
-        value={{ sesion, iniciarSesion: vi.fn(), cerrarSesion: vi.fn() }}
+        value={{ sesion, recuperando: false, iniciarSesion: vi.fn(), cerrarSesion: vi.fn() }}
       >
         <SeccionCodigosQr />
       </SesionContext.Provider>
