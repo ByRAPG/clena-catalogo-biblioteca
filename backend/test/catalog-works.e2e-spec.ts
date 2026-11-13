@@ -46,6 +46,7 @@ describe('Registrar un libro (e2e, HU-10)', () => {
     execFileSync('pnpm', ['exec', 'prisma', 'migrate', 'deploy'], {
       env: { ...process.env },
       stdio: 'pipe',
+      shell: process.platform === 'win32',
     });
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(ACCESS_TOKEN_VERIFIER)
