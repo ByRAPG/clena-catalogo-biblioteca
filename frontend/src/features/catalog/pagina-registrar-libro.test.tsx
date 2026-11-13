@@ -1,7 +1,8 @@
 import { MantineProvider } from '@mantine/core'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { Rutas } from '../../app/rutas'
 import { theme } from '../../shared/theme/theme'
 import { SesionProvider } from '../auth/sesion-provider'
@@ -10,6 +11,11 @@ const CATEGORIA = {
   id: '7c1f8e2a-3b4d-4c5e-9f10-2a3b4c5d6e7f',
   name: 'Literatura',
 }
+
+beforeAll(() => {
+  // jsdom no implementa scrollIntoView y el desplegable de Mantine lo usa.
+  Element.prototype.scrollIntoView ??= vi.fn()
+})
 
 function pintar(rol: 'ADMIN' | 'STAFF' | 'READER' | null) {
   sessionStorage.clear()
@@ -49,10 +55,28 @@ function apiFalsa(registro: () => Response) {
   })
 }
 
+// El desplegable del TagsInput también usa la etiqueta: solo el campo de texto.
 const campo = (nombre: RegExp) =>
   screen.getByLabelText(nombre, { selector: 'input, textarea' })
-const escribir = (nombre: RegExp, valor: string) =>
-  fireEvent.change(campo(nombre), { target: { value: valor } })
+
+/**
+ * Escribe tecla por tecla, como un usuario. El TagsInput de Mantine no
+ * reacciona a un evento `change` o `input` sintético suelto. Sin pausa entre
+ * teclas (`delay: null`) para que la suite completa no se pase de tiempo.
+ */
+const usuario = () => userEvent.setup({ delay: null })
+
+const escribir = async (nombre: RegExp, valor: string) => {
+  await usuario().type(campo(nombre), valor)
+}
+
+const guardar = () =>
+  usuario().click(screen.getByRole('button', { name: 'Guardar libro' }))
+
+/** Margen para los tests que escriben varios campos (el CI es más lento). */
+const LARGO = 15000
+const ESPERA = { timeout: 5000 }
+
 const llamadasA = (fetchMock: ReturnType<typeof apiFalsa>, ruta: string) =>
   fetchMock.mock.calls.filter(([url]) => String(url).includes(ruta))
 
@@ -67,7 +91,7 @@ describe('Registrar un libro (HU-10)', () => {
     vi.stubGlobal('fetch', fetchMock)
     pintar('STAFF')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar libro' }))
+    await guardar()
 
     expect(await screen.findByText('Escriba el título del libro')).toBeDefined()
     expect(screen.getByText('Escriba al menos un autor')).toBeDefined()
@@ -78,14 +102,16 @@ describe('Registrar un libro (HU-10)', () => {
   it('rechaza un año que no es número', async () => {
     vi.stubGlobal('fetch', apiFalsa(() => json({ id: 'x', title: 'x' }, 201)))
     pintar('STAFF')
-    escribir(/^Título/, 'Libro ficticio')
-    escribir(/^Autores/, 'Autora Ficticia')
-    escribir(/^Año/, 'abc')
+    await escribir(/^Título/, 'Libro ficticio')
+    await escribir(/^Autores/, 'Autora Ficticia')
+    await escribir(/^Año/, 'abc')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar libro' }))
+    await guardar()
 
-    expect(await screen.findByText(/Escriba un año entre 1 y/)).toBeDefined()
-  })
+    expect(
+      await screen.findByText(/Escriba un año entre 1 y/, {}, ESPERA),
+    ).toBeDefined()
+  }, LARGO)
 
   it('envía el libro con el token y muestra «Libro registrado»', async () => {
     const fetchMock = apiFalsa(() =>
@@ -93,17 +119,20 @@ describe('Registrar un libro (HU-10)', () => {
     )
     vi.stubGlobal('fetch', fetchMock)
     pintar('STAFF')
-    escribir(/^Título/, '  Libro ficticio ')
-    // Un autor escrito sin presionar Enter también cuenta.
-    escribir(/^Autores/, 'Autora Ficticia')
-    escribir(/^Temas/, 'Tema ficticio')
-    escribir(/^Año/, '2024')
+    await escribir(/^Título/, 'Libro ficticio')
+    await escribir(/^Autores/, 'Autora Ficticia')
+    await escribir(/^Temas/, 'Tema ficticio')
+    await escribir(/^Año/, '2024')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar libro' }))
+    await guardar()
 
-    expect(await screen.findByText('Libro registrado')).toBeDefined()
     expect(
-      screen.getByRole('link', { name: 'Ver la ficha del libro' }).getAttribute('href'),
+      await screen.findByText('Libro registrado', {}, ESPERA),
+    ).toBeDefined()
+    expect(
+      screen
+        .getByRole('link', { name: 'Ver la ficha del libro' })
+        .getAttribute('href'),
     ).toBe('/obras/obra-1')
     const [[, opciones]] = llamadasA(fetchMock, '/catalog/works')
     expect(new Headers(opciones?.headers).get('Authorization')).toBe(
@@ -117,7 +146,28 @@ describe('Registrar un libro (HU-10)', () => {
     })
     // El formulario queda listo para el siguiente libro.
     expect((campo(/^Título/) as HTMLInputElement).value).toBe('')
-  })
+  }, LARGO)
+
+  it('cuenta el autor escrito aunque no se presione Enter', async () => {
+    const fetchMock = apiFalsa(() =>
+      json({ id: 'obra-2', title: 'Otro libro' }, 201),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    pintar('STAFF')
+    await escribir(/^Título/, 'Otro libro')
+    // El último campo escrito es Autores: al guardar sigue sin convertirse en etiqueta.
+    await escribir(/^Autores/, 'Autora Ficticia')
+
+    await guardar()
+
+    expect(
+      await screen.findByText('Libro registrado', {}, ESPERA),
+    ).toBeDefined()
+    const [[, opciones]] = llamadasA(fetchMock, '/catalog/works')
+    expect(JSON.parse(String(opciones?.body)).authors).toEqual([
+      'Autora Ficticia',
+    ])
+  }, LARGO)
 
   it('muestra el mensaje del servidor si no se pudo guardar', async () => {
     vi.stubGlobal(
@@ -127,30 +177,37 @@ describe('Registrar un libro (HU-10)', () => {
       ),
     )
     pintar('ADMIN')
-    escribir(/^Título/, 'Libro ficticio')
-    escribir(/^Autores/, 'Autora Ficticia')
+    await escribir(/^Título/, 'Libro ficticio')
+    await escribir(/^Autores/, 'Autora Ficticia')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar libro' }))
+    await guardar()
 
-    expect(await screen.findByText('La categoría no existe')).toBeDefined()
+    expect(
+      await screen.findByText('La categoría no existe', {}, ESPERA),
+    ).toBeDefined()
     expect(screen.queryByText('Libro registrado')).toBeNull()
-  })
+  }, LARGO)
 
   it('consulta los autores existentes mientras se escribe', async () => {
     const fetchMock = apiFalsa(() => json({ id: 'x', title: 'x' }, 201))
     vi.stubGlobal('fetch', fetchMock)
     pintar('STAFF')
 
-    escribir(/^Autores/, 'garc')
+    await escribir(/^Autores/, 'garc')
 
-    await waitFor(() =>
-      expect(llamadasA(fetchMock, '/catalog/authors?q=garc')).toHaveLength(1),
+    await waitFor(
+      () =>
+        expect(llamadasA(fetchMock, '/catalog/authors?q=garc')).toHaveLength(1),
+      { timeout: 2000 },
     )
     const [[, opciones]] = llamadasA(fetchMock, '/catalog/authors')
     expect(new Headers(opciones?.headers).get('Authorization')).toBe(
       'Bearer token-prueba',
     )
-  })
+    expect(
+      await screen.findByText('Gabriel García Márquez', {}, { timeout: 2000 }),
+    ).toBeDefined()
+  }, LARGO)
 
   it('impide entrar a un lector', () => {
     vi.stubGlobal('fetch', apiFalsa(() => json({})))
