@@ -94,6 +94,36 @@ describe('peticion', () => {
     expect((error as ApiError).esFalloDeRed).toBe(true)
   })
 
+  it('traduce a ApiError un cuerpo que no es JSON', async () => {
+    // Un proxy caído responde HTML con un 502; antes salía un SyntaxError que
+    // las pantallas no reconocían.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response('<html><body>502 Bad Gateway</body></html>', {
+          status: 502,
+          headers: { 'Content-Type': 'text/html' },
+        }),
+      ),
+    )
+
+    const error = await peticion('/obras').catch((causa: unknown) => causa)
+
+    expect(error).toBeInstanceOf(ApiError)
+    expect((error as ApiError).statusCode).toBe(502)
+    expect((error as ApiError).esFalloDeRed).toBe(false)
+  })
+
+  it('envía las credenciales para que viaje la cookie de renovación', async () => {
+    const simulada = vi.fn().mockResolvedValue(respuesta({ ok: true }))
+    vi.stubGlobal('fetch', simulada)
+
+    await peticion('/auth/refresh', { metodo: 'POST' })
+
+    const [, opciones] = simulada.mock.calls[0] as [string, RequestInit]
+    expect(opciones.credentials).toBe('include')
+  })
+
   it('no intenta convertir el cuerpo de un 204', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 204 })))
 

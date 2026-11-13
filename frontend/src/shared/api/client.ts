@@ -76,6 +76,9 @@ export async function peticion<T>(
       method: metodo,
       headers: cabeceras,
       body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
+      // Necesario para que viaje la cookie `httpOnly` del refresh token
+      // (ADR-03). El backend responde con `credentials: true` en CORS.
+      credentials: 'include',
       signal,
     })
   } catch {
@@ -85,7 +88,20 @@ export async function peticion<T>(
   if (respuesta.status === 204) return undefined as T
 
   const texto = await respuesta.text()
-  const datos: unknown = texto.length > 0 ? JSON.parse(texto) : undefined
+
+  let datos: unknown
+  try {
+    datos = texto.length > 0 ? JSON.parse(texto) : undefined
+  } catch {
+    // Un proxy caído o un error de infraestructura puede responder HTML. Sin
+    // este `catch` saldría un `SyntaxError` crudo, que las pantallas no
+    // reconocen como `ApiError` y por tanto no saben explicar.
+    throw new ApiError(
+      `La API respondió ${respuesta.status} con un cuerpo que no es JSON`,
+      respuesta.status,
+      ruta,
+    )
+  }
 
   if (!respuesta.ok) {
     const cuerpoDeError = (datos ?? {}) as CuerpoDeError

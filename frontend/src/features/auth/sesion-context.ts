@@ -2,6 +2,11 @@ import { createContext, useContext } from 'react'
 
 export type Rol = 'ADMIN' | 'STAFF' | 'READER'
 
+/**
+ * Sesión del personal. El `token` es el access token y vive **solo en
+ * memoria** (ADR-03): no se escribe en `localStorage` ni en `sessionStorage`,
+ * así que una pestaña nueva o un reinicio del navegador no lo heredan.
+ */
 export interface Sesion {
   token: string
   nombre: string
@@ -10,8 +15,15 @@ export interface Sesion {
 
 export interface ContextoDeSesion {
   sesion: Sesion | null
-  iniciarSesion: (sesion: Sesion) => void
-  cerrarSesion: () => void
+  /**
+   * `true` mientras se intenta recuperar la sesión con la cookie al cargar la
+   * página. Quien proteja una ruta debe esperar: si redirige antes de que
+   * termine, echa fuera a alguien que sí tiene sesión válida.
+   */
+  recuperando: boolean
+  /** Lanza `ApiError` si las credenciales no sirven (401) o hay bloqueo (429). */
+  iniciarSesion: (correo: string, contrasena: string) => Promise<void>
+  cerrarSesion: () => Promise<void>
 }
 
 export const SesionContext = createContext<ContextoDeSesion | null>(null)

@@ -1,25 +1,52 @@
 import { MantineProvider } from '@mantine/core'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { olvidarRenovacionCompartida } from '../auth/renovacion-compartida'
 import { SesionProvider } from '../auth/sesion-provider'
 import { theme } from '../../shared/theme/theme'
 import { Rutas } from '../../app/rutas'
 
+/**
+ * Monta la pantalla con la sesión que devuelva `POST /auth/refresh`.
+ *
+ * Desde el ADR-03 el token vive solo en memoria, así que ya no se puede
+ * sembrar la sesión escribiendo en `sessionStorage`: se recupera con la
+ * cookie al cargar la página. Las llamadas que no son de autenticación se
+ * delegan al mock que haya instalado la prueba, para que sus asserts sobre
+ * `fetch` sigan contando solo lo suyo.
+ */
 function pintar(
   rol: 'ADMIN' | 'STAFF' | 'READER' | null,
   ruta = '/gestion/importar',
 ) {
-  sessionStorage.clear()
-  if (rol)
-    sessionStorage.setItem(
-      'clena.sesion',
-      JSON.stringify({
-        token: 'token-prueba',
-        nombre: 'Usuario ficticio',
-        rol,
-      }),
-    )
+  const previa = globalThis.fetch
+  const delegar = vi.isMockFunction(previa) ? previa : null
+
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((entrada: string, opciones?: RequestInit) => {
+      if (String(entrada).includes('/auth/refresh')) {
+        if (rol === null) {
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({ statusCode: 401, message: 'Sesión no válida' }),
+              { status: 401, headers: { 'Content-Type': 'application/json' } },
+            ),
+          )
+        }
+        return Promise.resolve(
+          Response.json({
+            accessToken: 'token-prueba',
+            usuario: { nombre: 'Usuario ficticio', rol },
+          }),
+        )
+      }
+      if (delegar !== null) return delegar(entrada, opciones)
+      return new Promise<Response>(() => {})
+    }),
+  )
+
   return render(
     <MantineProvider theme={theme}>
       <SesionProvider>
@@ -31,18 +58,23 @@ function pintar(
   )
 }
 
+beforeEach(() => {
+  olvidarRenovacionCompartida()
+})
+
 afterEach(() => {
-  sessionStorage.clear()
   vi.unstubAllGlobals()
 })
 
 describe('Importación CSV', () => {
-  it('ofrece plantilla descargable y desactiva importar sin archivo', () => {
+  it('ofrece plantilla descargable y desactiva importar sin archivo', async () => {
     pintar('ADMIN')
     expect(
-      screen
-        .getByRole('link', { name: 'Descargar plantilla de ejemplo' })
-        .getAttribute('href'),
+      (
+        await screen.findByRole('link', {
+          name: 'Descargar plantilla de ejemplo',
+        })
+      ).getAttribute('href'),
     ).toContain('/catalog/imports/template')
     expect(
       screen.getByRole('button', { name: 'Importar' }).hasAttribute('disabled'),
@@ -77,6 +109,8 @@ describe('Importación CSV', () => {
     Object.defineProperty(archivo, 'text', {
       value: async () => 'contenido CSV',
     })
+    // La pantalla aparece cuando `/auth/refresh` devuelve la sesión.
+    await screen.findByRole('button', { name: 'Importar' })
     const input = container.querySelector('input[type="file"]')
     if (!input) throw new Error('Falta el selector de archivo')
     fireEvent.change(input, { target: { files: [archivo] } })
@@ -113,6 +147,7 @@ describe('Importación CSV', () => {
     const { container } = pintar('ADMIN')
     const archivo = new File(['CSV'], 'catalogo.csv')
     Object.defineProperty(archivo, 'text', { value: async () => 'CSV' })
+    await screen.findByRole('button', { name: 'Importar' })
     const input = container.querySelector('input[type="file"]')
     if (!input) throw new Error('Falta el selector de archivo')
     fireEvent.change(input, { target: { files: [archivo] } })
@@ -124,16 +159,21 @@ describe('Importación CSV', () => {
     )
   })
 
-  it.each(['STAFF', 'READER'] as const)('impide acceder con rol %s', (rol) => {
-    pintar(rol)
-    expect(
-      screen.getByRole('heading', { name: 'No tiene permiso' }),
-    ).toBeDefined()
-  })
+  it.each(['STAFF', 'READER'] as const)(
+    'impide acceder con rol %s',
+    async (rol) => {
+      pintar(rol)
+      expect(
+        await screen.findByRole('heading', { name: 'No tiene permiso' }),
+      ).toBeDefined()
+    },
+  )
 
-  it('envía al ingreso cuando no hay sesión', () => {
+  it('envía al ingreso cuando no hay sesión', async () => {
     pintar(null)
-    expect(screen.getByRole('heading', { name: 'Ingresar' })).toBeDefined()
+    expect(
+      await screen.findByRole('heading', { name: 'Ingresar' }),
+    ).toBeDefined()
   })
 
   it('muestra el aviso de privacidad sin sesión y explica el consentimiento pendiente', () => {
