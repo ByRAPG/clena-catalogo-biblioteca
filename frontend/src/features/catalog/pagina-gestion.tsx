@@ -10,6 +10,9 @@ export function PaginaGestion() {
       <Stack gap="md">
         <Title order={2}>Gestión del catálogo</Title>
         <Text>Solo visible para el personal del CLENA.</Text>
+        <Anchor component={Link} to="/gestion/registrar-libro">
+          Registrar un libro nuevo
+        </Anchor>
         {sesion?.rol === 'ADMIN' && (
           <Anchor component={Link} to="/gestion/importar">
             Importar catálogo desde CSV
