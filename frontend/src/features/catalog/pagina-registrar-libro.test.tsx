@@ -2,9 +2,10 @@ import { MantineProvider } from '@mantine/core'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Rutas } from '../../app/rutas'
 import { theme } from '../../shared/theme/theme'
+import { olvidarRenovacionCompartida } from '../auth/renovacion-compartida'
 import { SesionProvider } from '../auth/sesion-provider'
 
 const CATEGORIA = {
@@ -17,14 +18,37 @@ beforeAll(() => {
   Element.prototype.scrollIntoView ??= vi.fn()
 })
 
-function pintar(rol: 'ADMIN' | 'STAFF' | 'READER' | null) {
-  sessionStorage.clear()
-  if (rol)
-    sessionStorage.setItem(
-      'clena.sesion',
-      JSON.stringify({ token: 'token-prueba', nombre: 'Usuario ficticio', rol }),
-    )
-  return render(
+/**
+ * Monta la pantalla con la sesión que devuelva `POST /auth/refresh`. Desde el
+ * ADR-03 el token vive solo en memoria, así que se recupera con la cookie al
+ * cargar la página; el resto de llamadas se delegan al mock de la prueba.
+ */
+async function pintar(rol: 'ADMIN' | 'STAFF' | 'READER' | null) {
+  const previa = globalThis.fetch
+  const delegar = vi.isMockFunction(previa) ? previa : null
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((entrada: string, opciones?: RequestInit) => {
+      if (String(entrada).includes('/auth/refresh')) {
+        if (rol === null)
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({ statusCode: 401, message: 'Sesión no válida' }),
+              { status: 401, headers: { 'Content-Type': 'application/json' } },
+            ),
+          )
+        return Promise.resolve(
+          Response.json({
+            accessToken: 'token-prueba',
+            usuario: { nombre: 'Usuario ficticio', rol },
+          }),
+        )
+      }
+      if (delegar !== null) return delegar(entrada, opciones)
+      return new Promise<Response>(() => {})
+    }),
+  )
+  render(
     <MantineProvider theme={theme}>
       <SesionProvider>
         <MemoryRouter initialEntries={['/gestion/registrar-libro']}>
@@ -33,6 +57,9 @@ function pintar(rol: 'ADMIN' | 'STAFF' | 'READER' | null) {
       </SesionProvider>
     </MantineProvider>,
   )
+  await screen.findByRole(rol === 'READER' ? 'heading' : 'button', {
+    name: rol === 'READER' ? 'No tiene permiso' : 'Guardar libro',
+  })
 }
 
 const json = (cuerpo: unknown, status = 200) =>
@@ -80,8 +107,11 @@ const ESPERA = { timeout: 5000 }
 const llamadasA = (fetchMock: ReturnType<typeof apiFalsa>, ruta: string) =>
   fetchMock.mock.calls.filter(([url]) => String(url).includes(ruta))
 
+beforeEach(() => {
+  olvidarRenovacionCompartida()
+})
+
 afterEach(() => {
-  sessionStorage.clear()
   vi.unstubAllGlobals()
 })
 
@@ -89,7 +119,7 @@ describe('Registrar un libro (HU-10)', () => {
   it('muestra el error junto al título y al autor y no guarda', async () => {
     const fetchMock = apiFalsa(() => json({ id: 'x', title: 'x' }, 201))
     vi.stubGlobal('fetch', fetchMock)
-    pintar('STAFF')
+    await pintar('STAFF')
 
     await guardar()
 
@@ -101,7 +131,7 @@ describe('Registrar un libro (HU-10)', () => {
 
   it('rechaza un año que no es número', async () => {
     vi.stubGlobal('fetch', apiFalsa(() => json({ id: 'x', title: 'x' }, 201)))
-    pintar('STAFF')
+    await pintar('STAFF')
     await escribir(/^Título/, 'Libro ficticio')
     await escribir(/^Autores/, 'Autora Ficticia')
     await escribir(/^Año/, 'abc')
@@ -118,7 +148,7 @@ describe('Registrar un libro (HU-10)', () => {
       json({ id: 'obra-1', title: 'Libro ficticio' }, 201),
     )
     vi.stubGlobal('fetch', fetchMock)
-    pintar('STAFF')
+    await pintar('STAFF')
     await escribir(/^Título/, 'Libro ficticio')
     await escribir(/^Autores/, 'Autora Ficticia')
     await escribir(/^Temas/, 'Tema ficticio')
@@ -153,7 +183,7 @@ describe('Registrar un libro (HU-10)', () => {
       json({ id: 'obra-2', title: 'Otro libro' }, 201),
     )
     vi.stubGlobal('fetch', fetchMock)
-    pintar('STAFF')
+    await pintar('STAFF')
     await escribir(/^Título/, 'Otro libro')
     // El último campo escrito es Autores: al guardar sigue sin convertirse en etiqueta.
     await escribir(/^Autores/, 'Autora Ficticia')
@@ -176,7 +206,7 @@ describe('Registrar un libro (HU-10)', () => {
         json({ statusCode: 400, message: 'La categoría no existe' }, 400),
       ),
     )
-    pintar('ADMIN')
+    await pintar('ADMIN')
     await escribir(/^Título/, 'Libro ficticio')
     await escribir(/^Autores/, 'Autora Ficticia')
 
@@ -191,7 +221,7 @@ describe('Registrar un libro (HU-10)', () => {
   it('consulta los autores existentes mientras se escribe', async () => {
     const fetchMock = apiFalsa(() => json({ id: 'x', title: 'x' }, 201))
     vi.stubGlobal('fetch', fetchMock)
-    pintar('STAFF')
+    await pintar('STAFF')
 
     await escribir(/^Autores/, 'garc')
 
@@ -209,9 +239,9 @@ describe('Registrar un libro (HU-10)', () => {
     ).toBeDefined()
   }, LARGO)
 
-  it('impide entrar a un lector', () => {
+  it('impide entrar a un lector', async () => {
     vi.stubGlobal('fetch', apiFalsa(() => json({})))
-    pintar('READER')
+    await pintar('READER')
     expect(screen.getByRole('heading', { name: 'No tiene permiso' })).toBeDefined()
   })
 })
