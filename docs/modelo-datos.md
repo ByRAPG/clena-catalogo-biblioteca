@@ -1,173 +1,31 @@
 # Modelo de datos
 
-> Responsable: Daniel Méndez · Work item: CLENA-27 (T-06). Este diagrama es el punto de partida; se actualiza con cada migración.
+> Responsable: Daniel Méndez · Work item: CLENA-27 (T-06). Este diagrama refleja el esquema de `backend/prisma/schema.prisma` y se actualiza con cada migración. La fuente editable es `docs/diagramas/ModeloER.drawio` (draw.io).
 
-```mermaid
-erDiagram
-  USER ||--o{ REFRESH_TOKEN : tiene
-  USER ||--o| READER : "es (si es lector)"
-  READER ||--o{ LOAN : recibe
-  USER ||--o{ LOAN : "registra (personal)"
-  WORK ||--o{ COPY : tiene
-  WORK }o--o{ AUTHOR : "escrita por"
-  WORK }o--o{ SUBJECT : trata
-  ROOM ||--o{ SECTION : contiene
-  SECTION ||--o{ SHELF : contiene
-  SHELF ||--o{ COPY : ubica
-  COPY ||--o{ LOAN : "se presta en"
-  LOAN ||--o{ NOTIFICATION : genera
-  READER ||--o{ AVAILABILITY_ALERT : pide
-  WORK ||--o{ AVAILABILITY_ALERT : sobre
-  FAQ_NODE ||--o{ FAQ_NODE : "hijos"
-  USER ||--o{ HELP_REQUEST : atiende
-  USER ||--o{ IMPORT_JOB : ejecuta
+## Resumen de entidades
 
-  USER {
-    uuid id PK
-    string email UK
-    string passwordHash
-    string fullName
-    enum role "ADMIN | STAFF | READER"
-    bool active
-    int failedLogins
-    datetime lockedUntil
-    datetime createdAt
-  }
-  REFRESH_TOKEN {
-    uuid id PK
-    uuid userId FK
-    string tokenHash
-    uuid familyId
-    datetime expiresAt
-    datetime revokedAt
-  }
-  READER {
-    uuid id PK
-    uuid userId FK "nulo si no tiene cuenta"
-    string fullName
-    string documentId "opcional"
-    string email "opcional"
-    string phone "opcional"
-    string privacyVersion
-    datetime consentAt
-    datetime anonymizedAt
-  }
-  WORK {
-    uuid id PK
-    string title
-    string subtitle
-    int year
-    string publisher
-    string isbn UK "opcional"
-    enum materialType "LIBRO | REVISTA | DOCUMENTO | MAPA | OTRO"
-    enum format "FISICO | DIGITAL | AMBOS"
-    string digitalUrl
-    string searchText "normalizado, índice trigram"
-    datetime deletedAt
-  }
-  AUTHOR {
-    uuid id PK
-    string name
-    string normalizedName UK
-  }
-  SUBJECT {
-    uuid id PK
-    string name
-    string normalizedName UK
-  }
-  ROOM {
-    uuid id PK
-    string name
-    string mapSvg "opcional (HU-19)"
-  }
-  SECTION {
-    uuid id PK
-    uuid roomId FK
-    string name
-  }
-  SHELF {
-    uuid id PK
-    uuid sectionId FK
-    string code
-    string mapElementId "opcional (HU-19)"
-  }
-  COPY {
-    uuid id PK
-    uuid workId FK
-    uuid shelfId FK
-    string inventoryCode UK
-    enum status "DISPONIBLE | PRESTADO | REPARACION | BAJA"
-  }
-  LOAN {
-    uuid id PK
-    uuid copyId FK
-    uuid readerId FK
-    uuid staffId FK
-    datetime loanedAt
-    datetime dueAt
-    datetime returnedAt
-  }
-  NOTIFICATION {
-    uuid id PK
-    uuid loanId FK
-    enum type "POR_VENCER | VENCIDO | DISPONIBLE"
-    datetime sentAt
-    string error
-  }
-  AVAILABILITY_ALERT {
-    uuid id PK
-    uuid readerId FK
-    uuid workId FK
-    datetime createdAt
-    datetime notifiedAt
-  }
-  FAQ_NODE {
-    uuid id PK
-    uuid parentId FK
-    string question
-    string answer
-    int order
-    bool active
-    int views
-    int helpfulCount
-  }
-  HELP_REQUEST {
-    uuid id PK
-    string shortCode
-    string location
-    string reason
-    enum status "ABIERTA | EN_CAMINO | ATENDIDA | EXPIRADA"
-    uuid attendedById FK
-    datetime createdAt
-    datetime updatedAt
-  }
-  SEARCH_LOG {
-    uuid id PK
-    string normalizedQuery
-    int resultCount
-    datetime createdAt
-  }
-  IMPORT_JOB {
-    uuid id PK
-    uuid userId FK
-    string fileName
-    int created
-    int updated
-    int failed
-    json errors
-    datetime createdAt
-  }
-```
+| Grupo | Tablas | Descripción |
+|---|---|---|
+| Usuarios y lectores | `users`, `refresh_tokens`, `readers` | Cuentas con rol (`ADMIN`, `STAFF`, `READER`), tokens de refresco con familia de rotación y lectores, que pueden existir sin cuenta |
+| Catálogo | `works`, `authors`, `subjects`, `categories`, `work_authors`, `work_subjects`, `copies` | Obras con sus autores, temas y categoría; cada obra tiene uno o más ejemplares físicos |
+| Ubicación | `rooms`, `sections`, `shelves` | Sala, sección y estante donde se encuentra cada ejemplar |
+| Préstamos y reservas | `loans`, `reservations`, `notifications`, `availability_alerts` | Préstamos de ejemplares a lectores, reservas, recordatorios por préstamo y avisos de disponibilidad |
+| Importación | `import_jobs` | Registro de cada importación de catálogo: archivo, filas creadas, actualizadas y fallidas |
+
+## Diagrama entidad-relación
+
+![Figura 1. Diagrama entidad-relación: usuarios y lectores, catálogo, ubicación, préstamos y reservas, e importación](img/ModeloER.png)
 
 ## Reglas e índices
 
 | Regla | Cómo se garantiza |
 |---|---|
-| Un ejemplar solo tiene un préstamo activo | Índice único parcial `LOAN(copyId) WHERE returnedAt IS NULL` + regla de dominio |
-| No duplicar autores ni temas | Único en `normalizedName` |
-| Código de inventario único | Único en `COPY.inventoryCode` |
-| Recordatorio único por préstamo y tipo | Único `NOTIFICATION(loanId, type)` |
-| Búsqueda rápida y tolerante | Índice GIN `gin_trgm_ops` sobre `WORK.searchText`, `AUTHOR.normalizedName`, `SUBJECT.normalizedName` |
-| Borrado lógico de obras | `WORK.deletedAt`; la búsqueda pública filtra `deletedAt IS NULL` |
-| Eliminación de cuenta (Ley 1581) | Se borran o anonimizan los datos de `USER` y `READER`; se conservan los préstamos sin datos personales |
-| Sin datos personales en analítica | `SEARCH_LOG` no guarda usuario ni IP |
+| Un ejemplar solo tiene un préstamo activo | Índice único parcial `loans(copy_id) WHERE returned_at IS NULL` + regla de dominio |
+| Un ejemplar solo tiene una reserva activa | Índice único parcial `reservations(copy_id) WHERE status = 'ACTIVA'` |
+| Una alerta pendiente por lector y obra | Índice único parcial `availability_alerts(reader_id, work_id) WHERE notified_at IS NULL` |
+| No duplicar autores, temas ni categorías | Único en `normalized_name` |
+| Código de inventario único | Único en `copies.inventory_code` |
+| Recordatorio único por préstamo y tipo | Único `notifications(loan_id, type)` |
+| Búsqueda rápida y tolerante | Índice GIN `gin_trgm_ops` sobre `works.search_text`, `authors.normalized_name`, `subjects.normalized_name` |
+| Borrado lógico de obras | `works.deleted_at`; la búsqueda pública filtra `deleted_at IS NULL` |
+| Eliminación de cuenta (Ley 1581) | Se anonimizan los datos de `users` y `readers` (`anonymized_at`); se conservan los préstamos sin datos personales |
