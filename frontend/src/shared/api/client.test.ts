@@ -72,6 +72,25 @@ describe('peticion', () => {
     })
   })
 
+  it('expone Retry-After en el error cuando el backend lo envía', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({ statusCode: 429, message: 'Cuenta bloqueada' }),
+          { status: 429, headers: { 'Retry-After': '90' } },
+        ),
+      ),
+    )
+
+    const error = await peticion('/auth/login', { metodo: 'POST' }).catch(
+      (causa: unknown) => causa,
+    )
+
+    expect(error).toBeInstanceOf(ApiError)
+    expect((error as ApiError).retryAfterSeconds).toBe(90)
+  })
+
   it('une los mensajes cuando la validación devuelve una lista', async () => {
     vi.stubGlobal(
       'fetch',

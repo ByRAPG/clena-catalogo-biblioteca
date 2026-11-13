@@ -172,7 +172,7 @@ describe('Importación CSV', () => {
   it('envía al ingreso cuando no hay sesión', async () => {
     pintar(null)
     expect(
-      await screen.findByRole('heading', { name: 'Ingresar' }),
+      await screen.findByRole('heading', { name: 'Iniciar sesión' }),
     ).toBeDefined()
   })
 

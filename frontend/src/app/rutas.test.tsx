@@ -105,13 +105,13 @@ describe('Guard de las rutas del personal', () => {
     pintar('/gestion')
 
     expect(screen.getByText('Comprobando su sesión…')).toBeDefined()
-    expect(screen.queryByRole('heading', { name: 'Ingresar' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Iniciar sesión' })).toBeNull()
   })
 
   it('envía a ingresar cuando se abre la gestión sin sesión', async () => {
     pintar('/gestion')
 
-    expect(await screen.findByRole('heading', { name: 'Ingresar' })).toBeDefined()
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeDefined()
     expect(screen.queryByText('Gestión del catálogo')).toBeNull()
   })
 
@@ -124,7 +124,7 @@ describe('Guard de las rutas del personal', () => {
     ).toBeDefined()
     expect(screen.queryByText('Gestión del catálogo')).toBeNull()
     // No es un problema de identidad, así que no debe mandar a ingresar.
-    expect(screen.queryByRole('heading', { name: 'Ingresar' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Iniciar sesión' })).toBeNull()
   })
 
   it('deja entrar a la gestión con el rol STAFF', async () => {
