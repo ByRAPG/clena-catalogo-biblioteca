@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useSesion } from '../auth/sesion-context'
 import { SeccionCodigosQr } from '../qr/seccion-codigos-qr'
 
+/** Pantalla del personal: alta y edición del catálogo (HU-10, HU-11, HU-19). */
 export function PaginaGestion() {
   const { sesion } = useSesion()
   return (

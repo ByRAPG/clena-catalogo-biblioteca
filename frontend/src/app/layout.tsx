@@ -13,6 +13,10 @@ import { AccesibilidadProvider } from '../features/accessibility/accesibilidad-p
 import { ControlesAccesibilidad } from '../features/accessibility/controles-accesibilidad'
 import { useSesion } from '../features/auth/sesion-context'
 
+/**
+ * Marco común de las pantallas públicas. El enlace «Saltar al contenido» es
+ * requisito de accesibilidad: aparece al tabular y lleva directo al <main>.
+ */
 export function Layout() {
   const { sesion, recuperando, cerrarSesion } = useSesion()
   const [cerrandoSesion, setCerrandoSesion] = useState(false)

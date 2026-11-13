@@ -22,6 +22,7 @@ export function configureApp(app: INestApplication): void {
   );
   app.useGlobalFilters(new AllExceptionsFilter());
 
+  // Alias sin prefijo pedido por la Entrega 1 (/health); la ruta oficial es /api/v1/health.
   const getHealth = app.get(GetHealth);
   app.getHttpAdapter().get('/health', (_req: Request, res: Response) => {
     getHealth

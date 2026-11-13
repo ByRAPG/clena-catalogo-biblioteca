@@ -10,6 +10,11 @@ import { Layout } from './layout'
 import { PaginaMensaje } from './pagina-mensaje'
 import { RutaProtegida } from './ruta-protegida'
 
+/**
+ * Mapa de rutas (T-03).
+ * Públicas: búsqueda, detalle de la obra, ingreso y aviso de privacidad.
+ * Protegidas: gestión del catálogo para ADMIN o STAFF; importación solo ADMIN.
+ */
 export function Rutas() {
   return (
     <Routes>
