@@ -25,10 +25,21 @@ import { IamImportAuthenticator } from './infrastructure/security/iam-import.aut
 import { IamModule } from '../iam/iam.module';
 import { ImportCatalogController } from './presentation/import-catalog.controller';
 import { ImportAdminGuard } from './presentation/guards/import-admin.guard';
+import { RegisterWorkUseCase } from './application/use-cases/register-work.use-case';
+import { SuggestCatalogTermsUseCase } from './application/use-cases/suggest-catalog-terms.use-case';
+import { WORK_REGISTRATION_REPOSITORY } from './application/ports/work-registration.repository';
+import { CATALOG_TERM_REPOSITORY } from './application/ports/catalog-term.repository';
+import { PrismaWorkRegistrationRepository } from './infrastructure/persistence/prisma-work-registration.repository';
+import { PrismaCatalogTermRepository } from './infrastructure/persistence/prisma-catalog-term.repository';
+import { CatalogWorksController } from './presentation/catalog-works.controller';
 
 @Module({
   imports: [IamModule],
-  controllers: [RoomsController, ImportCatalogController],
+  controllers: [
+    RoomsController,
+    ImportCatalogController,
+    CatalogWorksController,
+  ],
   providers: [
     ImportCatalogUseCase,
     GetImportTemplateUseCase,
@@ -41,6 +52,13 @@ import { ImportAdminGuard } from './presentation/guards/import-admin.guard';
     { provide: IMPORT_JOB_REPOSITORY, useClass: PrismaImportJobRepository },
     { provide: IMPORT_TEMPLATE_READER, useClass: FileImportTemplateReader },
     { provide: IMPORT_AUTHENTICATOR, useClass: IamImportAuthenticator },
+    RegisterWorkUseCase,
+    SuggestCatalogTermsUseCase,
+    {
+      provide: WORK_REGISTRATION_REPOSITORY,
+      useClass: PrismaWorkRegistrationRepository,
+    },
+    { provide: CATALOG_TERM_REPOSITORY, useClass: PrismaCatalogTermRepository },
     GenerateRoomQr,
     GenerateEntranceQr,
     { provide: ROOM_REPOSITORY, useClass: PrismaRoomRepository },
