@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import {
-  Alert,
   Anchor,
   Box,
   Button,
@@ -13,26 +12,19 @@ import { Link, Outlet } from 'react-router-dom'
 import { AccesibilidadProvider } from '../features/accessibility/accesibilidad-provider'
 import { ControlesAccesibilidad } from '../features/accessibility/controles-accesibilidad'
 import { useSesion } from '../features/auth/sesion-context'
-import { peticion } from '../shared/api/client'
 
 export function Layout() {
-  const { sesion, cerrarSesion } = useSesion()
+  const { sesion, recuperando, cerrarSesion } = useSesion()
   const [cerrandoSesion, setCerrandoSesion] = useState(false)
-  const [errorCierre, setErrorCierre] = useState('')
 
   async function salir() {
     if (cerrandoSesion) return
     setCerrandoSesion(true)
-    setErrorCierre('')
     try {
-      await peticion<void>('/auth/logout', { metodo: 'POST' })
-      cerrarSesion()
-    } catch (causa: unknown) {
-      setErrorCierre(
-        causa instanceof Error
-          ? causa.message
-          : 'No se pudo cerrar la sesión. Inténtalo de nuevo.',
-      )
+      await cerrarSesion()
+    } catch {
+      // Si el backend no responde, `cerrarSesion` igual deja la sesión cerrada
+      // en este navegador: no hay nada más que mostrar.
     } finally {
       setCerrandoSesion(false)
     }
@@ -57,7 +49,7 @@ export function Layout() {
                 <Anchor component={Link} to="/gestion" c="white">
                   Gestión
                 </Anchor>
-                {!sesion && (
+                {!recuperando && !sesion && (
                   <Anchor component={Link} to="/ingresar" c="white">
                     Ingresar
                   </Anchor>
@@ -73,11 +65,6 @@ export function Layout() {
                 )}
               </Group>
             </Group>
-            {errorCierre && (
-              <Alert role="alert" color="red" title="No se pudo cerrar sesión">
-                {errorCierre}
-              </Alert>
-            )}
           </Stack>
         </Container>
       </Box>

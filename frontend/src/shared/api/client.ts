@@ -28,12 +28,20 @@ interface CuerpoDeError {
 export class ApiError extends Error {
   readonly statusCode: number
   readonly ruta: string
+  /** Segundos que indica el backend con `Retry-After` (429); null si no vino. */
+  readonly retryAfterSeconds: number | null
 
-  constructor(mensaje: string, statusCode: number, ruta: string) {
+  constructor(
+    mensaje: string,
+    statusCode: number,
+    ruta: string,
+    retryAfterSeconds: number | null = null,
+  ) {
     super(mensaje)
     this.name = 'ApiError'
     this.statusCode = statusCode
     this.ruta = ruta
+    this.retryAfterSeconds = retryAfterSeconds
   }
 
   /** true si la causa fue la red o el servidor caído, no una respuesta HTTP. */
@@ -105,10 +113,12 @@ export async function peticion<T>(
 
   if (!respuesta.ok) {
     const cuerpoDeError = (datos ?? {}) as CuerpoDeError
+    const espera = respuesta.headers.get('Retry-After')
     throw new ApiError(
       mensajeDeError(cuerpoDeError, respuesta.status),
       cuerpoDeError.statusCode ?? respuesta.status,
       cuerpoDeError.path ?? ruta,
+      espera !== null && /^\d+$/.test(espera) ? Number(espera) : null,
     )
   }
 

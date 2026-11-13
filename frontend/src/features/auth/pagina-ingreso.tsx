@@ -2,21 +2,18 @@ import { useEffect, useState, type FormEvent } from 'react'
 import {
   Alert,
   Button,
-  Checkbox,
   Card,
+  Checkbox,
+  Group,
+  Loader,
   Stack,
   Text,
   TextInput,
   Title,
 } from '@mantine/core'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ApiError, peticion } from '../../shared/api/client'
-import { useSesion, type Rol } from './sesion-context'
-
-interface RespuestaDeIngreso {
-  accessToken: string
-  usuario: { nombre: string; rol: Rol }
-}
+import { ApiError } from '../../shared/api/client'
+import { useSesion } from './sesion-context'
 
 type ErrorDeIngreso =
   | { tipo: 'general'; mensaje: string }
@@ -38,8 +35,25 @@ function formatearEspera(segundos: number): string {
   return partes.join(' y ')
 }
 
+/**
+ * A dónde ir con la sesión abierta: la ruta desde la que se pidió ingresar,
+ * si es interna, o el inicio según el rol. Se rechazan las que empiezan con
+ * `//`, que el navegador leería como otro sitio.
+ */
+function destinoTrasIngresar(estado: unknown, rol: string): string {
+  const desde = (estado as { desde?: unknown } | null)?.desde
+  if (
+    typeof desde === 'string' &&
+    desde.startsWith('/') &&
+    !desde.startsWith('//')
+  ) {
+    return desde
+  }
+  return rol === 'READER' ? '/' : '/gestion'
+}
+
 export function PaginaIngreso() {
-  const { iniciarSesion } = useSesion()
+  const { sesion, recuperando, iniciarSesion } = useSesion()
   const ubicacion = useLocation()
   const navegar = useNavigate()
   const [correo, setCorreo] = useState('')
@@ -65,6 +79,13 @@ export function PaginaIngreso() {
     return () => window.clearTimeout(temporizador)
   }, [error])
 
+  // Con sesión (recién iniciada o recuperada con la cookie) no hay nada que
+  // hacer en esta pantalla: se va al destino.
+  useEffect(() => {
+    if (sesion === null) return
+    navegar(destinoTrasIngresar(ubicacion.state, sesion.rol), { replace: true })
+  }, [sesion, ubicacion.state, navegar])
+
   async function ingresar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
     if (ocupado || error?.tipo === 'bloqueo') return
@@ -72,29 +93,7 @@ export function PaginaIngreso() {
     setOcupado(true)
     setError(null)
     try {
-      const respuesta = await peticion<RespuestaDeIngreso>('/auth/login', {
-        metodo: 'POST',
-        cuerpo: { email: correo, password: contrasena },
-      })
-
-      iniciarSesion({
-        token: respuesta.accessToken,
-        nombre: respuesta.usuario.nombre,
-        rol: respuesta.usuario.rol,
-      })
-
-      const estado = ubicacion.state as { desde?: unknown } | null
-      const destinoRecordado =
-        typeof estado?.desde === 'string' &&
-        estado.desde.startsWith('/') &&
-        !estado.desde.startsWith('//')
-          ? estado.desde
-          : null
-      navegar(
-        destinoRecordado ??
-          (respuesta.usuario.rol === 'READER' ? '/' : '/gestion'),
-        { replace: true },
-      )
+      await iniciarSesion(correo, contrasena)
     } catch (causa: unknown) {
       if (causa instanceof ApiError && causa.statusCode === 401) {
         setError({
@@ -119,6 +118,17 @@ export function PaginaIngreso() {
     } finally {
       setOcupado(false)
     }
+  }
+
+  // Al cargar la página se intenta recuperar la sesión con la cookie: hasta
+  // saber el resultado no se muestra el formulario.
+  if (recuperando) {
+    return (
+      <Group gap="sm" aria-live="polite">
+        <Loader size="sm" />
+        <Text>Comprobando su sesión…</Text>
+      </Group>
+    )
   }
 
   const bloqueado = error?.tipo === 'bloqueo'

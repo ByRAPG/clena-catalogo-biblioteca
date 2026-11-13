@@ -1,11 +1,12 @@
 import { MantineProvider, Text } from '@mantine/core'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Layout } from '../../app/layout'
-import { SesionProvider } from './sesion-provider'
-import { PaginaIngreso } from './pagina-ingreso'
 import { theme } from '../../shared/theme/theme'
+import { PaginaIngreso } from './pagina-ingreso'
+import { olvidarRenovacionCompartida } from './renovacion-compartida'
+import { SesionProvider } from './sesion-provider'
 
 function respuesta(cuerpo: unknown, estado = 200, headers?: HeadersInit) {
   const cabeceras = new Headers(headers)
@@ -14,6 +15,39 @@ function respuesta(cuerpo: unknown, estado = 200, headers?: HeadersInit) {
     status: estado,
     headers: cabeceras,
   })
+}
+
+const sinSesion = () =>
+  respuesta({ statusCode: 401, message: 'Sesión no válida' }, 401)
+
+const sesionDePersonal = () =>
+  respuesta({
+    accessToken: 'token-prueba',
+    usuario: { nombre: 'Personal de prueba', rol: 'STAFF' },
+  })
+
+interface Respuestas {
+  refresh?: () => Response
+  login?: () => Response
+  logout?: () => Response
+}
+
+/**
+ * Al cargar, el proveedor pide `POST /auth/refresh` para recuperar la sesión;
+ * por defecto responde 401, como a quien aún no ingresó.
+ */
+function simularApi({ refresh = sinSesion, login, logout }: Respuestas = {}) {
+  const simulada = vi.fn<typeof fetch>((entrada) => {
+    const ruta = String(entrada)
+    if (ruta.endsWith('/auth/refresh')) return Promise.resolve(refresh())
+    if (ruta.endsWith('/auth/login') && login) return Promise.resolve(login())
+    if (ruta.endsWith('/auth/logout') && logout) {
+      return Promise.resolve(logout())
+    }
+    return Promise.reject(new Error(`Petición no simulada: ${ruta}`))
+  })
+  vi.stubGlobal('fetch', simulada)
+  return simulada
 }
 
 function pintarIngreso(desde?: string) {
@@ -37,6 +71,32 @@ function pintarIngreso(desde?: string) {
   )
 }
 
+function pintarLayout() {
+  return render(
+    <MantineProvider theme={theme}>
+      <SesionProvider>
+        <MemoryRouter initialEntries={['/']}>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route index element={<Text>Catálogo</Text>} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </SesionProvider>
+    </MantineProvider>,
+  )
+}
+
+/** El formulario aparece cuando termina la recuperación de la sesión. */
+async function llenarFormulario(correo: string, contrasena: string) {
+  fireEvent.change(await screen.findByLabelText(/Correo institucional/), {
+    target: { value: correo },
+  })
+  fireEvent.change(screen.getByLabelText(/^Contraseña/), {
+    target: { value: contrasena },
+  })
+}
+
 function enviarFormulario() {
   const formulario = screen
     .getByRole('button', { name: 'Iniciar sesión' })
@@ -45,63 +105,48 @@ function enviarFormulario() {
   fireEvent.submit(formulario)
 }
 
+beforeEach(() => {
+  // La renovación en curso vive en el módulo: una prueba que la deja sin
+  // responder se la heredaría a la siguiente.
+  olvidarRenovacionCompartida()
+})
+
 afterEach(() => {
-  sessionStorage.clear()
   vi.unstubAllGlobals()
 })
 
 describe('inicio de sesión', () => {
   it('inicia sesión y vuelve a la ruta desde la que se pidió ingresar', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      respuesta({
-        accessToken: 'token-prueba',
-        usuario: { nombre: 'Personal de prueba', rol: 'STAFF' },
-      }),
-    )
-    vi.stubGlobal('fetch', fetchMock)
+    const simulada = simularApi({ login: sesionDePersonal })
     pintarIngreso('/destino')
 
-    fireEvent.change(screen.getByLabelText(/Correo institucional/), {
-      target: { value: 'personal@example.org' },
-    })
-    fireEvent.change(screen.getByLabelText(/^Contraseña/), {
-      target: { value: 'clave-de-prueba' },
-    })
+    await llenarFormulario('personal@example.org', 'clave-de-prueba')
     enviarFormulario()
 
     expect(
       await screen.findByRole('heading', { name: 'Destino recordado' }),
     ).toBeDefined()
-    expect(JSON.parse(sessionStorage.getItem('clena.sesion') ?? '{}')).toEqual({
-      token: 'token-prueba',
-      nombre: 'Personal de prueba',
-      rol: 'STAFF',
-    })
-    const [, opciones] = fetchMock.mock.calls[0] as [string, RequestInit]
-    expect(opciones.method).toBe('POST')
-    expect(JSON.parse(String(opciones.body))).toEqual({
+    const llamada = simulada.mock.calls.find(([entrada]) =>
+      String(entrada).endsWith('/auth/login'),
+    )
+    expect(llamada?.[1]?.method).toBe('POST')
+    expect(JSON.parse(String(llamada?.[1]?.body))).toEqual({
       email: 'personal@example.org',
       password: 'clave-de-prueba',
     })
   })
 
   it('envía al catálogo público por defecto a un lector', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
+    simularApi({
+      login: () =>
         respuesta({
           accessToken: 'token-lector',
           usuario: { nombre: 'Lector de prueba', rol: 'READER' },
         }),
-      ),
-    )
+    })
     pintarIngreso()
-    fireEvent.change(screen.getByLabelText(/Correo institucional/), {
-      target: { value: 'lector@example.org' },
-    })
-    fireEvent.change(screen.getByLabelText(/^Contraseña/), {
-      target: { value: 'clave-de-prueba' },
-    })
+
+    await llenarFormulario('lector@example.org', 'clave-de-prueba')
     enviarFormulario()
 
     expect(
@@ -109,20 +154,24 @@ describe('inicio de sesión', () => {
     ).toBeDefined()
   })
 
-  it('muestra el mensaje de credenciales incorrectas al recibir 401', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        respuesta({ statusCode: 401, message: 'Credenciales inválidas' }, 401),
-      ),
-    )
+  it('no muestra el formulario si la sesión ya se recuperó con la cookie', async () => {
+    simularApi({ refresh: sesionDePersonal })
     pintarIngreso()
-    fireEvent.change(screen.getByLabelText(/Correo institucional/), {
-      target: { value: 'personal@example.org' },
+
+    expect(
+      await screen.findByRole('heading', { name: 'Gestión destino' }),
+    ).toBeDefined()
+    expect(screen.queryByLabelText(/Correo institucional/)).toBeNull()
+  })
+
+  it('muestra el mensaje de credenciales incorrectas al recibir 401', async () => {
+    simularApi({
+      login: () =>
+        respuesta({ statusCode: 401, message: 'Credenciales inválidas' }, 401),
     })
-    fireEvent.change(screen.getByLabelText(/^Contraseña/), {
-      target: { value: 'incorrecta' },
-    })
+    pintarIngreso()
+
+    await llenarFormulario('personal@example.org', 'incorrecta')
     enviarFormulario()
 
     await waitFor(() =>
@@ -133,23 +182,15 @@ describe('inicio de sesión', () => {
   })
 
   it('bloquea el formulario y muestra la espera enviada con 429', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        respuesta(
-          { statusCode: 429, message: 'Cuenta bloqueada' },
-          429,
-          { 'Retry-After': '90' },
-        ),
-      ),
-    )
+    simularApi({
+      login: () =>
+        respuesta({ statusCode: 429, message: 'Cuenta bloqueada' }, 429, {
+          'Retry-After': '90',
+        }),
+    })
     pintarIngreso()
-    fireEvent.change(screen.getByLabelText(/Correo institucional/), {
-      target: { value: 'personal@example.org' },
-    })
-    fireEvent.change(screen.getByLabelText(/^Contraseña/), {
-      target: { value: 'incorrecta' },
-    })
+
+    await llenarFormulario('personal@example.org', 'incorrecta')
     enviarFormulario()
 
     await waitFor(() =>
@@ -157,7 +198,9 @@ describe('inicio de sesión', () => {
         'Acceso bloqueado tras 5 intentos',
       ),
     )
-    expect(screen.getByRole('alert').textContent).toContain('1 minuto y 30 segundos')
+    expect(screen.getByRole('alert').textContent).toContain(
+      '1 minuto y 30 segundos',
+    )
     expect(
       screen
         .getByRole('button', { name: 'Acceso bloqueado' })
@@ -167,43 +210,32 @@ describe('inicio de sesión', () => {
 })
 
 describe('cierre de sesión', () => {
-  it('envía logout y limpia la sesión después de recibir respuesta', async () => {
-    sessionStorage.setItem(
-      'clena.sesion',
-      JSON.stringify({
-        token: 'token-prueba',
-        nombre: 'Personal de prueba',
-        rol: 'STAFF',
-      }),
-    )
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(new Response(null, { status: 204 }))
-    vi.stubGlobal('fetch', fetchMock)
+  it('cierra la sesión y vuelve a ofrecer Ingresar', async () => {
+    const simulada = simularApi({
+      refresh: sesionDePersonal,
+      logout: () => new Response(null, { status: 204 }),
+    })
+    pintarLayout()
 
-    render(
-      <MantineProvider theme={theme}>
-        <SesionProvider>
-          <MemoryRouter initialEntries={['/']}>
-            <Routes>
-              <Route element={<Layout />}>
-                <Route index element={<Text>Catálogo</Text>} />
-              </Route>
-            </Routes>
-          </MemoryRouter>
-        </SesionProvider>
-      </MantineProvider>,
-    )
+    fireEvent.click(await screen.findByRole('button', { name: 'Cerrar sesión' }))
 
-    fireEvent.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
-
-    await waitFor(() =>
-      expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).toBeNull(),
-    )
-    expect(fetchMock).toHaveBeenCalledWith(
+    expect(await screen.findByRole('link', { name: 'Ingresar' })).toBeDefined()
+    expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).toBeNull()
+    expect(simulada).toHaveBeenCalledWith(
       expect.stringMatching(/\/auth\/logout$/),
       expect.objectContaining({ method: 'POST', credentials: 'include' }),
     )
-    expect(sessionStorage.getItem('clena.sesion')).toBeNull()
+  })
+
+  it('cierra la sesión en este navegador aunque falle el logout', async () => {
+    simularApi({
+      refresh: sesionDePersonal,
+      logout: () => respuesta({ statusCode: 500, message: 'Error' }, 500),
+    })
+    pintarLayout()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Cerrar sesión' }))
+
+    expect(await screen.findByRole('link', { name: 'Ingresar' })).toBeDefined()
   })
 })
