@@ -18,6 +18,8 @@ pnpm run start:dev
 
 Variables validadas al arrancar (zod, `src/shared/config/env.validation.ts`): `PORT`, `DATABASE_URL`, `CORS_ORIGIN`, `LOG_LEVEL`, `JWT_*`. Si falta una obligatoria, la API no inicia.
 
+Búsqueda semántica: `SEMANTIC_SEARCH=on|off` (por defecto `off`) y `EMBEDDING_PROVIDER=fake|local` (por defecto `fake`; `local` aún no está implementado y falla al arrancar con la semántica activa).
+
 ## Probar
 
 ```bash
