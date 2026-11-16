@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        image: pgvector/pgvector:0.8.1-pg16
         env:
           POSTGRES_USER: clena_test
           POSTGRES_PASSWORD: clena_test

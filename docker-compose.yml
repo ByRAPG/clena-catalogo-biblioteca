@@ -1,7 +1,7 @@
 services:
   db:
     container_name: clena-db
-    image: postgres:16
+    image: pgvector/pgvector:0.8.1-pg16
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-clena}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
