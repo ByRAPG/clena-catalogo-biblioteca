@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { configureApp } from '../src/app.setup';
@@ -29,7 +30,11 @@ describeDb('Búsqueda (e2e, PostgreSQL real)', () => {
   beforeAll(async () => {
     process.env.DATABASE_URL = databaseUrl;
     const moduleRef = await Test.createTestingModule({
-      imports: [SharedModule, SearchModule],
+      imports: [
+        ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: true }),
+        SharedModule,
+        SearchModule,
+      ],
     }).compile();
     app = moduleRef.createNestApplication();
     configureApp(app);

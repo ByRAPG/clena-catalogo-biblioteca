@@ -27,6 +27,8 @@ export const envSchema = z
     JWT_ACCESS_TTL: z.string().default('15m'),
     JWT_REFRESH_SECRET: z.string().min(1),
     JWT_REFRESH_TTL: z.string().default('7d'),
+    SEMANTIC_SEARCH: z.enum(['on', 'off']).default('off'),
+    EMBEDDING_PROVIDER: z.enum(['fake', 'local']).default('fake'),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== 'production') return;
@@ -38,6 +40,16 @@ export const envSchema = z
           message: `debe tener al menos ${MIN_SECRET_LENGTH} caracteres en producción`,
         });
       }
+    }
+  })
+  .superRefine((env, ctx) => {
+    if (env.SEMANTIC_SEARCH === 'on' && env.EMBEDDING_PROVIDER === 'local') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['EMBEDDING_PROVIDER'],
+        message:
+          'local aún no está implementado; usa fake o SEMANTIC_SEARCH=off',
+      });
     }
   });
 
