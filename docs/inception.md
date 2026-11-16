@@ -82,7 +82,7 @@ El Grupo 9 eligió el problema 1 porque es el que observó directamente, afecta 
 | 4 | El Grupo 9 valida las 21 historias; Backend las registra como Issues y el Grupo 9 las valida con un comentario en cada una | 7 de noviembre y acuerdo posterior por mensaje |
 | 5 | No se suben datos reales del CLENA sin autorización escrita; se usan datos ficticios | 7 de noviembre |
 | 6 | El CLENA no entregó información; se mantienen los datos ficticios o de dominio público (Issue #55) | 9 y 10 de noviembre, [acta del Planning](actas/2026-11-09-sprint-planning-1.md) y [acta de la review](actas/2026-11-10-review-avance-g9.md) |
-| 7 | El producto no usa inteligencia artificial. El asistente con IA que mencionó el Grupo 9 queda como mejora futura, descartada por costo y complejidad | Propuesta del Grupo 9 y decisión del equipo ([`memoria-critica.md`](memoria-critica.md)) |
+| 7 | El producto no usa IA generativa ni servicios externos de IA; desde el 16 nov 2026 admite solo un modelo de embeddings local para la búsqueda semántica (ADR-08). El asistente con IA que mencionó el Grupo 9 queda como mejora futura, descartada por costo y complejidad | Propuesta del Grupo 9 y decisión del equipo ([`memoria-critica.md`](memoria-critica.md)) |
 
 ## 4. Cliente y usuarios
 
@@ -136,7 +136,7 @@ Lo que el enunciado permite dejar para después (préstamos y alertas de devoluc
 | Elemento | Motivo |
 |---|---|
 | Chat de atención | Corresponde al proyecto de la Sala de Internet (decisión del 7 de noviembre) |
-| Asistente con inteligencia artificial | El producto no usa IA; el Grupo 9 lo descartó por costo y complejidad |
+| Asistente con inteligencia artificial | El producto no usa IA generativa ni servicios externos de IA (solo embeddings locales para la búsqueda, ADR-08); el Grupo 9 lo descartó por costo y complejidad |
 | Mapa interactivo de la biblioteca con el estante resaltado | Propuesta del 3 de noviembre; queda como sugerencia, no como historia comprometida |
 | Cita bibliográfica, estadísticas de búsquedas sin resultado, botón «Necesito ayuda» | Sugerencias de Backend que el Grupo 9 puede convertir en historias de baja prioridad |
 | Datos reales del CLENA | No hay autorización escrita; se usan datos ficticios |
@@ -282,7 +282,7 @@ El stack del enunciado es fijo. El equipo eligió dentro de la libertad que se l
 | Gestor de paquetes | pnpm | Decisión del equipo (T-15, Issue #24) |
 | Despliegue | Render o Railway, en el Sprint 3 (T-07 y T-19) | Capa gratuita con PostgreSQL administrado |
 
-Las decisiones de arquitectura se justifican en [`arquitectura.md`](arquitectura.md). Otras decisiones vigentes: repositorio público con licencia MIT (propuesta del equipo, por confirmar con el CLENA); el uso de IA se permite como asistente en el desarrollo, pero el producto no usa IA; los datos son ficticios o de dominio público hasta contar con autorización escrita del CLENA.
+Las decisiones de arquitectura se justifican en [`arquitectura.md`](arquitectura.md). Otras decisiones vigentes: repositorio público con licencia MIT (propuesta del equipo, por confirmar con el CLENA); el uso de IA se permite como asistente en el desarrollo, pero el producto no usa IA generativa ni servicios externos de IA (solo embeddings locales para la búsqueda, ADR-08); los datos son ficticios o de dominio público hasta contar con autorización escrita del CLENA.
 
 ## 11. Riesgos
 

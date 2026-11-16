@@ -63,7 +63,7 @@ Ver `docs/definition-of-done.md`.
 - `docs/backlog.md`: historias y criterios. No inventar requisitos fuera de ahí.
 - Informes en `docs/`: se entregan en PDF con diagramas de draw.io (nunca Mermaid). Ver `docs/pdf/README.md`.
 
-El producto **no usa IA**. Nunca subir secretos ni datos reales del CLENA.
+El producto no usa IA generativa ni servicios externos de IA; solo un modelo de embeddings de código abierto que corre en el propio servidor, sin enviar datos a terceros, para ordenar resultados de búsqueda (ADR-08). Nunca subir secretos ni datos reales del CLENA.
 
 ## Evidencia
 

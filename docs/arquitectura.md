@@ -134,12 +134,16 @@ Ejemplo: el personal registra un préstamo.
 
 ## 8. Búsqueda
 
+Búsqueda actual (léxica):
+
 1. Normaliza el texto: minúsculas, sin tildes (`unaccent`), espacios simples.
 2. Combina coincidencia parcial (`ILIKE`) y similitud de trigramas (`similarity`, operador `%`) sobre título, autores y temas.
 3. Ordena por puntuación: coincidencia exacta > parcial > similar.
 4. Índices GIN `gin_trgm_ops` sobre columnas normalizadas generadas.
 
 Meta: < 1 s con 5 000 obras.
+
+Búsqueda híbrida (diseño aprobado en el ADR-08, **pendiente de implementar**): a la búsqueda léxica se sumará una vectorial con pgvector y un modelo de embeddings que corre en el propio servidor. Los resultados de ambas se fusionan con Reciprocal Rank Fusion, y si el modelo no está disponible la API responde solo con la léxica. Hasta ahora solo se ha medido el modelo en una prueba de concepto; la búsqueda semántica aún no funciona en la aplicación.
 
 ## 9. Despliegue y entornos
 
@@ -163,7 +167,7 @@ Las migraciones se aplican con `prisma migrate deploy` al desplegar. Nunca `db p
 - **Contexto:** se necesita tolerar errores y tildes.
 - **Decisión:** extensiones nativas de PostgreSQL.
 - **Alternativas:** Elasticsearch o Meilisearch (otro servicio que operar y desplegar).
-- **Consecuencias:** suficiente para miles de obras; sin sinónimos ni búsqueda semántica.
+- **Consecuencias:** suficiente para miles de obras; sin sinónimos ni búsqueda semántica (ver ADR-08).
 
 ### ADR-03 · JWT access + refresh con rotación
 - **Contexto:** el enunciado exige access y refresh token.
@@ -193,3 +197,39 @@ Las migraciones se aplican con `prisma migrate deploy` al desplegar. Nunca `db p
 - **Decisión:** pnpm en `backend/`, `frontend/` y `docs/pdf/`, con la versión fijada en `packageManager` de cada `package.json` y `pnpm-lock.yaml` versionado. El CI usa `pnpm/action-setup` e `install --frozen-lockfile`.
 - **Alternativas:** npm (descartada por la indicación del docente).
 - **Consecuencias:** cada integrante activa Corepack una vez (`corepack enable`) y nunca ejecuta `npm install` (crearía `package-lock.json`). Los scripts de instalación de dependencias se aprueban en `pnpm-workspace.yaml` (`allowBuilds`); Prisma los necesita para generar su cliente. Los Dockerfile usan `corepack enable` y `pnpm install --frozen-lockfile`.
+
+### ADR-08 · Búsqueda semántica local
+- **Contexto:** tras la Entrega 1 (13 nov 2026) el docente pidió búsqueda semántica. La búsqueda actual es léxica (`pg_trgm`, ADR-02) y no entiende sinónimos ni temas relacionados: quien escribe «cuidado del medio ambiente» no encuentra un libro titulado «Ecología». La regla «el producto no usa IA» se acota el 16 nov 2026: el producto no usa IA generativa ni servicios externos de IA; solo admite un modelo de embeddings de código abierto que corre en el propio servidor, sin enviar datos a terceros, para ordenar resultados.
+- **Decisión:** búsqueda híbrida.
+  - Léxica: la actual (`pg_trgm` + `unaccent`).
+  - Vectorial: pgvector con columna `vector(384)` y búsqueda exacta, sin índice aproximado (HNSW o IVFFlat) por el tamaño del catálogo (unos pocos miles de obras).
+  - Modelo: `multilingual-e5-small` (licencia MIT) cuantizado a 8 bits (`q8`), ejecutado dentro del proceso del backend con `@huggingface/transformers`. Los prefijos `query:` y `passage:` los pone el adaptador.
+  - Fusión: Reciprocal Rank Fusion con k = 60, función pura en el dominio de `search`, sobre 100 candidatos por lista.
+  - Puertos en `search/application/ports/`: `EMBEDDING_GENERATOR` (`embedQuery`, `embedPassages`, `status`), `WORK_EMBEDDING_REPOSITORY` (`findStale`, `save`) y la separación del repositorio de búsqueda en ranking léxico, ranking semántico y resumen de obras.
+  - Tabla propia `work_embeddings` en el módulo `search`; un caso de uso de reindexado procesa las obras sin vector, con otra versión del modelo o con otro hash del texto fuente.
+  - API: parámetro opcional `mode=hybrid|lexical|semantic`. La respuesta indica el modo realmente usado y `meta.degraded`.
+  - Degradación: si el modelo no está listo o la consulta tarda demasiado, responde solo la léxica con `meta.degraded = true`. `SEMANTIC_SEARCH=off` apaga la búsqueda semántica con un adaptador nulo.
+  - Pruebas y CI: generador falso con vectores deterministas; el modelo real no se usa en CI.
+  - Imagen: el modelo se descarga al construir la imagen con una revisión fijada y se carga sin red (`allowRemoteModels = false`, ruta local). El número de hilos de ONNX Runtime (`intraOpNumThreads`) se fija al número de CPU del servidor.
+- **Alternativas descartadas:**
+  - API externa de embeddings: los datos salen del servidor, tiene costo, depende de la red y contradice la regla del proyecto.
+  - Servicio aparte en Python: otro lenguaje, otro contenedor y otra superficie que operar.
+  - Solo sinónimos o tesauro: se mantiene a mano y no cubre temas relacionados.
+  - Índice HNSW o IVFFlat: innecesario a este tamaño; la búsqueda exacta evita ajustar parámetros y pérdida de resultados.
+- **Prueba de concepto (16 nov 2026):** `@huggingface/transformers` 4.3.2 sobre `node:22-bookworm-slim` (Node 22.23.5), archivos de `Xenova/multilingual-e5-small` en la revisión `761b726dd34fb83930e26aab4e9ac3899aa1fa78`, variante `q8` de 118 MB, contenedor sin red y sin swap, equipo con AMD Ryzen 5 8640HS. Cada configuración se midió una sola vez.
+
+| Límite del contenedor | Hilos de ONNX | Carga en frío | Memoria tras cargar | Pico de memoria | Consulta (mediana / p95) | 1000 pasajes cortos |
+|---|---|---|---|---|---|---|
+| 1 GB, 1 CPU | por defecto | 3,97 s | 425 MB | 530 MB | 100 / 197 ms | 90 s |
+| 1 GB, 1 CPU | 1 | 3,29 s | 423 MB | 535 MB | 5,6 / 8,5 ms | 12 s |
+| 2 GB, 2 CPU | por defecto | 3,19 s | 422 MB | 537 MB | 92 / 100 ms | 54 s |
+| 2 GB, 2 CPU | 2 | 2,69 s | 430 MB | 534 MB | 6,0 / 9,4 ms | 8 a 12 s |
+
+  Con la variante `fp32` (470 MB) el contenedor de 1 GB muere por falta de memoria; con 2 GB funciona, ocupa unos 860 MB y es más lento. La variante `int8` dio resultados parecidos a `q8`. En 10 consultas en español sin coincidencia literal de palabras, `q8` acertó el primer resultado en las 10; las similitudes caen entre 0,8 y 0,9, de modo que sirven para ordenar pero no para cortar con un umbral fijo sin calibrar.
+- **Consecuencias:**
+  - Memoria: el modelo añade unos 350 MB al proceso del backend. Se recomiendan 2 GB de memoria para el servidor; con 1 GB cabe, pero queda poco margen para la API y no conviene tener PostgreSQL en la misma máquina.
+  - Hilos: sin fijar `intraOpNumThreads`, ONNX Runtime crea un hilo por cada núcleo del anfitrión y la consulta sale unas 18 veces más lenta dentro de un contenedor con límite de CPU.
+  - Indexado: unos pocos miles de obras se indexan en menos de un minuto.
+  - Imagen y base de datos: la base pasa a una imagen `pgvector/pgvector` de PostgreSQL 16 (también en el servicio del CI) y el backend pasa a una base Debian slim en la imagen de producción, porque ONNX Runtime necesita glibc. La imagen de la prueba pesa 721 MB; `onnxruntime-node` trae binarios de todas las plataformas y puede recortarse, pero no se probó.
+  - Una obra nueva aparece al instante por la búsqueda léxica y por la semántica cuando se reindexa.
+  - **Sin medir:** consumo junto con NestJS, Prisma y el servidor HTTP; varias consultas a la vez; textos reales del catálogo y una CPU de servidor en la nube (es de esperar que sea más lenta que la del equipo de prueba). La calidad de la búsqueda híbrida se evaluará con consultas de prueba antes de darla por buena.
