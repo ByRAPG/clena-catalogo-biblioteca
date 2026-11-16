@@ -40,7 +40,7 @@ export function Layout() {
         Saltar al contenido
       </Anchor>
 
-      <Box component="header" bg="blue.8" c="white" py="md">
+      <Box component="header" bg="marca.8" c="white" py="md">
         <Container size="lg">
           <Stack gap="xs">
             <Group justify="space-between">
