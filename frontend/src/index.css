@@ -11,6 +11,18 @@ body {
   margin: 0;
 }
 
+/* Texto atenuado y marcador con contraste AA (el gris por defecto de Mantine da 3,3:1). */
+html[data-mantine-color-scheme='light'] {
+  --mantine-color-dimmed: #4a5163;
+  --mantine-color-placeholder: #5f6676;
+}
+
+/* Foco visible de 3 px en todo control (guía visual). */
+html[data-mantine-color-scheme] :focus-visible {
+  outline: 3px solid var(--mantine-primary-color-filled);
+  outline-offset: 2px;
+}
+
 /* El enlace de salto solo se ve cuando recibe el foco con el teclado. */
 .salto-al-contenido {
   position: absolute;
