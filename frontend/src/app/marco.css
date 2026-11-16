@@ -1,0 +1,294 @@
+/*
+ * Marco de la aplicación (T-22): cabecera, contenido y pie. Colores de la
+ * paleta `marca` del tema; el modo de alto contraste los reemplaza al final.
+ * Las medidas van en rem para que la «letra más grande» las escale.
+ */
+.marco {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.marco-ancho {
+  width: 100%;
+  max-width: 75rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  box-sizing: border-box;
+}
+
+.marco-contenido {
+  flex: 1 0 auto;
+  padding-block: 2rem;
+}
+
+/* ---------- Cabecera ---------- */
+.cabecera {
+  background: var(--mantine-color-marca-8);
+  color: #fff;
+}
+
+.barra-utilidades {
+  background: var(--mantine-color-marca-9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  padding-block: 0.5rem;
+}
+
+.barra-utilidades-fila {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 40em) {
+  .barra-utilidades-fila {
+    justify-content: flex-start;
+  }
+}
+
+/*
+ * Botones conmutables sobre fondo oscuro. Mantine fija sus colores con
+ * variables en línea, así que se pisan las propiedades directamente (el modo
+ * de alto contraste conserva sus propias reglas).
+ */
+html:not([data-alto-contraste='true']) .barra-utilidades .mantine-Button-root {
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding-inline: 0.625rem;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+html:not([data-alto-contraste='true'])
+  .barra-utilidades
+  .mantine-Button-root:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+html:not([data-alto-contraste='true'])
+  .barra-utilidades
+  .mantine-Button-root[aria-pressed='true'] {
+  color: var(--mantine-color-marca-8);
+  background: #fff;
+  border-color: #fff;
+}
+
+html:not([data-alto-contraste='true'])
+  .barra-utilidades
+  .mantine-Button-root[aria-pressed='true']:hover {
+  background: var(--mantine-color-marca-1);
+}
+
+.cabecera-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 1.5rem;
+  padding-block: 0.75rem;
+}
+
+.cabecera-marca {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 0.5rem;
+}
+
+.marca {
+  --isotipo-trazo: var(--mantine-color-marca-8);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.marca-isotipo {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.marca-textos {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.marca-nombre {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.marca-linea {
+  font-size: 0.875rem;
+  color: var(--mantine-color-marca-1);
+}
+
+.navegacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+}
+
+.navegacion-enlace,
+.pie-enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding-inline: 0.75rem;
+  color: #fff;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.navegacion-enlace:hover,
+.pie-enlace:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-bottom-color: rgba(255, 255, 255, 0.6);
+}
+
+.navegacion-enlace[aria-current='page'],
+.pie-enlace[aria-current='page'] {
+  border-bottom-color: #fff;
+  font-weight: 600;
+}
+
+@media (max-width: 40em) {
+  .cabecera-fila {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .navegacion {
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    padding-top: 0.25rem;
+    margin-inline: -0.75rem;
+  }
+}
+
+/* ---------- Pie ---------- */
+.pie {
+  flex: none;
+  background: var(--mantine-color-marca-8);
+  color: #fff;
+  margin-top: 2rem;
+  border-top: 4px solid var(--mantine-color-granate-8);
+}
+
+.pie-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem 2rem;
+  padding-block: 1.75rem 1.25rem;
+}
+
+.pie-marca {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.creditos {
+  font-size: 0.9375rem;
+}
+
+.creditos-linea {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.pie-enlaces {
+  display: flex;
+  flex-direction: column;
+}
+
+.pie-base {
+  padding-block: 0.75rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--mantine-color-marca-1);
+  font-size: 0.875rem;
+}
+
+/* ---------- Foco y movimiento ---------- */
+.cabecera-marca:focus-visible,
+.navegacion-enlace:focus-visible,
+.pie-enlace:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navegacion-enlace,
+  .pie-enlace,
+  .barra-utilidades .mantine-Button-root {
+    transition: none !important;
+  }
+}
+
+/* ---------- Alto contraste (HU-04) ---------- */
+html[data-alto-contraste='true'] .cabecera,
+html[data-alto-contraste='true'] .pie {
+  background: #000;
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] .pie {
+  border-top: 2px solid #fff;
+}
+
+html[data-alto-contraste='true'] .barra-utilidades {
+  background: #000;
+  border-bottom: 1px solid #fff;
+}
+
+html[data-alto-contraste='true'] .marca {
+  --isotipo-trazo: #000;
+}
+
+html[data-alto-contraste='true'] .marca-linea,
+html[data-alto-contraste='true'] .pie-base {
+  color: #e6e6e6;
+}
+
+html[data-alto-contraste='true'] .pie-base,
+html[data-alto-contraste='true'] .navegacion {
+  border-top-color: #fff;
+}
+
+html[data-alto-contraste='true'] .navegacion-enlace:hover,
+html[data-alto-contraste='true'] .pie-enlace:hover {
+  background: #333;
+  border-bottom-color: #ffff00;
+}
+
+html[data-alto-contraste='true'] .navegacion-enlace[aria-current='page'],
+html[data-alto-contraste='true'] .pie-enlace[aria-current='page'] {
+  border-bottom-color: #ffff00;
+}
+
+html[data-alto-contraste='true'] .cabecera-marca:focus-visible,
+html[data-alto-contraste='true'] .navegacion-enlace:focus-visible,
+html[data-alto-contraste='true'] .pie-enlace:focus-visible {
+  outline-color: #ffff00 !important;
+}
+
+.barra-utilidades .mantine-Group-root {
+  gap: 0.5rem;
+}
+
+.pie-enlaces {
+  margin-inline: -0.75rem;
+}

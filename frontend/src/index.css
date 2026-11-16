@@ -211,10 +211,11 @@ html[data-alto-contraste='true'] :focus-visible {
 }
 
 /* Sobre el encabezado de marca el foco va en blanco para que se distinga. */
-header :focus-visible {
+header :focus-visible,
+footer :focus-visible {
   outline-color: #fff !important;
 }
 
-html[data-alto-contraste='true'] header :focus-visible {
+html[data-alto-contraste='true'] :is(header, footer) :focus-visible {
   outline-color: #ffff00 !important;
 }
