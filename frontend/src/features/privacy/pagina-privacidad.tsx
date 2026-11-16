@@ -8,14 +8,14 @@ export const TEXTO_CONSENTIMIENTO =
 export function PaginaPrivacidad() {
   return (
     <Stack gap="lg">
-      <Title order={2}>Aviso de privacidad</Title>
+      <Title order={1} size="h2">Aviso de privacidad</Title>
       <Text>Consulta Fácil · Versión {VERSION_AVISO_PRIVACIDAD}</Text>
       <Alert title="Prototipo académico" color="yellow">
         Este aviso es provisional. Antes de usar datos reales deben confirmarse
         con el CLENA el responsable del tratamiento, sus datos de contacto y la
         política institucional. Las demostraciones utilizan datos ficticios.
       </Alert>
-      <Title order={3}>Finalidades y datos mínimos</Title>
+      <Title order={2} size="h3">Finalidades y datos mínimos</Title>
       <Text>
         La consulta pública del catálogo no requiere crear una cuenta. Para
         gestionar cuentas se prevén nombre, correo y credenciales protegidas.
@@ -29,7 +29,7 @@ export function PaginaPrivacidad() {
         errores de las filas. No incluya información personal de lectores en el
         archivo.
       </Text>
-      <Title order={3}>Sus derechos</Title>
+      <Title order={2} size="h3">Sus derechos</Title>
       <List>
         <List.Item>
           Conocer, actualizar y rectificar sus datos personales.
@@ -48,14 +48,14 @@ export function PaginaPrivacidad() {
           aplicable.
         </List.Item>
       </List>
-      <Title order={3}>Solicitudes y eliminación de cuenta</Title>
+      <Title order={2} size="h3">Solicitudes y eliminación de cuenta</Title>
       <Text>
         En este prototipo, solicite al equipo del proyecto la consulta,
         corrección o eliminación de los datos ficticios. El canal institucional
         y la eliminación de cuentas desde la aplicación están pendientes de
         habilitación. Este aviso no activa esas funciones.
       </Text>
-      <Title order={3}>Consentimiento para el registro</Title>
+      <Title order={2} size="h3">Consentimiento para el registro</Title>
       <Text>{TEXTO_CONSENTIMIENTO}</Text>
       <Text>
         El formulario de registro deberá solicitar aceptación expresa y guardar

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { olvidarRenovacionCompartida } from '../features/auth/renovacion-compartida'
+import type { Rol } from '../features/auth/sesion-context'
 import { SesionProvider } from '../features/auth/sesion-provider'
 import { CLAVE_TUTORIAL_VISTO } from '../features/tutorial/tutorial-visto'
 import { theme } from '../shared/theme/theme'
@@ -22,22 +23,30 @@ function pintar(ruta: string) {
   )
 }
 
+function simularApi(rol?: Rol) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((entrada: string) => {
+      if (!entrada.includes('/auth/refresh')) return new Promise<Response>(() => {})
+      return Promise.resolve(
+        rol === undefined
+          ? new Response(JSON.stringify({ statusCode: 401 }), {
+              status: 401,
+              headers: { 'Content-Type': 'application/json' },
+            })
+          : Response.json({
+              accessToken: 'jwt-de-prueba',
+              usuario: { nombre: 'Persona de Prueba', rol },
+            }),
+      )
+    }),
+  )
+}
+
 beforeEach(() => {
   olvidarRenovacionCompartida()
   localStorage.setItem(CLAVE_TUTORIAL_VISTO, 'true')
-  vi.stubGlobal(
-    'fetch',
-    vi.fn((entrada: string) =>
-      entrada.includes('/auth/refresh')
-        ? Promise.resolve(
-            new Response(JSON.stringify({ statusCode: 401 }), {
-              status: 401,
-              headers: { 'Content-Type': 'application/json' },
-            }),
-          )
-        : new Promise<Response>(() => {}),
-    ),
-  )
+  simularApi()
 })
 
 describe('Marco de la aplicación', () => {
@@ -50,14 +59,41 @@ describe('Marco de la aplicación', () => {
     expect(screen.getByRole('contentinfo')).toBeDefined()
   })
 
-  it('enlaza la marca con el inicio y muestra Gestión e Ingresar', async () => {
+  it('enlaza la marca con el inicio y, sin sesión, muestra Ingresar y no Gestión', async () => {
     pintar('/privacidad')
 
     const inicio = screen.getByRole('link', { name: /Consulta Fácil.*inicio/ })
     expect(inicio.getAttribute('href')).toBe('/')
     const nav = screen.getByRole('navigation', { name: 'Principal' })
-    expect(within(nav).getByRole('link', { name: 'Gestión' })).toBeDefined()
     expect(await within(nav).findByRole('link', { name: 'Ingresar' })).toBeDefined()
+    expect(within(nav).queryByRole('link', { name: 'Gestión' })).toBeNull()
+  })
+
+  it('no muestra Gestión mientras se resuelve la sesión', () => {
+    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => {})))
+    pintar('/privacidad')
+
+    const nav = screen.getByRole('navigation', { name: 'Principal' })
+    expect(within(nav).queryByRole('link', { name: 'Gestión' })).toBeNull()
+  })
+
+  it('con sesión del personal muestra Gestión con aria-current en /gestion', async () => {
+    simularApi('STAFF')
+    pintar('/gestion')
+
+    const nav = screen.getByRole('navigation', { name: 'Principal' })
+    const gestion = await within(nav).findByRole('link', { name: 'Gestión' })
+    expect(gestion.getAttribute('aria-current')).toBe('page')
+    expect(within(nav).queryByRole('link', { name: 'Ingresar' })).toBeNull()
+  })
+
+  it('con sesión de lector no ofrece Gestión', async () => {
+    simularApi('READER')
+    pintar('/privacidad')
+
+    const nav = screen.getByRole('navigation', { name: 'Principal' })
+    await within(nav).findByRole('button', { name: 'Cerrar sesión' })
+    expect(within(nav).queryByRole('link', { name: 'Gestión' })).toBeNull()
   })
 
   it('marca con aria-current la ruta activa', async () => {
@@ -66,9 +102,7 @@ describe('Marco de la aplicación', () => {
     const nav = screen.getByRole('navigation', { name: 'Principal' })
     const ingresar = await within(nav).findByRole('link', { name: 'Ingresar' })
     expect(ingresar.getAttribute('aria-current')).toBe('page')
-    expect(
-      within(nav).getByRole('link', { name: 'Gestión' }).getAttribute('aria-current'),
-    ).toBeNull()
+    expect(within(nav).queryByRole('link', { name: 'Gestión' })).toBeNull()
   })
 
   it('conserva los controles de accesibilidad dentro de la cabecera', async () => {
@@ -100,6 +134,23 @@ describe('Marco de la aplicación', () => {
   it('actualiza el título del documento por página', () => {
     pintar('/privacidad')
     expect(document.title).toBe('Aviso de privacidad · Consulta Fácil')
+  })
+})
+
+describe('Título principal por página', () => {
+  const rutas = ['/', '/ingresar', '/privacidad', '/sin-permiso', '/no-existe']
+  it.each(rutas)('%s tiene exactamente un h1', async (ruta) => {
+    const { container } = pintar(ruta)
+    await screen.findByRole('navigation', { name: 'Principal' })
+    expect(container.querySelectorAll('h1')).toHaveLength(1)
+    expect(container.querySelector('h3')).toBeNull()
+  })
+
+  it('la gestión también tiene un h1', async () => {
+    simularApi('ADMIN')
+    const { container } = pintar('/gestion')
+    await screen.findByRole('heading', { level: 1, name: 'Gestión del catálogo' })
+    expect(container.querySelectorAll('h1')).toHaveLength(1)
   })
 })
 

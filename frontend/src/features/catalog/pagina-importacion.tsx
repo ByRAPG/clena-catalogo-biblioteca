@@ -61,7 +61,7 @@ export function PaginaImportacion() {
 
   return (
     <Stack gap="lg">
-      <Title order={2}>Importar catálogo desde CSV</Title>
+      <Title order={1} size="h2">Importar catálogo desde CSV</Title>
       <Text>
         Las filas válidas se importan aunque otras tengan errores. Puede guardar
         un archivo Excel como CSV UTF-8.

@@ -9,7 +9,7 @@ export function PaginaGestion() {
   return (
     <Stack gap="xl">
       <Stack gap="md">
-        <Title order={2}>Gestión del catálogo</Title>
+        <Title order={1} size="h2">Gestión del catálogo</Title>
         <Text>Solo visible para el personal del CLENA.</Text>
         <Anchor component={Link} to="/gestion/registrar-libro">
           Registrar un libro nuevo

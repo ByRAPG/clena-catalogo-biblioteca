@@ -108,7 +108,7 @@ export function PaginaDetalleObra() {
       </Anchor>
 
       <Stack gap="xs">
-        <Title order={2}>{obra.title}</Title>
+        <Title order={1} size="h2">{obra.title}</Title>
         {obra.subtitle !== null && <Text fz="lg">{obra.subtitle}</Text>}
         <Text fz="lg">
           <Text component="span" fw={600}>
@@ -142,7 +142,7 @@ export function PaginaDetalleObra() {
 
       <Card withBorder padding="lg" radius="md">
         <Stack gap="sm">
-          <Title order={3} size="h3">
+          <Title order={2} size="h3">
             Datos de la obra
           </Title>
           <Table withRowBorders={false} verticalSpacing="xs">
@@ -183,7 +183,7 @@ export function PaginaDetalleObra() {
       </Card>
 
       <Stack gap="sm">
-        <Title order={3} size="h3">
+        <Title order={2} size="h3">
           Dónde encontrarlo
         </Title>
         {obra.copies.length === 0 ? (

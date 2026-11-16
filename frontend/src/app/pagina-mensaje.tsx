@@ -10,7 +10,7 @@ export function PaginaMensaje({
 }) {
   return (
     <Stack gap="md">
-      <Title order={2}>{titulo}</Title>
+      <Title order={1} size="h2">{titulo}</Title>
       <Text>{detalle}</Text>
     </Stack>
   )

@@ -157,7 +157,7 @@ export function PaginaBusqueda() {
 
   return (
     <Stack gap="lg">
-      <Title order={2}>Catálogo CLENA</Title>
+      <Title order={1} size="h2">Catálogo CLENA</Title>
       <Text>
         Busque un libro por título, autor o tema y vea en qué sala, sección y
         estante está.

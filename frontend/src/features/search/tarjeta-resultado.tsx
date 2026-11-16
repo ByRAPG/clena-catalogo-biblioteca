@@ -20,7 +20,7 @@ export function TarjetaResultado({ obra }: { obra: ObraResumen }) {
   return (
     <Card component="li" withBorder padding="lg" radius="md">
       <Stack gap="xs">
-        <Title order={3} size="h3">
+        <Title order={2} size="h3">
           <Anchor component={Link} to={`/obras/${obra.id}`} fw={700}>
             {obra.title}
           </Anchor>

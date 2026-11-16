@@ -82,7 +82,7 @@ export function SeccionCodigosQr() {
 
   return (
     <Stack gap="md" component="section" aria-labelledby="titulo-codigos-qr">
-      <Title order={3} id="titulo-codigos-qr">
+      <Title order={2} size="h3" id="titulo-codigos-qr">
         Códigos QR
       </Title>
       <Text>

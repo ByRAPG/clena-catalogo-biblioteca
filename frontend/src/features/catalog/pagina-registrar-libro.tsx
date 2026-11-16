@@ -121,7 +121,7 @@ export function PaginaRegistrarLibro() {
 
   return (
     <Stack gap="lg">
-      <Title order={2}>Registrar un libro nuevo</Title>
+      <Title order={1} size="h2">Registrar un libro nuevo</Title>
       <Text>
         Los campos con asterisco son obligatorios. Los ejemplares y su ubicación
         se registran después.

@@ -146,7 +146,7 @@ export function PaginaIngreso() {
     >
       <Stack gap="md">
         <div>
-          <Title id="titulo-ingreso" order={2}>
+          <Title id="titulo-ingreso" order={1} size="h2">
             Iniciar sesión
           </Title>
           <Text c="dimmed" size="sm">

@@ -3,11 +3,16 @@ import { Anchor, Button } from '@mantine/core'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { AccesibilidadProvider } from '../features/accessibility/accesibilidad-provider'
 import { ControlesAccesibilidad } from '../features/accessibility/controles-accesibilidad'
-import { useSesion } from '../features/auth/sesion-context'
+import { useSesion, type Rol } from '../features/auth/sesion-context'
 import { CreditosInstitucionales } from '../shared/ui/creditos-institucionales'
 import { Marca } from '../shared/ui/marca'
 import './marco.css'
 import { useTituloPagina } from './titulo-pagina'
+
+/** Mismo criterio que las rutas de /gestion: solo el personal. */
+function puedeGestionar(rol: Rol) {
+  return rol === 'ADMIN' || rol === 'STAFF'
+}
 
 /**
  * Marco común de las pantallas públicas: cabecera (utilidades de
@@ -55,9 +60,11 @@ export function Layout() {
               <Marca />
             </Link>
             <nav aria-label="Principal" className="navegacion">
-              <NavLink to="/gestion" className="navegacion-enlace">
-                Gestión
-              </NavLink>
+              {!recuperando && sesion && puedeGestionar(sesion.rol) && (
+                <NavLink to="/gestion" className="navegacion-enlace">
+                  Gestión
+                </NavLink>
+              )}
               {!recuperando && !sesion && (
                 <NavLink to="/ingresar" className="navegacion-enlace">
                   Ingresar
