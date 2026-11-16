@@ -24,7 +24,7 @@ Reindexado de embeddings (solo con `SEMANTIC_SEARCH=on`): `SEMANTIC_REINDEX_INTE
 
 ```bash
 pnpm run search:reindex        # compila y ejecuta; imprime el resumen JSON y sale con código 1 si hubo fallos
-pnpm run search:reindex:dist   # producción: sobre un build ya hecho (node dist/src/modules/search/presentation/search-reindex.cli.js)
+pnpm run search:reindex:dist   # producción: sobre un build ya hecho (node dist/modules/search/presentation/search-reindex.cli.js)
 ```
 
 No usa `tsx` porque Nest necesita los metadatos de decoradores que `tsx` no emite.
