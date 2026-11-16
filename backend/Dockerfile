@@ -36,6 +36,11 @@ FROM ${NODE_IMAGE} AS production
 RUN apt-get update \
     && apt-get install -y --no-install-recommends openssl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+# En ejecución no se instala nada: se quitan npm, npx, corepack y yarn de la
+# imagen base (menos superficie de ataque y menos avisos de los escáneres).
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+    /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+    /opt/yarn-* /usr/local/bin/yarn /usr/local/bin/yarnpkg
 ENV NODE_ENV=production \
     PORT=3000
 WORKDIR /app
