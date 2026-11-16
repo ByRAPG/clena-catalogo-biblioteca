@@ -77,6 +77,12 @@ describe('createEmbeddingGenerator', () => {
     );
   });
 
+  it('sin configuración entrega el adaptador nulo', () => {
+    expect(createEmbeddingGenerator(undefined, undefined)).toBeInstanceOf(
+      NullEmbeddingGenerator,
+    );
+  });
+
   it('on con fake entrega el generador falso', () => {
     expect(createEmbeddingGenerator('on', 'fake')).toBeInstanceOf(
       FakeEmbeddingGenerator,
