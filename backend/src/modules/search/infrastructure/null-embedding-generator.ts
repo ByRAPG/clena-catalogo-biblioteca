@@ -1,4 +1,4 @@
-﻿import {
+import {
   EmbeddingGenerator,
   EmbeddingGeneratorStatus,
 } from '../application/ports/embedding-generator';

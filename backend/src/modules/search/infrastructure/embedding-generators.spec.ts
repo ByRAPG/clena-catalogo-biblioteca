@@ -1,4 +1,4 @@
-﻿import { EmbeddingGenerator } from '../application/ports/embedding-generator';
+import { EmbeddingGenerator } from '../application/ports/embedding-generator';
 import { EMBEDDING_DIMENSIONS } from '../domain/embedding';
 import { SemanticSearchDisabledError } from '../domain/search-errors';
 import { createEmbeddingGenerator } from './create-embedding-generator';
