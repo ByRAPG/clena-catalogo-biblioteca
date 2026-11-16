@@ -63,6 +63,17 @@ class InMemoryUserRepository implements UserRepository {
     this.users.set(user.id, user);
     return Promise.resolve();
   }
+
+  create(user: User): Promise<void> {
+    this.users.set(user.id, user);
+    return Promise.resolve();
+  }
+
+  existsActiveAdmin(): Promise<boolean> {
+    return Promise.resolve(
+      [...this.users.values()].some((u) => u.role === 'ADMIN' && u.canLogin()),
+    );
+  }
 }
 
 class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
@@ -144,6 +155,7 @@ const makeHasher = () => ({
   verify: jest.fn((plain: string, hash: string) =>
     Promise.resolve(hash === `hashed:${plain}`),
   ),
+  hash: jest.fn((plain: string) => Promise.resolve(`hashed:${plain}`)),
 });
 
 const makeUser = (overrides: Partial<UserProps> = {}): User =>

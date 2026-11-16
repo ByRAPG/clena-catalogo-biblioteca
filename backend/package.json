@@ -19,6 +19,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma:generate": "prisma generate",
     "prisma:migrate:deploy": "prisma migrate deploy",
+    "iam:create-admin": "nest build && node dist/modules/iam/presentation/create-admin.cli.js",
+    "iam:create-admin:dist": "node dist/modules/iam/presentation/create-admin.cli.js",
     "prisma:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate"
   },
