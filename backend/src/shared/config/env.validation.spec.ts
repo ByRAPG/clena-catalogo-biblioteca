@@ -75,4 +75,23 @@ describe('validateEnv', () => {
       }),
     ).not.toThrow();
   });
+
+  it('valida el reindexado de embeddings', () => {
+    const env = validateEnv(base);
+    expect(env.SEMANTIC_REINDEX_INTERVAL_SECONDS).toBe(300);
+    expect(env.SEMANTIC_REINDEX_BATCH_SIZE).toBe(16);
+    expect(
+      validateEnv({ ...base, SEMANTIC_REINDEX_INTERVAL_SECONDS: '0' })
+        .SEMANTIC_REINDEX_INTERVAL_SECONDS,
+    ).toBe(0);
+    expect(() =>
+      validateEnv({ ...base, SEMANTIC_REINDEX_INTERVAL_SECONDS: '-1' }),
+    ).toThrow(/SEMANTIC_REINDEX_INTERVAL_SECONDS/);
+    expect(() =>
+      validateEnv({ ...base, SEMANTIC_REINDEX_BATCH_SIZE: '0' }),
+    ).toThrow(/SEMANTIC_REINDEX_BATCH_SIZE/);
+    expect(() =>
+      validateEnv({ ...base, SEMANTIC_REINDEX_BATCH_SIZE: 'x' }),
+    ).toThrow(/SEMANTIC_REINDEX_BATCH_SIZE/);
+  });
 });

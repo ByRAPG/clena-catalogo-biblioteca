@@ -29,6 +29,18 @@ export const envSchema = z
     JWT_REFRESH_TTL: z.string().default('7d'),
     SEMANTIC_SEARCH: z.enum(['on', 'off']).default('off'),
     EMBEDDING_PROVIDER: z.enum(['fake', 'local']).default('fake'),
+    // Segundos entre reindexados de embeddings; 0 desactiva el intervalo.
+    SEMANTIC_REINDEX_INTERVAL_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .default(300),
+    SEMANTIC_REINDEX_BATCH_SIZE: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(500)
+      .default(16),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== 'production') return;

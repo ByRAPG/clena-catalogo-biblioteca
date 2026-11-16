@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { validateEnv } from './shared/config/env.validation';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { IamModule } from './modules/iam/iam.module';
+import { SearchReindexModule } from './modules/search/search-reindex.module';
 import { SearchModule } from './modules/search/search.module';
 import { SharedModule } from './shared/shared.module';
 
@@ -15,6 +16,7 @@ import { SharedModule } from './shared/shared.module';
     }),
     SharedModule,
     SearchModule,
+    SearchReindexModule,
     CatalogModule,
     IamModule,
   ],
