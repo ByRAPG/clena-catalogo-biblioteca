@@ -69,7 +69,8 @@ jobs:
           export SEED_DEMO_PASSWORD="$(node -p "require('node:crypto').randomBytes(24).toString('hex')")"
           pnpm run prisma:seed
       - run: pnpm run lint
-      - run: pnpm test --coverage --runInBand
+      - name: Pruebas unitarias con umbral de cobertura (domain y application)
+        run: pnpm run test:cov --runInBand
       - run: pnpm run test:e2e --runInBand
       - run: pnpm run build
 
@@ -93,7 +94,8 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm run lint
-      - run: pnpm test
+      - name: Pruebas con umbral de cobertura
+        run: pnpm run test:cov
       - run: pnpm run build
 
   ci:
