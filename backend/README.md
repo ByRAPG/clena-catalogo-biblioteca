@@ -18,6 +18,17 @@ pnpm run start:dev
 
 Variables validadas al arrancar (zod, `src/shared/config/env.validation.ts`): `PORT`, `DATABASE_URL`, `CORS_ORIGIN`, `LOG_LEVEL`, `JWT_*`. Si falta una obligatoria, la API no inicia.
 
+Búsqueda semántica: `SEMANTIC_SEARCH=on|off` (por defecto `off`) y `EMBEDDING_PROVIDER=fake|local` (por defecto `fake`; `local` aún no está implementado y falla al arrancar con la semántica activa).
+
+Reindexado de embeddings (solo con `SEMANTIC_SEARCH=on`): `SEMANTIC_REINDEX_INTERVAL_SECONDS` (por defecto 300; `0` lo limita a una pasada al arrancar) y `SEMANTIC_REINDEX_BATCH_SIZE` (por defecto 16). La API reindexa en segundo plano al arrancar y por intervalo; solo procesa obras sin vector, con otro modelo o con el texto cambiado. Para forzarlo a mano:
+
+```bash
+pnpm run search:reindex        # compila y ejecuta; imprime el resumen JSON y sale con código 1 si hubo fallos
+pnpm run search:reindex:dist   # producción: sobre un build ya hecho (node dist/modules/search/presentation/search-reindex.cli.js)
+```
+
+No usa `tsx` porque Nest necesita los metadatos de decoradores que `tsx` no emite.
+
 ## Probar
 
 ```bash
