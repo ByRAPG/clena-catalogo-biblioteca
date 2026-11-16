@@ -18,7 +18,27 @@ export const envSchema = z
       .default('development'),
     PORT: z.coerce.number().int().positive().default(3000),
     DATABASE_URL: z.string().min(1),
-    CORS_ORIGIN: z.string().default('http://localhost:5173'),
+    CORS_ORIGIN: z
+      .string()
+      .default('http://localhost:5173')
+      .refine(
+        (value) => !value.split(',').some((origin) => origin.trim() === '*'),
+        'no admite comodín (*): la API usa cookies con credenciales',
+      ),
+    // Saltos de proxy inverso de confianza: 'false' (por defecto) o un entero >= 1.
+    TRUST_PROXY: z
+      .string()
+      .default('false')
+      .refine(
+        (value) => value === 'false' || /^[1-9]\d*$/.test(value),
+        "debe ser 'false' o un entero positivo (número de proxies de confianza)",
+      )
+      .transform((value) => (value === 'false' ? false : Number(value))),
+    // Límite global por IP: THROTTLE_LIMIT peticiones cada THROTTLE_TTL_SECONDS.
+    THROTTLE_TTL_SECONDS: z.coerce.number().int().positive().default(60),
+    THROTTLE_LIMIT: z.coerce.number().int().positive().default(100),
+    // Límite más estricto para /auth/* (mismo intervalo).
+    THROTTLE_AUTH_LIMIT: z.coerce.number().int().positive().default(20),
     PUBLIC_WEB_URL: z
       .url({ protocol: /^https?$/ })
       .default('http://localhost:5173'),
