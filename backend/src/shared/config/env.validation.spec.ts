@@ -72,7 +72,7 @@ describe('validateEnv · endurecimiento', () => {
   it('límites de peticiones con valores por defecto', () => {
     const env = validateEnv(base);
     expect(env.THROTTLE_TTL_SECONDS).toBe(60);
-    expect(env.THROTTLE_LIMIT).toBe(100);
+    expect(env.THROTTLE_LIMIT).toBe(300);
     expect(env.THROTTLE_AUTH_LIMIT).toBe(20);
   });
 });

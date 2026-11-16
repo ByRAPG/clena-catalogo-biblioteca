@@ -35,8 +35,9 @@ export const envSchema = z
       )
       .transform((value) => (value === 'false' ? false : Number(value))),
     // Límite global por IP: THROTTLE_LIMIT peticiones cada THROTTLE_TTL_SECONDS.
+    // 300 y no menos: los equipos de la biblioteca salen por una misma IP.
     THROTTLE_TTL_SECONDS: z.coerce.number().int().positive().default(60),
-    THROTTLE_LIMIT: z.coerce.number().int().positive().default(100),
+    THROTTLE_LIMIT: z.coerce.number().int().positive().default(300),
     // Límite más estricto para /auth/* (mismo intervalo).
     THROTTLE_AUTH_LIMIT: z.coerce.number().int().positive().default(20),
     PUBLIC_WEB_URL: z
