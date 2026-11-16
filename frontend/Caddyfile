@@ -1,0 +1,79 @@
+# Servidor web de producción: sirve la SPA, reenvía /api/* al backend y, si
+# SITE_ADDRESS es un dominio público, obtiene y renueva el certificado TLS solo.
+#
+# SITE_ADDRESS: dominio (p. ej. biblioteca.ejemplo.org) para HTTPS automático;
+# ":80" (valor por defecto) para HTTP sin TLS en pruebas locales.
+{
+	# Sin API de administración expuesta dentro del contenedor.
+	admin off
+}
+
+{$SITE_ADDRESS::80} {
+	encode zstd gzip
+
+	# Cabeceras comunes a todas las respuestas (SPA y API). `defer` las aplica
+	# al final, para que ni el backend ni Caddy las dupliquen o reintroduzcan.
+	header {
+		defer
+		-Server
+		-X-Powered-By
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+		Cross-Origin-Opener-Policy "same-origin"
+	}
+
+	# API: el navegador usa el mismo origen, así no hace falta CORS.
+	@api path /api/* /health
+	handle @api {
+		reverse_proxy backend:3000 {
+			# Si la API tarda más de 30 s se corta, en vez de colgar al visitante.
+			transport http {
+				response_header_timeout 30s
+			}
+		}
+	}
+
+	# Recursos con hash en el nombre: inmutables durante un año. Sin respaldo a
+	# index.html: un /assets/ inexistente da 404 real, no HTML con caché inmutable.
+	handle /assets/* {
+		root * /srv
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	# SPA: archivos estáticos con respaldo a index.html para las rutas del cliente.
+	handle {
+		root * /srv
+
+		# CSP estricta. Scripts solo propios (sin 'unsafe-inline'). Mantine inserta
+		# una etiqueta <style> con sus variables CSS al arrancar, por eso
+		# style-src-elem admite 'unsafe-inline' (solo etiquetas <style>); los
+		# atributos style="" del HTML no se permiten (React los fija por CSSOM).
+		header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; style-src-elem 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+
+		# index.html se revalida siempre para tomar los hashes nuevos tras actualizar.
+		header Cache-Control "no-cache"
+
+		try_files {path} /index.html
+		file_server
+	}
+
+	# Los errores (p. ej. un /assets/ inexistente) pasan por aquí: sin caché y sin
+	# la cabecera `Server`.
+	handle_errors {
+		header {
+			-Server
+			Cache-Control "no-store"
+			X-Content-Type-Options "nosniff"
+		}
+		respond "{err.status_code} {err.status_text}"
+	}
+}
+
+# Sonda interna del HEALTHCHECK del contenedor (solo escucha en 127.0.0.1).
+http://127.0.0.1:8081 {
+	bind 127.0.0.1
+	respond /healthz "ok" 200
+}
