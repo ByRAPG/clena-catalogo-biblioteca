@@ -77,13 +77,17 @@ export class QueryEmbedder {
     }
     // El cupo se libera cuando termina la inferencia real, aunque se haya
     // agotado el tiempo de espera, para no sobrepasar el límite de CPU.
+    // El vector se guarda en caché aunque llegue tarde: la consulta repetida
+    // ya no vuelve a degradar.
     const inference = Promise.resolve()
       .then(() => this.generator.embedQuery(normalizedQuery))
+      .then((vector) => {
+        this.cache.set(normalizedQuery, vector);
+        return vector;
+      })
       .finally(release);
     try {
-      const vector = await withTimeout(inference, this.options.timeoutMs);
-      this.cache.set(normalizedQuery, vector);
-      return vector;
+      return await withTimeout(inference, this.options.timeoutMs);
     } catch (error) {
       const reason =
         error instanceof TimeoutError
