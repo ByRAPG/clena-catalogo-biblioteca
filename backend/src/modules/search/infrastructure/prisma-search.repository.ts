@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../shared/infrastructure/prisma.service';
 import {
+  LexicalHit,
   SearchCriteria,
   SearchPage,
   SearchRepository,
@@ -72,25 +73,55 @@ export class PrismaSearchRepository implements SearchRepository {
       return { rows: pageRows, total: count };
     });
 
-    if (rows.length === 0) return { items: [], total };
+    const items = await this.findSummaries(
+      rows.map((row) => ({ id: row.id, matchedOn: this.matchedOnOf(row) })),
+    );
+    return { items, total };
+  }
 
+  async rankLexical(
+    criteria: SearchCriteria,
+    limit: number,
+  ): Promise<LexicalHit[]> {
+    if (criteria.query === null) return [];
+    const candidates = this.candidatesSql(criteria);
+    const rows = await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT set_config('pg_trgm.word_similarity_threshold', ${WORD_SIMILARITY_THRESHOLD}, true)`;
+      return tx.$queryRaw<ScoreRow[]>(Prisma.sql`
+        ${candidates}
+        SELECT id, title_score, author_score, subject_score
+        FROM cand
+        ORDER BY score DESC, title ASC, id ASC
+        LIMIT ${limit}`);
+    });
+    return rows.map((row) => ({
+      id: row.id,
+      matchedOn: this.matchedOnOf(row),
+    }));
+  }
+
+  async findSummaries(hits: readonly LexicalHit[]): Promise<WorkSummary[]> {
+    if (hits.length === 0) return [];
     const works = await this.prisma.work.findMany({
-      where: { id: { in: rows.map((r) => r.id) } },
+      where: { id: { in: hits.map((h) => h.id) }, deletedAt: null },
       include: workInclude,
     });
     const byId = new Map(works.map((w) => [w.id, w]));
     const items: WorkSummary[] = [];
-    for (const row of rows) {
-      const work = byId.get(row.id);
-      if (!work) continue;
-      const scores: MatchScores = {
-        title: row.title_score,
-        author: row.author_score,
-        subject: row.subject_score,
-      };
-      items.push(this.toSummary(work, resolveMatchedOn(scores)));
+    for (const hit of hits) {
+      const work = byId.get(hit.id);
+      if (work) items.push(this.toSummary(work, hit.matchedOn));
     }
-    return { items, total };
+    return items;
+  }
+
+  private matchedOnOf(row: ScoreRow): MatchedOn | null {
+    const scores: MatchScores = {
+      title: row.title_score,
+      author: row.author_score,
+      subject: row.subject_score,
+    };
+    return resolveMatchedOn(scores);
   }
 
   async findWorkDetail(id: string): Promise<WorkDetail | null> {

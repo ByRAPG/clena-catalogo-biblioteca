@@ -10,6 +10,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { SEARCH_MODES, SearchMode } from '../../domain/search-mode';
 
 export class SearchWorksQueryDto {
   @ApiPropertyOptional({
@@ -61,4 +62,14 @@ export class SearchWorksQueryDto {
   @Min(1)
   @Max(50)
   pageSize?: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Modo de búsqueda. Por defecto `hybrid` si la búsqueda semántica está activa y `lexical` si no. Si el modelo no responde a tiempo se degrada a léxica (`meta.degraded`).',
+    enum: SEARCH_MODES,
+    example: 'hybrid',
+  })
+  @IsOptional()
+  @IsIn(SEARCH_MODES)
+  mode?: SearchMode;
 }
