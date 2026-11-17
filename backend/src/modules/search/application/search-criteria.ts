@@ -6,6 +6,7 @@ import { SearchCriteria } from './ports/search.repository';
 export const DEFAULT_PAGE_SIZE = 10;
 export const MAX_PAGE_SIZE = 50;
 export const MAX_QUERY_LENGTH = 100;
+export const MAX_PAGE = 10000;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -31,9 +32,9 @@ function optionalUuid(value: string | undefined, name: string): string | null {
 export function buildSearchCriteria(input: SearchInput): SearchCriteria {
   const page = input.page ?? 1;
   const pageSize = input.pageSize ?? DEFAULT_PAGE_SIZE;
-  if (!Number.isInteger(page) || page < 1) {
+  if (!Number.isInteger(page) || page < 1 || page > MAX_PAGE) {
     throw new InvalidSearchCriteriaError(
-      'page debe ser un entero mayor o igual a 1',
+      `page debe estar entre 1 y ${MAX_PAGE}`,
     );
   }
   if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > MAX_PAGE_SIZE) {

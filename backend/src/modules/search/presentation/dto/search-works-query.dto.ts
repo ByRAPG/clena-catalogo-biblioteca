@@ -48,11 +48,12 @@ export class SearchWorksQueryDto {
   @IsIn(['true'])
   available?: 'true';
 
-  @ApiPropertyOptional({ minimum: 1, default: 1, example: 1 })
+  @ApiPropertyOptional({ minimum: 1, maximum: 10000, default: 1, example: 1 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(10000)
   page?: number;
 
   @ApiPropertyOptional({ minimum: 1, maximum: 50, default: 10, example: 10 })

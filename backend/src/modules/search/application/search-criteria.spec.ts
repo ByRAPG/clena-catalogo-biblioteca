@@ -51,6 +51,7 @@ describe('buildSearchCriteria', () => {
   it.each([
     [{ page: 0 }],
     [{ page: 1.5 }],
+    [{ page: 10001 }],
     [{ pageSize: 0 }],
     [{ pageSize: 51 }],
     [{ q: 'x'.repeat(101) }],
