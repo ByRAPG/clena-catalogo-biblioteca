@@ -81,6 +81,8 @@ describeDb('Búsqueda híbrida (e2e, pgvector)', () => {
       'DATABASE_URL',
       'SEMANTIC_SEARCH',
       'EMBEDDING_PROVIDER',
+      'SEARCH_MIN_SIMILARITY',
+      'SEARCH_RELATIVE_CUTOFF',
     ]) {
       saved[key] = process.env[key];
     }
@@ -91,6 +93,9 @@ describeDb('Búsqueda híbrida (e2e, pgvector)', () => {
     process.env.DATABASE_URL = url.toString();
     process.env.SEMANTIC_SEARCH = 'on';
     process.env.EMBEDDING_PROVIDER = 'fake';
+    // Los umbrales están calibrados para e5; el generador falso usa valores neutros.
+    process.env.SEARCH_MIN_SIMILARITY = '0';
+    process.env.SEARCH_RELATIVE_CUTOFF = '1';
     execFileSync('pnpm', ['exec', 'prisma', 'migrate', 'deploy'], {
       env: { ...process.env },
       stdio: 'pipe',

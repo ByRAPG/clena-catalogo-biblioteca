@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { fuseRrf } from '../domain/rrf';
+import { fuseRrf, RRF_K } from '../domain/rrf';
+import { cutOffSemantic } from '../domain/semantic-cutoff';
 import { SearchMode } from '../domain/search-mode';
-import { WorkSummary } from '../domain/work-summary';
+import { MatchSource, WorkSummary } from '../domain/work-summary';
 import { QueryEmbedder } from './query-embedder';
 import {
   LexicalHit,
@@ -14,6 +15,10 @@ import {
   WORK_EMBEDDING_REPOSITORY,
   WorkEmbeddingRepository,
 } from './ports/work-embedding.repository';
+import {
+  SEARCH_RANKING_OPTIONS,
+  SearchRankingOptions,
+} from './search-ranking-options';
 import { SearchInput, buildSearchCriteria } from './search-criteria';
 
 /** Candidatos que aporta cada ranking a la fusión (ADR-08). */
@@ -32,6 +37,10 @@ export interface SearchWorksResult {
   };
 }
 
+function sourceOf(lexical: boolean, semantic: boolean): MatchSource {
+  return lexical && semantic ? 'both' : lexical ? 'lexical' : 'semantic';
+}
+
 @Injectable()
 export class SearchWorks {
   constructor(
@@ -39,6 +48,8 @@ export class SearchWorks {
     @Inject(WORK_EMBEDDING_REPOSITORY)
     private readonly embeddings: WorkEmbeddingRepository,
     private readonly queryEmbedder: QueryEmbedder,
+    @Inject(SEARCH_RANKING_OPTIONS)
+    private readonly ranking: SearchRankingOptions,
   ) {}
 
   async execute(input: SearchInput): Promise<SearchWorksResult> {
@@ -60,8 +71,13 @@ export class SearchWorks {
       : null;
     if (semanticHits === null) return this.lexical(criteria, true);
 
-    const semanticIds = semanticHits.map((h) => h.workId);
+    // Solo cuentan los vecinos realmente cercanos (umbral y corte relativo).
+    const semanticIds = cutOffSemantic(semanticHits, this.ranking).map(
+      (h) => h.workId,
+    );
+    const semanticSet = new Set(semanticIds);
     let hits: LexicalHit[];
+    let lexicalSet = new Set<string>();
     if (requested === 'semantic') {
       hits = semanticIds.map((id) => ({ id, matchedOn: null }));
     } else {
@@ -69,16 +85,27 @@ export class SearchWorks {
         criteria,
         CANDIDATES_PER_RANKING,
       );
+      lexicalSet = new Set(lexicalHits.map((h) => h.id));
       const matched = new Map(lexicalHits.map((h) => [h.id, h.matchedOn]));
-      hits = fuseRrf([lexicalHits.map((h) => h.id), semanticIds]).map(
-        ({ id }) => ({ id, matchedOn: matched.get(id) ?? null }),
-      );
+      // La léxica pesa más: una coincidencia de texto no cede ante una obra
+      // que solo se parece por significado.
+      hits = fuseRrf([lexicalHits.map((h) => h.id), semanticIds], RRF_K, [
+        this.ranking.lexicalWeight,
+        1,
+      ]).map(({ id }) => ({ id, matchedOn: matched.get(id) ?? null }));
     }
 
     const offset = (criteria.page - 1) * criteria.pageSize;
-    const data = await this.repository.findSummaries(
+    const summaries = await this.repository.findSummaries(
       hits.slice(offset, offset + criteria.pageSize),
     );
+    const data = summaries.map((summary) => ({
+      ...summary,
+      matchSource: sourceOf(
+        lexicalSet.has(summary.id),
+        semanticSet.has(summary.id),
+      ),
+    }));
     return {
       data,
       meta: {
@@ -108,7 +135,10 @@ export class SearchWorks {
   ): Promise<SearchWorksResult> {
     const { items, total } = await this.repository.searchWorks(criteria);
     return {
-      data: items,
+      data:
+        criteria.query === null
+          ? items
+          : items.map((item) => ({ ...item, matchSource: 'lexical' as const })),
       meta: {
         page: criteria.page,
         pageSize: criteria.pageSize,

@@ -47,6 +47,11 @@ export const envSchema = z
     SEMANTIC_MAX_CONCURRENCY: z.coerce.number().int().min(1).default(2),
     SEMANTIC_CACHE_SIZE: z.coerce.number().int().min(0).default(500),
     SEMANTIC_CACHE_TTL_SECONDS: z.coerce.number().int().min(0).default(600),
+    // Calidad de la semántica (calibrados para multilingual-e5-small): similitud
+    // coseno mínima, distancia máxima al mejor resultado y peso de la léxica.
+    SEARCH_MIN_SIMILARITY: z.coerce.number().min(0).max(1).default(0.835),
+    SEARCH_RELATIVE_CUTOFF: z.coerce.number().min(0).max(1).default(0.03),
+    SEARCH_LEXICAL_WEIGHT: z.coerce.number().min(0).max(10).default(2),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== 'production') return;
