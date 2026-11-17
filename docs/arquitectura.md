@@ -144,7 +144,7 @@ Búsqueda actual (léxica):
 
 Meta: < 1 s con 5 000 obras.
 
-Búsqueda híbrida (diseño aprobado en el ADR-08, **pendiente de implementar**): a la búsqueda léxica se sumará una vectorial con pgvector y un modelo de embeddings que corre en el propio servidor. Los resultados de ambas se fusionan con Reciprocal Rank Fusion, y si el modelo no está disponible la API responde solo con la léxica. Hasta ahora solo se ha medido el modelo en una prueba de concepto; la búsqueda semántica aún no funciona en la aplicación.
+Búsqueda híbrida (ADR-08): `GET /search/works` acepta `mode=hybrid|lexical|semantic`; por defecto es `hybrid` si `SEMANTIC_SEARCH=on` y `lexical` si no. `SearchWorks` toma hasta 100 candidatos léxicos y 100 vectoriales (distancia coseno exacta en pgvector, con los mismos filtros), los fusiona con `fuseRrf` (Reciprocal Rank Fusion, k = 60) y pagina sobre la lista fusionada; por eso en `hybrid` y `semantic` `meta.total` queda acotado a 200 y 100. La respuesta añade `meta.mode` (modo aplicado) y `meta.degraded`. Si el generador falla, no está listo, tarda más de `SEMANTIC_TIMEOUT_MS` o ya hay `SEMANTIC_MAX_CONCURRENCY` inferencias en curso, responde solo la léxica con `degraded = true`, nunca un error. Los vectores de consulta se guardan en una caché LRU en memoria (`SEMANTIC_CACHE_SIZE`, `SEMANTIC_CACHE_TTL_SECONDS`). Sin texto en `q` se mantiene el comportamiento léxico de siempre.
 
 ## 9. Despliegue y entornos
 
