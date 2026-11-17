@@ -20,6 +20,8 @@ Variables validadas al arrancar (zod, `src/shared/config/env.validation.ts`): `P
 
 Búsqueda semántica: `SEMANTIC_SEARCH=on|off` (por defecto `off`) y `EMBEDDING_PROVIDER=fake|local` (por defecto `fake`; `local` aún no está implementado y falla al arrancar con la semántica activa).
 
+Consulta semántica (solo con `SEMANTIC_SEARCH=on`): `SEMANTIC_TIMEOUT_MS` (800), `SEMANTIC_MAX_CONCURRENCY` (2), `SEMANTIC_CACHE_SIZE` (500; `0` desactiva la caché) y `SEMANTIC_CACHE_TTL_SECONDS` (600). Si el modelo falla, tarda más del tiempo o no hay cupo, la API responde solo con la búsqueda léxica y `meta.degraded = true`.
+
 Reindexado de embeddings (solo con `SEMANTIC_SEARCH=on`): `SEMANTIC_REINDEX_INTERVAL_SECONDS` (por defecto 300; `0` lo limita a una pasada al arrancar) y `SEMANTIC_REINDEX_BATCH_SIZE` (por defecto 16). La API reindexa en segundo plano al arrancar y por intervalo; solo procesa obras sin vector, con otro modelo o con el texto cambiado. Para forzarlo a mano:
 
 ```bash
