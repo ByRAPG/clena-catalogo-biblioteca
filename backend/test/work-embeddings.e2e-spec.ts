@@ -120,11 +120,13 @@ describeDb('Embeddings de obras (e2e, pgvector)', () => {
     );
     const a = stale.find((s) => s.workId === ids.a);
     expect(a?.sourceText).toBe(
-      'Obra A\nAutores: Ana Autora\nTemas: Novela\nCategoría: Literatura',
+      'Obra A. Libro de Literatura sobre Novela. Autor: Ana Autora.',
     );
     expect(a?.sourceHash).toMatch(/^[0-9a-f]{64}$/);
     const b = stale.find((s) => s.workId === ids.b);
-    expect(b?.sourceText).toBe('Obra B\nAutores: Ana Autora\nTemas: Novela');
+    expect(b?.sourceText).toBe(
+      'Obra B. Libro sobre Novela. Autor: Ana Autora.',
+    );
     expect(await repo.findStale(MODEL, 2)).toHaveLength(2);
   });
 
