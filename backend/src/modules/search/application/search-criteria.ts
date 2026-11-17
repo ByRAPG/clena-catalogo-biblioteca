@@ -1,5 +1,6 @@
 import { normalizeText } from '../../../shared/domain/normalize-text';
 import { InvalidSearchCriteriaError } from '../domain/search-errors';
+import { SEARCH_MODES, SearchMode, isSearchMode } from '../domain/search-mode';
 import { SearchCriteria } from './ports/search.repository';
 
 export const DEFAULT_PAGE_SIZE = 10;
@@ -15,6 +16,7 @@ export interface SearchInput {
   available?: boolean;
   page?: number;
   pageSize?: number;
+  mode?: string;
 }
 
 function optionalUuid(value: string | undefined, name: string): string | null {
@@ -44,6 +46,12 @@ export function buildSearchCriteria(input: SearchInput): SearchCriteria {
       `q no puede superar ${MAX_QUERY_LENGTH} caracteres`,
     );
   }
+  if (input.mode !== undefined && !isSearchMode(input.mode)) {
+    throw new InvalidSearchCriteriaError(
+      `mode debe ser uno de: ${SEARCH_MODES.join(', ')}`,
+    );
+  }
+  const mode: SearchMode | null = input.mode ?? null;
   const normalized = normalizeText(input.q ?? '');
   return {
     query: normalized === '' ? null : normalized,
@@ -52,5 +60,6 @@ export function buildSearchCriteria(input: SearchInput): SearchCriteria {
     onlyAvailable: input.available === true,
     page,
     pageSize,
+    mode,
   };
 }

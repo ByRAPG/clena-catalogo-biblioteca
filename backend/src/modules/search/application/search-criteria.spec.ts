@@ -12,7 +12,15 @@ describe('buildSearchCriteria', () => {
       onlyAvailable: false,
       page: 1,
       pageSize: 10,
+      mode: null,
     });
+  });
+
+  it('valida el modo de búsqueda', () => {
+    expect(buildSearchCriteria({ mode: 'semantic' }).mode).toBe('semantic');
+    expect(() => buildSearchCriteria({ mode: 'otro' })).toThrow(
+      InvalidSearchCriteriaError,
+    );
   });
 
   it('normaliza q (tildes, mayúsculas, espacios)', () => {

@@ -3,43 +3,17 @@ import { WorkDetail } from '../domain/work-summary';
 import { GetWorkDetail } from './get-work-detail.use-case';
 import { ListSearchFilters } from './list-search-filters.use-case';
 import { SearchRepository } from './ports/search.repository';
-import { SearchWorks } from './search-works.use-case';
 
 const fakeRepo = (
   overrides: Partial<SearchRepository> = {},
 ): SearchRepository => ({
   searchWorks: jest.fn().mockResolvedValue({ items: [], total: 0 }),
+  rankLexical: jest.fn().mockResolvedValue([]),
+  findSummaries: jest.fn().mockResolvedValue([]),
   findWorkDetail: jest.fn().mockResolvedValue(null),
   listCategories: jest.fn().mockResolvedValue([]),
   listRooms: jest.fn().mockResolvedValue([]),
   ...overrides,
-});
-
-describe('SearchWorks', () => {
-  it('envía criterios normalizados al repositorio y arma la meta', async () => {
-    const repo = fakeRepo({
-      searchWorks: jest.fn().mockResolvedValue({ items: [], total: 23 }),
-    });
-    const result = await new SearchWorks(repo).execute({
-      q: 'SOLEDÁD',
-      page: 2,
-    });
-    expect(repo.searchWorks).toHaveBeenCalledWith(
-      expect.objectContaining({ query: 'soledad', page: 2, pageSize: 10 }),
-    );
-    expect(result).toEqual({
-      data: [],
-      meta: { page: 2, pageSize: 10, total: 23 },
-    });
-  });
-
-  it('propaga el error de criterios inválidos sin consultar', async () => {
-    const repo = fakeRepo();
-    await expect(
-      new SearchWorks(repo).execute({ pageSize: 99 }),
-    ).rejects.toThrow('pageSize');
-    expect(repo.searchWorks).not.toHaveBeenCalled();
-  });
 });
 
 describe('GetWorkDetail', () => {

@@ -131,7 +131,13 @@ describeDb('Búsqueda (e2e, PostgreSQL real)', () => {
       .expect(200);
     expect(res.body).toEqual({
       data: [],
-      meta: { page: 1, pageSize: 10, total: 0 },
+      meta: {
+        page: 1,
+        pageSize: 10,
+        total: 0,
+        mode: 'lexical',
+        degraded: false,
+      },
     });
   });
 

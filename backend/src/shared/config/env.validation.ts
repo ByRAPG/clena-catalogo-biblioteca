@@ -41,6 +41,12 @@ export const envSchema = z
       .min(1)
       .max(500)
       .default(16),
+    // Búsqueda semántica en consulta: tiempo máximo (ms), inferencias
+    // simultáneas y caché de embeddings de consulta.
+    SEMANTIC_TIMEOUT_MS: z.coerce.number().int().min(1).default(800),
+    SEMANTIC_MAX_CONCURRENCY: z.coerce.number().int().min(1).default(2),
+    SEMANTIC_CACHE_SIZE: z.coerce.number().int().min(0).default(500),
+    SEMANTIC_CACHE_TTL_SECONDS: z.coerce.number().int().min(0).default(600),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== 'production') return;

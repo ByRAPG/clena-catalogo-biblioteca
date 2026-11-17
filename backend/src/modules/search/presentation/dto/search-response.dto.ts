@@ -97,12 +97,28 @@ export class PageMetaDto {
   total!: number;
 }
 
+export class SearchMetaDto extends PageMetaDto {
+  @ApiProperty({
+    enum: ['hybrid', 'lexical', 'semantic'],
+    example: 'hybrid',
+    description: 'Modo realmente aplicado',
+  })
+  mode!: 'hybrid' | 'lexical' | 'semantic';
+
+  @ApiProperty({
+    example: false,
+    description:
+      'true si se pidió semántica o híbrida y se respondió solo con la léxica',
+  })
+  degraded!: boolean;
+}
+
 export class SearchWorksResponseDto {
   @ApiProperty({ type: [WorkSummaryDto] })
   data!: WorkSummaryDto[];
 
-  @ApiProperty({ type: PageMetaDto })
-  meta!: PageMetaDto;
+  @ApiProperty({ type: SearchMetaDto })
+  meta!: SearchMetaDto;
 }
 
 export class WorkCopyDto {
