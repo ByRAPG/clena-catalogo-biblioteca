@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CategoryRefDto {
   @ApiProperty({
@@ -73,6 +73,14 @@ export class WorkSummaryDto {
     example: 'title',
   })
   matchedOn!: 'title' | 'author' | 'subject' | null;
+
+  @ApiPropertyOptional({
+    enum: ['lexical', 'semantic', 'both'],
+    description:
+      'Qué búsqueda aportó la obra: texto (`lexical`), significado (`semantic`) o ambas. Solo hay con `q`.',
+    example: 'semantic',
+  })
+  matchSource?: 'lexical' | 'semantic' | 'both';
 
   @ApiProperty({ type: AvailabilityDto })
   availability!: AvailabilityDto;

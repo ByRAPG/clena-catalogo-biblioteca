@@ -55,3 +55,15 @@ describe('fuseRrf', () => {
     expect(fuseRrf([[], []])).toEqual([]);
   });
 });
+
+describe('fuseRrf con pesos', () => {
+  it('un peso mayor hace que la primera lista gane a la segunda', () => {
+    expect(fuseRrf([['a'], ['b']]).map((f) => f.id)).toEqual(['a', 'b']);
+    expect(fuseRrf([['b'], ['a']], RRF_K, [1, 3]).map((f) => f.id)).toEqual([
+      'a',
+      'b',
+    ]);
+    const [first] = fuseRrf([['a']], RRF_K, [2]);
+    expect(first.score).toBeCloseTo(2 / 61, 12);
+  });
+});

@@ -2,6 +2,9 @@ export type CopyStatus = 'DISPONIBLE' | 'PRESTADO' | 'MANTENIMIENTO' | 'BAJA';
 
 export type MatchedOn = 'title' | 'author' | 'subject';
 
+/** Qué ranking aportó la obra: texto, significado (vectorial) o ambos. */
+export type MatchSource = 'lexical' | 'semantic' | 'both';
+
 export type AvailabilityStatus = 'DISPONIBLE' | 'NO_DISPONIBLE';
 export type UnavailableReason = 'PRESTADO' | 'MANTENIMIENTO' | 'SIN_EJEMPLARES';
 
@@ -39,6 +42,8 @@ export interface WorkSummary {
   category: CategoryRef | null;
   year: number | null;
   matchedOn: MatchedOn | null;
+  /** Ausente si la búsqueda no tuvo texto (`q`). */
+  matchSource?: MatchSource;
   availability: Availability;
   location: Location | null;
 }

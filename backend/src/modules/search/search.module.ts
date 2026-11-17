@@ -13,6 +13,11 @@ import {
   SEMANTIC_QUERY_OPTIONS,
   SemanticQueryOptions,
 } from './application/query-embedder';
+import {
+  DEFAULT_SEARCH_RANKING_OPTIONS,
+  SEARCH_RANKING_OPTIONS,
+  SearchRankingOptions,
+} from './application/search-ranking-options';
 import { SearchWorks } from './application/search-works.use-case';
 import { createEmbeddingGenerator } from './infrastructure/create-embedding-generator';
 import { PrismaSearchRepository } from './infrastructure/prisma-search.repository';
@@ -46,9 +51,24 @@ import { SearchController } from './presentation/search.controller';
       }),
     },
     {
-      provide: SEARCH_REPOSITORY,
-      useClass: PrismaSearchRepository,
+      provide: SEARCH_RANKING_OPTIONS,
+      inject: [ConfigService],
+      useFactory: (config: ConfigService<Env, true>): SearchRankingOptions => ({
+        minSimilarity: Number(
+          config.get('SEARCH_MIN_SIMILARITY', { infer: true }) ??
+            DEFAULT_SEARCH_RANKING_OPTIONS.minSimilarity,
+        ),
+        relativeCutoff: Number(
+          config.get('SEARCH_RELATIVE_CUTOFF', { infer: true }) ??
+            DEFAULT_SEARCH_RANKING_OPTIONS.relativeCutoff,
+        ),
+        lexicalWeight: Number(
+          config.get('SEARCH_LEXICAL_WEIGHT', { infer: true }) ??
+            DEFAULT_SEARCH_RANKING_OPTIONS.lexicalWeight,
+        ),
+      }),
     },
+    { provide: SEARCH_REPOSITORY, useClass: PrismaSearchRepository },
     {
       provide: WORK_EMBEDDING_REPOSITORY,
       useClass: PrismaWorkEmbeddingRepository,

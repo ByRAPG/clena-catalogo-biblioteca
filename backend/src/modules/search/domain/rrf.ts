@@ -11,25 +11,28 @@ export interface FusedItem {
  * Reciprocal Rank Fusion: combina listas de ids ordenadas de mejor a peor.
  * Un id repetido dentro de una misma lista cuenta solo en su primera posición.
  * Desempate determinista: mayor puntuación, luego mejor posición en alguna
- * lista y, por último, id ascendente.
+ * lista y, por último, id ascendente. `weights` (opcional, uno por lista;
+ * 1 si falta) multiplica la contribución de cada lista.
  */
 export function fuseRrf(
   rankings: readonly (readonly string[])[],
   k: number = RRF_K,
+  weights: readonly number[] = [],
 ): FusedItem[] {
   const acc = new Map<string, { score: number; best: number }>();
-  for (const ranking of rankings) {
+  rankings.forEach((ranking, listIndex) => {
+    const weight = weights[listIndex] ?? 1;
     const seen = new Set<string>();
     ranking.forEach((id, index) => {
       if (seen.has(id)) return;
       seen.add(id);
       const rank = index + 1;
       const entry = acc.get(id) ?? { score: 0, best: Number.POSITIVE_INFINITY };
-      entry.score += 1 / (k + rank);
+      entry.score += weight / (k + rank);
       entry.best = Math.min(entry.best, rank);
       acc.set(id, entry);
     });
-  }
+  });
   return [...acc.entries()]
     .sort(
       ([idA, a], [idB, b]) =>

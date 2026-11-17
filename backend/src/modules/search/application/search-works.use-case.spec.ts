@@ -6,6 +6,7 @@ import {
   QueryEmbedder,
   SemanticQueryOptions,
 } from './query-embedder';
+import { SearchRankingOptions } from './search-ranking-options';
 import { SearchWorks } from './search-works.use-case';
 import { EMBEDDING_DIMENSIONS } from '../domain/embedding';
 import { WorkSummary } from '../domain/work-summary';
@@ -18,6 +19,8 @@ function setup(
     state?: 'ready' | 'loading' | 'disabled' | 'error';
     embedQuery?: () => Promise<number[]>;
     nearest?: string[];
+    scores?: number[];
+    ranking?: Partial<SearchRankingOptions>;
     lexical?: string[];
     semanticOptions?: Partial<SemanticQueryOptions>;
   } = {},
@@ -41,11 +44,12 @@ function setup(
   const embeddings: jest.Mocked<WorkEmbeddingRepository> = {
     findStale: jest.fn(),
     save: jest.fn(),
-    searchNearest: jest
-      .fn()
-      .mockResolvedValue(
-        (options.nearest ?? []).map((workId) => ({ workId, score: 0.9 })),
-      ),
+    searchNearest: jest.fn().mockResolvedValue(
+      (options.nearest ?? []).map((workId, i) => ({
+        workId,
+        score: options.scores?.[i] ?? 0.9,
+      })),
+    ),
   };
   const generator: EmbeddingGenerator = {
     embedQuery: jest.fn(options.embedQuery ?? (() => Promise.resolve(vector))),
@@ -64,7 +68,12 @@ function setup(
     repo,
     embeddings,
     generator,
-    useCase: new SearchWorks(repo, embeddings, embedder),
+    useCase: new SearchWorks(repo, embeddings, embedder, {
+      minSimilarity: 0,
+      relativeCutoff: 1,
+      lexicalWeight: 1,
+      ...options.ranking,
+    }),
   };
 }
 
@@ -245,5 +254,94 @@ describe('SearchWorks', () => {
     await useCase.execute({ q: 'Ecología' });
     await useCase.execute({ q: 'ecologia' });
     expect(generator.embedQuery).toHaveBeenCalledTimes(1);
+  });
+
+  describe('calidad de la semántica', () => {
+    it('descarta los vecinos bajo el umbral y ajusta meta.total', async () => {
+      const { useCase } = setup({
+        nearest: ['x', 'y', 'z'],
+        scores: [0.9, 0.84, 0.7],
+        ranking: { minSimilarity: 0.8 },
+      });
+      const result = await useCase.execute({ q: 'ecologia', mode: 'semantic' });
+      expect(result.data.map((w) => w.id)).toEqual(['x', 'y']);
+      expect(result.meta.total).toBe(2);
+    });
+
+    it('si ninguno llega al umbral no devuelve nada, sin degradar', async () => {
+      const { useCase } = setup({
+        nearest: ['x'],
+        scores: [0.7],
+        ranking: { minSimilarity: 0.8 },
+      });
+      const result = await useCase.execute({
+        q: 'cosa rara',
+        mode: 'semantic',
+      });
+      expect(result.data).toEqual([]);
+      expect(result.meta).toMatchObject({ total: 0, degraded: false });
+    });
+
+    it('en híbrida una obra solo semántica bajo el umbral no entra', async () => {
+      const { useCase } = setup({
+        lexical: ['a'],
+        nearest: ['b'],
+        scores: [0.7],
+        ranking: { minSimilarity: 0.8 },
+      });
+      const result = await useCase.execute({ q: 'x', mode: 'hybrid' });
+      expect(result.data.map((w) => w.id)).toEqual(['a']);
+      expect(result.meta.total).toBe(1);
+    });
+
+    it('el corte relativo quita lo lejano al mejor', async () => {
+      const { useCase } = setup({
+        nearest: ['x', 'y'],
+        scores: [0.9, 0.8],
+        ranking: { relativeCutoff: 0.05 },
+      });
+      const result = await useCase.execute({ q: 'x', mode: 'semantic' });
+      expect(result.data.map((w) => w.id)).toEqual(['x']);
+    });
+
+    it('con peso mayor, la coincidencia léxica gana a la solo semántica', async () => {
+      const base = { lexical: ['a'], nearest: ['s', 'a2'] };
+      const flat = await setup(base).useCase.execute({
+        q: 'x',
+        mode: 'hybrid',
+      });
+      expect(flat.data.map((w) => w.id)).toEqual(['a', 's', 'a2']);
+      const lexicalFirst = await setup({
+        lexical: ['l1', 'l2'],
+        nearest: ['s'],
+        ranking: { lexicalWeight: 3 },
+      }).useCase.execute({ q: 'x', mode: 'hybrid' });
+      expect(lexicalFirst.data.map((w) => w.id)).toEqual(['l1', 'l2', 's']);
+    });
+
+    it('marca matchSource según el ranking que aportó la obra', async () => {
+      const hybrid = await setup({
+        lexical: ['a', 'b'],
+        nearest: ['b', 'c'],
+      }).useCase.execute({ q: 'x', mode: 'hybrid' });
+      expect(
+        Object.fromEntries(hybrid.data.map((w) => [w.id, w.matchSource])),
+      ).toEqual({ a: 'lexical', b: 'both', c: 'semantic' });
+
+      const semantic = await setup({ nearest: ['c'] }).useCase.execute({
+        q: 'x',
+        mode: 'semantic',
+      });
+      expect(semantic.data[0].matchSource).toBe('semantic');
+    });
+
+    it('en léxica marca lexical con texto y nada sin texto', async () => {
+      const { repo, useCase } = setup({ state: 'disabled' });
+      repo.searchWorks.mockResolvedValue({ items: [summary('a')], total: 1 });
+      const withText = await useCase.execute({ q: 'x' });
+      expect(withText.data[0].matchSource).toBe('lexical');
+      const noText = await useCase.execute({});
+      expect(noText.data[0].matchSource).toBeUndefined();
+    });
   });
 });
