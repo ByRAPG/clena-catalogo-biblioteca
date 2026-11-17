@@ -119,8 +119,8 @@ describe('validateEnv', () => {
 
   it('calidad de la semántica: valores calibrados por defecto y rango válido', () => {
     expect(validateEnv(base)).toMatchObject({
-      SEARCH_MIN_SIMILARITY: 0.835,
-      SEARCH_RELATIVE_CUTOFF: 0.03,
+      SEARCH_MIN_SIMILARITY: 0.84,
+      SEARCH_RELATIVE_CUTOFF: 0.04,
       SEARCH_LEXICAL_WEIGHT: 2,
     });
     expect(

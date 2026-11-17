@@ -70,8 +70,8 @@ export const envSchema = z
     SEMANTIC_CACHE_TTL_SECONDS: z.coerce.number().int().min(0).default(600),
     // Calidad de la semántica (calibrados para multilingual-e5-small): similitud
     // coseno mínima, distancia máxima al mejor resultado y peso de la léxica.
-    SEARCH_MIN_SIMILARITY: z.coerce.number().min(0).max(1).default(0.835),
-    SEARCH_RELATIVE_CUTOFF: z.coerce.number().min(0).max(1).default(0.03),
+    SEARCH_MIN_SIMILARITY: z.coerce.number().min(0).max(1).default(0.84),
+    SEARCH_RELATIVE_CUTOFF: z.coerce.number().min(0).max(1).default(0.04),
     SEARCH_LEXICAL_WEIGHT: z.coerce.number().min(0).max(10).default(2),
   })
   .superRefine((env, ctx) => {

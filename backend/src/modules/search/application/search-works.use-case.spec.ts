@@ -249,10 +249,10 @@ describe('SearchWorks', () => {
     expect(generator.embedQuery).toHaveBeenCalledTimes(1);
   });
 
-  it('cachea el vector de la consulta normalizada', async () => {
+  it('cachea el vector de la misma consulta (espacios colapsados)', async () => {
     const { generator, useCase } = setup({ nearest: ['a'] });
-    await useCase.execute({ q: 'Ecología' });
-    await useCase.execute({ q: 'ecologia' });
+    await useCase.execute({ q: 'Ecología  básica' });
+    await useCase.execute({ q: ' Ecología básica' });
     expect(generator.embedQuery).toHaveBeenCalledTimes(1);
   });
 
@@ -333,6 +333,12 @@ describe('SearchWorks', () => {
         mode: 'semantic',
       });
       expect(semantic.data[0].matchSource).toBe('semantic');
+    });
+
+    it('embebe el texto original de la consulta, no el normalizado', async () => {
+      const { generator, useCase } = setup({ nearest: ['x'] });
+      await useCase.execute({ q: '  García   Márquez ', mode: 'semantic' });
+      expect(generator.embedQuery).toHaveBeenCalledWith('García Márquez');
     });
 
     it('en léxica marca lexical con texto y nada sin texto', async () => {
