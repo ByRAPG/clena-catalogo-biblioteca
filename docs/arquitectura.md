@@ -111,6 +111,7 @@ Ejemplo: el personal registra un préstamo.
 ## 6. API
 
 - Prefijo `/api/v1`. Documentación Swagger en `/docs` (el enunciado la pide ahí). Salud en `/api/v1/health` (incluye chequeo de base de datos), con alias `/health` sin prefijo que pide la Entrega 1. El healthcheck de Docker usa `/api/v1/health`.
+- `/api/v1/health` añade `semanticModel` (`off|loading|ready|error`): solo informa el estado del modelo de embeddings local; un modelo caído no cambia `status`. El modelo (multilingual-e5-small q8) se descarga en la etapa `model` del Dockerfile con revisión fijada y SHA-256, se copia a `/app/models` y se carga sin red ni caché escribible (`allowRemoteModels = false`); se inicia en segundo plano al arrancar con `SEMANTIC_SEARCH=on` y `EMBEDDING_PROVIDER=local`.
 - Formato de error único:
 
 ```json
