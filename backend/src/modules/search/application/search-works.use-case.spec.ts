@@ -223,6 +223,23 @@ describe('SearchWorks', () => {
     expect(generator.embedQuery).toHaveBeenCalledTimes(1);
   });
 
+  it('guarda en caché el vector que llega después del tiempo máximo', async () => {
+    const { generator, useCase } = setup({
+      nearest: ['a'],
+      embedQuery: () =>
+        new Promise<number[]>((resolve) =>
+          setTimeout(() => resolve(vector), 60),
+        ),
+      semanticOptions: { timeoutMs: 20 },
+    });
+    const first = await useCase.execute({ q: 'ecologia' });
+    expect(first.meta.degraded).toBe(true);
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    const second = await useCase.execute({ q: 'ecologia' });
+    expect(second.meta).toMatchObject({ mode: 'hybrid', degraded: false });
+    expect(generator.embedQuery).toHaveBeenCalledTimes(1);
+  });
+
   it('cachea el vector de la consulta normalizada', async () => {
     const { generator, useCase } = setup({ nearest: ['a'] });
     await useCase.execute({ q: 'Ecología' });
