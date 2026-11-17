@@ -1,10 +1,12 @@
 import { normalizeText } from '../../../shared/domain/normalize-text';
 import { InvalidSearchCriteriaError } from '../domain/search-errors';
+import { SEARCH_MODES, SearchMode, isSearchMode } from '../domain/search-mode';
 import { SearchCriteria } from './ports/search.repository';
 
 export const DEFAULT_PAGE_SIZE = 10;
 export const MAX_PAGE_SIZE = 50;
 export const MAX_QUERY_LENGTH = 100;
+export const MAX_PAGE = 10000;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -15,6 +17,7 @@ export interface SearchInput {
   available?: boolean;
   page?: number;
   pageSize?: number;
+  mode?: string;
 }
 
 function optionalUuid(value: string | undefined, name: string): string | null {
@@ -29,9 +32,9 @@ function optionalUuid(value: string | undefined, name: string): string | null {
 export function buildSearchCriteria(input: SearchInput): SearchCriteria {
   const page = input.page ?? 1;
   const pageSize = input.pageSize ?? DEFAULT_PAGE_SIZE;
-  if (!Number.isInteger(page) || page < 1) {
+  if (!Number.isInteger(page) || page < 1 || page > MAX_PAGE) {
     throw new InvalidSearchCriteriaError(
-      'page debe ser un entero mayor o igual a 1',
+      `page debe estar entre 1 y ${MAX_PAGE}`,
     );
   }
   if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > MAX_PAGE_SIZE) {
@@ -44,6 +47,12 @@ export function buildSearchCriteria(input: SearchInput): SearchCriteria {
       `q no puede superar ${MAX_QUERY_LENGTH} caracteres`,
     );
   }
+  if (input.mode !== undefined && !isSearchMode(input.mode)) {
+    throw new InvalidSearchCriteriaError(
+      `mode debe ser uno de: ${SEARCH_MODES.join(', ')}`,
+    );
+  }
+  const mode: SearchMode | null = input.mode ?? null;
   const normalized = normalizeText(input.q ?? '');
   return {
     query: normalized === '' ? null : normalized,
@@ -52,5 +61,6 @@ export function buildSearchCriteria(input: SearchInput): SearchCriteria {
     onlyAvailable: input.available === true,
     page,
     pageSize,
+    mode,
   };
 }

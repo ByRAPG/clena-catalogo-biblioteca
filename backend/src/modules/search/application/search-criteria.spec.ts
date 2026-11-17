@@ -12,7 +12,15 @@ describe('buildSearchCriteria', () => {
       onlyAvailable: false,
       page: 1,
       pageSize: 10,
+      mode: null,
     });
+  });
+
+  it('valida el modo de búsqueda', () => {
+    expect(buildSearchCriteria({ mode: 'semantic' }).mode).toBe('semantic');
+    expect(() => buildSearchCriteria({ mode: 'otro' })).toThrow(
+      InvalidSearchCriteriaError,
+    );
   });
 
   it('normaliza q (tildes, mayúsculas, espacios)', () => {
@@ -43,6 +51,7 @@ describe('buildSearchCriteria', () => {
   it.each([
     [{ page: 0 }],
     [{ page: 1.5 }],
+    [{ page: 10001 }],
     [{ pageSize: 0 }],
     [{ pageSize: 51 }],
     [{ q: 'x'.repeat(101) }],

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CategoryRefDto {
   @ApiProperty({
@@ -74,6 +74,14 @@ export class WorkSummaryDto {
   })
   matchedOn!: 'title' | 'author' | 'subject' | null;
 
+  @ApiPropertyOptional({
+    enum: ['lexical', 'semantic', 'both'],
+    description:
+      'Qué búsqueda aportó la obra: texto (`lexical`), significado (`semantic`) o ambas. Solo hay con `q`.',
+    example: 'semantic',
+  })
+  matchSource?: 'lexical' | 'semantic' | 'both';
+
   @ApiProperty({ type: AvailabilityDto })
   availability!: AvailabilityDto;
 
@@ -97,12 +105,28 @@ export class PageMetaDto {
   total!: number;
 }
 
+export class SearchMetaDto extends PageMetaDto {
+  @ApiProperty({
+    enum: ['hybrid', 'lexical', 'semantic'],
+    example: 'hybrid',
+    description: 'Modo realmente aplicado',
+  })
+  mode!: 'hybrid' | 'lexical' | 'semantic';
+
+  @ApiProperty({
+    example: false,
+    description:
+      'true si se pidió semántica o híbrida y se respondió solo con la léxica',
+  })
+  degraded!: boolean;
+}
+
 export class SearchWorksResponseDto {
   @ApiProperty({ type: [WorkSummaryDto] })
   data!: WorkSummaryDto[];
 
-  @ApiProperty({ type: PageMetaDto })
-  meta!: PageMetaDto;
+  @ApiProperty({ type: SearchMetaDto })
+  meta!: SearchMetaDto;
 }
 
 export class WorkCopyDto {
