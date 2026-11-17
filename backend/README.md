@@ -18,7 +18,7 @@ pnpm run start:dev
 
 Variables validadas al arrancar (zod, `src/shared/config/env.validation.ts`): `PORT`, `DATABASE_URL`, `CORS_ORIGIN`, `LOG_LEVEL`, `JWT_*`. Si falta una obligatoria, la API no inicia.
 
-Búsqueda semántica: `SEMANTIC_SEARCH=on|off` (por defecto `off`) y `EMBEDDING_PROVIDER=fake|local` (por defecto `fake`; `local` aún no está implementado y falla al arrancar con la semántica activa).
+Búsqueda semántica: `SEMANTIC_SEARCH=on|off` (por defecto `off`) y `EMBEDDING_PROVIDER=fake|local` (por defecto `fake`). Con `local` se usa multilingual-e5-small (q8) dentro del proceso: `EMBEDDING_MODEL_PATH` (carpeta del modelo, por defecto `/app/models`) y `EMBEDDING_INTRA_OP_THREADS` (hilos de ONNX Runtime, por defecto 2). El modelo se carga en segundo plano al arrancar y `/api/v1/health` informa `semanticModel` (`off|loading|ready|error`) sin que un modelo caído vuelva `degraded` a la API. La imagen de producción lo trae descargado y verificado (SHA-256); en ejecución no se descarga nada. Con el modelo local, la pasada de arranque espera (en segundo plano) a que el modelo termine de cargar. Para probarlo sin Docker: `node scripts/fetch-embedding-model.mjs <carpeta>` y `EMBEDDING_MODEL_PATH=<carpeta>`; la prueba con el modelo real se activa con `EMBEDDING_REAL_MODEL_PATH=<carpeta> pnpm test local-embedding-generator.real`.
 
 Reindexado de embeddings (solo con `SEMANTIC_SEARCH=on`): `SEMANTIC_REINDEX_INTERVAL_SECONDS` (por defecto 300; `0` lo limita a una pasada al arrancar) y `SEMANTIC_REINDEX_BATCH_SIZE` (por defecto 16). La API reindexa en segundo plano al arrancar y por intervalo; solo procesa obras sin vector, con otro modelo o con el texto cambiado. Para forzarlo a mano:
 
@@ -62,3 +62,17 @@ Solo migraciones versionadas en `prisma/migrations/` (nunca `db push` fuera de l
 El `ValidationPipe` global usa `whitelist` y `forbidNonWhitelisted`: si el cliente envía un campo que el DTO no declara, la API responde 400. Declare todos los campos en el DTO.
 
 En producción, `JWT_ACCESS_SECRET` y `JWT_REFRESH_SECRET` deben tener al menos 32 caracteres. `CORS_ORIGIN` admite varios orígenes separados por coma.
+
+## Imagen de producción
+
+Imagen multi-etapa (`node:22-bookworm-slim`, usuario `node` sin privilegios, solo `dist`, dependencias de producción, `prisma/` y `package.json`). El entrypoint ejecuta `prisma migrate deploy` y luego `node dist/main`; no corre la semilla.
+
+```bash
+docker build --target production -t clena-backend:prod backend
+docker run -d --name clena-backend -p 3000:3000 \
+  -e NODE_ENV=production -e DATABASE_URL=... \
+  -e JWT_ACCESS_SECRET=... -e JWT_REFRESH_SECRET=... \
+  clena-backend:prod
+```
+
+Los secretos JWT deben tener al menos 32 caracteres. Se pasan por variables de entorno, nunca dentro de la imagen. La imagen trae `HEALTHCHECK` contra `/api/v1/health`. El desarrollo sigue usando `--target development` (lo hace `docker-compose.yml`).

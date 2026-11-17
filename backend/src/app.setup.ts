@@ -29,7 +29,9 @@ export function configureApp(app: INestApplication): void {
       .execute()
       .then((report) => res.json(report))
       .catch(() =>
-        res.status(503).json({ status: 'degraded', database: 'down' }),
+        res
+          .status(503)
+          .json({ status: 'degraded', database: 'down', semanticModel: 'off' }),
       );
   });
 

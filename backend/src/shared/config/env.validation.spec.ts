@@ -59,21 +59,17 @@ describe('validateEnv', () => {
     );
   });
 
-  it('falla con semántica activa y proveedor local no implementado', () => {
+  it('acepta el proveedor local y trae ruta e hilos por defecto', () => {
+    const env = validateEnv({
+      ...base,
+      SEMANTIC_SEARCH: 'on',
+      EMBEDDING_PROVIDER: 'local',
+    });
+    expect(env.EMBEDDING_MODEL_PATH).toBe('/app/models');
+    expect(env.EMBEDDING_INTRA_OP_THREADS).toBe(2);
     expect(() =>
-      validateEnv({
-        ...base,
-        SEMANTIC_SEARCH: 'on',
-        EMBEDDING_PROVIDER: 'local',
-      }),
-    ).toThrow(/EMBEDDING_PROVIDER.*no está implementado/);
-    expect(() =>
-      validateEnv({
-        ...base,
-        SEMANTIC_SEARCH: 'off',
-        EMBEDDING_PROVIDER: 'local',
-      }),
-    ).not.toThrow();
+      validateEnv({ ...base, EMBEDDING_INTRA_OP_THREADS: '0' }),
+    ).toThrow(/EMBEDDING_INTRA_OP_THREADS/);
   });
 
   it('valida el reindexado de embeddings', () => {

@@ -8,6 +8,14 @@ export class HealthResponseDto {
   database!: 'up' | 'down';
 
   @ApiProperty({
+    enum: ['off', 'loading', 'ready', 'error'],
+    example: 'ready',
+    description:
+      'Modelo de búsqueda semántica. Solo informa: un modelo caído no vuelve `degraded` a la API.',
+  })
+  semanticModel!: 'off' | 'loading' | 'ready' | 'error';
+
+  @ApiProperty({
     description: 'Segundos desde que arrancó la API',
     example: 120,
   })

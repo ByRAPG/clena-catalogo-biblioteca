@@ -4,6 +4,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { validateEnv } from '../../../shared/config/env.validation';
 import { SharedModule } from '../../../shared/shared.module';
+import {
+  EMBEDDING_GENERATOR,
+  EmbeddingGenerator,
+} from '../application/ports/embedding-generator';
 import { ReindexWorkEmbeddings } from '../application/reindex-work-embeddings.use-case';
 import { readReindexConfig } from '../infrastructure/reindex-config';
 import { SearchModule } from '../search.module';
@@ -28,6 +32,8 @@ async function main(): Promise<number> {
     { logger: ['error', 'warn'] },
   );
   try {
+    // Sin servidor que arrancar: espera a que el modelo termine de cargar.
+    await app.get<EmbeddingGenerator>(EMBEDDING_GENERATOR).warmUp?.();
     const { batchSize } = readReindexConfig(app.get(ConfigService));
     const summary = await app.get(ReindexWorkEmbeddings).execute({
       batchSize,

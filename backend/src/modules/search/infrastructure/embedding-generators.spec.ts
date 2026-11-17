@@ -3,6 +3,7 @@ import { EMBEDDING_DIMENSIONS } from '../domain/embedding';
 import { SemanticSearchDisabledError } from '../domain/search-errors';
 import { createEmbeddingGenerator } from './create-embedding-generator';
 import { FakeEmbeddingGenerator } from './fake-embedding-generator';
+import { LocalEmbeddingGenerator } from './local-embedding-generator';
 import { NullEmbeddingGenerator } from './null-embedding-generator';
 
 const dot = (a: number[], b: number[]): number =>
@@ -89,9 +90,19 @@ describe('createEmbeddingGenerator', () => {
     );
   });
 
-  it('on con local falla con mensaje claro', () => {
+  it('on con local entrega el adaptador local sin cargar el modelo', () => {
+    const generator = createEmbeddingGenerator('on', 'local', {
+      modelPath: '/models',
+      intraOpNumThreads: 2,
+      loadLibrary: () => Promise.reject(new Error('no debe cargarse')),
+    });
+    expect(generator).toBeInstanceOf(LocalEmbeddingGenerator);
+    expect(generator.status().state).toBe('loading');
+  });
+
+  it('on con local sin ruta falla con mensaje claro', () => {
     expect(() => createEmbeddingGenerator('on', 'local')).toThrow(
-      /no está implementado/,
+      /EMBEDDING_MODEL_PATH/,
     );
   });
 });

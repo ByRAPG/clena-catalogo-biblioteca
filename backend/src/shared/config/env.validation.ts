@@ -29,6 +29,15 @@ export const envSchema = z
     JWT_REFRESH_TTL: z.string().default('7d'),
     SEMANTIC_SEARCH: z.enum(['on', 'off']).default('off'),
     EMBEDDING_PROVIDER: z.enum(['fake', 'local']).default('fake'),
+    // Carpeta del modelo local (solo con EMBEDDING_PROVIDER=local); nunca se descarga en ejecución.
+    EMBEDDING_MODEL_PATH: z.string().min(1).default('/app/models'),
+    // Hilos de ONNX Runtime; sin fijarlos la consulta es ~18 veces más lenta en contenedores.
+    EMBEDDING_INTRA_OP_THREADS: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(64)
+      .default(2),
     // Segundos entre reindexados de embeddings; 0 desactiva el intervalo.
     SEMANTIC_REINDEX_INTERVAL_SECONDS: z.coerce
       .number()
@@ -52,16 +61,6 @@ export const envSchema = z
           message: `debe tener al menos ${MIN_SECRET_LENGTH} caracteres en producción`,
         });
       }
-    }
-  })
-  .superRefine((env, ctx) => {
-    if (env.SEMANTIC_SEARCH === 'on' && env.EMBEDDING_PROVIDER === 'local') {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['EMBEDDING_PROVIDER'],
-        message:
-          'local aún no está implementado; usa fake o SEMANTIC_SEARCH=off',
-      });
     }
   });
 

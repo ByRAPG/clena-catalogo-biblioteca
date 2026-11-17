@@ -1,3 +1,4 @@
+import { SemanticModelStatus } from '../domain/health-report';
 import { GetHealth } from './get-health.use-case';
 import { HealthRepository } from './ports/health.repository';
 
@@ -23,5 +24,26 @@ describe('GetHealth', () => {
       Promise.reject(new Error('sin conexión')),
     ).execute();
     expect(report).toMatchObject({ status: 'degraded', database: 'down' });
+  });
+
+  describe('estado del modelo semántico', () => {
+    const withModel = (current: SemanticModelStatus) =>
+      new GetHealth(
+        { isDatabaseAvailable: () => Promise.resolve(true) },
+        { current: () => current },
+      );
+
+    it('informa off si no hay proveedor', async () => {
+      const report = await build(() => Promise.resolve(true)).execute();
+      expect(report.semanticModel).toBe('off');
+    });
+
+    it.each(['off', 'loading', 'ready', 'error'] as const)(
+      'informa %s sin volver el servicio no saludable',
+      async (state) => {
+        const report = await withModel(state).execute();
+        expect(report).toMatchObject({ status: 'ok', semanticModel: state });
+      },
+    );
   });
 });
