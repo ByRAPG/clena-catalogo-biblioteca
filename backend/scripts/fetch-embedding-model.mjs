@@ -26,19 +26,35 @@ const FILES = {
 
 const target = process.argv[2];
 if (!target) {
-  console.error('Uso: node scripts/fetch-embedding-model.mjs <carpeta-destino>');
+  console.error(
+    'Uso: node scripts/fetch-embedding-model.mjs <carpeta-destino>',
+  );
   process.exit(2);
+}
+
+// 3 intentos con timeout de 120 s cada uno; un fallo de red no debe romper el build a la primera.
+async function download(url) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const response = await fetch(url, {
+        signal: AbortSignal.timeout(120000),
+      });
+      if (response.ok && response.body) return response;
+      throw new Error(`HTTP ${response.status}`);
+    } catch (error) {
+      if (attempt === 3)
+        throw new Error(`Descarga fallida de ${url}: ${error}`);
+      console.warn(`Intento ${attempt} fallido (${error}); reintentando`);
+    }
+  }
 }
 
 for (const [file, expected] of Object.entries(FILES)) {
   const destination = join(target, REPO, file);
   await mkdir(dirname(destination), { recursive: true });
-  const response = await fetch(
+  const response = await download(
     `https://huggingface.co/${REPO}/resolve/${REVISION}/${file}`,
   );
-  if (!response.ok || !response.body) {
-    throw new Error(`Descarga fallida de ${file}: HTTP ${response.status}`);
-  }
   const hash = createHash('sha256');
   const source = Readable.fromWeb(response.body);
   source.on('data', (chunk) => hash.update(chunk));
