@@ -11,6 +11,18 @@ body {
   margin: 0;
 }
 
+/* Texto atenuado y marcador con contraste AA (el gris por defecto de Mantine da 3,3:1). */
+:root[data-mantine-color-scheme='light'] {
+  --mantine-color-dimmed: #4a5163;
+  --mantine-color-placeholder: #5f6676;
+}
+
+/* Foco visible de 3 px en todo control (guía visual). */
+html[data-mantine-color-scheme] :focus-visible {
+  outline: 3px solid var(--mantine-primary-color-filled);
+  outline-offset: 2px;
+}
+
 /* El enlace de salto solo se ve cuando recibe el foco con el teclado. */
 .salto-al-contenido {
   position: absolute;
@@ -174,4 +186,35 @@ html[data-alto-contraste='true'] .tutorial-cerrar:hover {
 html[data-alto-contraste='true'] .tutorial-cerrar:focus {
   outline: 2px solid #ffff00;
   outline-offset: 2px;
+}
+
+/* Alto contraste: paginador legible y foco amarillo en cualquier control. */
+html[data-alto-contraste='true'] .mantine-Pagination-control {
+  background-color: #000 !important;
+  border: 2px solid #ffff00 !important;
+  color: #fff !important;
+}
+
+html[data-alto-contraste='true'] .mantine-Pagination-control[data-active] {
+  background-color: #ffff00 !important;
+  color: #000 !important;
+}
+
+html[data-alto-contraste='true'] .mantine-Pagination-control:disabled {
+  border-color: #bfbfbf !important;
+  color: #bfbfbf !important;
+  opacity: 1;
+}
+
+html[data-alto-contraste='true'] :focus-visible {
+  outline-color: #ffff00 !important;
+}
+
+/* Sobre el encabezado de marca el foco va en blanco para que se distinga. */
+header :focus-visible {
+  outline-color: #fff !important;
+}
+
+html[data-alto-contraste='true'] header :focus-visible {
+  outline-color: #ffff00 !important;
 }
