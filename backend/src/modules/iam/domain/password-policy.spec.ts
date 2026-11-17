@@ -27,6 +27,12 @@ describe('assertPasswordAllowed', () => {
     );
   });
 
+  it('rechaza una contraseña común, sin importar mayúsculas', () => {
+    expect(() => assertPasswordAllowed('Password12345', email)).toThrow(
+      WeakPasswordError,
+    );
+  });
+
   it('el mensaje de error no contiene la contraseña', () => {
     const secret = 'corta-secreta';
     try {

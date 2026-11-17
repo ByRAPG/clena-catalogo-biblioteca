@@ -133,7 +133,7 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml exec \
 unset ADMIN_PASSWORD
 ```
 
-`-e ADMIN_PASSWORD` sin valor toma la variable del shell actual, así que la contraseña no aparece en la línea de comandos. `ADMIN_FULL_NAME` es opcional (por defecto «Administrador»). Es idempotente: si el correo ya existe, no cambia su contraseña ni su rol y lo avisa (código de salida 0). Si ya hay un administrador activo, se niega (código 3); para crear otro a propósito añade `-e ADMIN_ALLOW_ADDITIONAL=true`. No guardes `ADMIN_PASSWORD` en `.env.prod`. En desarrollo: `pnpm iam:create-admin` en `backend/` con las mismas variables.
+`-e ADMIN_PASSWORD` sin valor toma la variable del shell actual, así que la contraseña no aparece en la línea de comandos. `ADMIN_FULL_NAME` es opcional (por defecto «Administrador»). Es idempotente: si el correo ya existe, no cambia su contraseña ni su rol y lo avisa (código de salida 0). Si ya hay un administrador activo, se niega (código 3); para crear otro a propósito añade `-e ADMIN_ALLOW_ADDITIONAL=true`. Alternativa que evita la contraseña en el entorno (visible en `docker inspect`): monta un archivo de solo lectura con la contraseña y pasa `-e ADMIN_PASSWORD_FILE=/ruta/al/archivo` en lugar de `ADMIN_PASSWORD`; se descarta el salto de línea final. La política rechaza contraseñas de una lista corta de las más comunes. No guardes `ADMIN_PASSWORD` en `.env.prod`. En desarrollo: `pnpm iam:create-admin` en `backend/` con las mismas variables.
 
 `.env.prod` está ignorado por git; no lo subas. Con `SITE_ADDRESS=:80` el sitio se sirve por HTTP sin TLS (solo pruebas): la cookie de sesión es `Secure` y el navegador no la guarda fuera de `localhost`.
 

@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { readFileSync } from 'node:fs';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -31,10 +32,21 @@ export class CreateAdminCliModule {}
 
 /**
  * Crea el primer administrador. Uso (sin argumentos; todo por entorno):
- *   ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_FULL_NAME (opcional),
+ *   ADMIN_EMAIL, ADMIN_PASSWORD (o ADMIN_PASSWORD_FILE: ruta de un archivo con la
+ *   contraseña, p. ej. un secreto de Docker, para no exponerla en el entorno), ADMIN_FULL_NAME (opcional),
  *   ADMIN_ALLOW_ADDITIONAL=true (opcional).
  */
 async function main(): Promise<number> {
+  const env = { ...process.env };
+  const file = env.ADMIN_PASSWORD_FILE?.trim();
+  if (file) {
+    try {
+      env.ADMIN_PASSWORD = readFileSync(file, 'utf8').replace(/\r?\n$/, '');
+    } catch {
+      console.error('No se pudo leer ADMIN_PASSWORD_FILE.');
+      return 2;
+    }
+  }
   let app;
   try {
     app = await NestFactory.createApplicationContext(CreateAdminCliModule, {
@@ -50,7 +62,7 @@ async function main(): Promise<number> {
   try {
     const { exitCode, message } = await runCreateAdmin(
       app.get(CreateInitialAdmin),
-      process.env,
+      env,
     );
     (exitCode === 0 ? console.log : console.error)(message);
     return exitCode;
