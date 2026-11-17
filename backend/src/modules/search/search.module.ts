@@ -69,6 +69,6 @@ const MODEL_STATUS: Record<EmbeddingGeneratorState, SemanticModelStatus> = {
       }),
     },
   ],
-  exports: [ReindexWorkEmbeddings, SEMANTIC_MODEL_STATUS],
+  exports: [ReindexWorkEmbeddings, SEMANTIC_MODEL_STATUS, EMBEDDING_GENERATOR],
 })
 export class SearchModule {}
