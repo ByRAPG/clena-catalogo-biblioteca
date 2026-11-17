@@ -93,6 +93,8 @@ const alturaControl = '2.75rem'
 export const theme: MantineThemeOverride = createTheme({
   colors: colores,
   primaryColor: 'marca',
+  // Con «reducir movimiento» del sistema, Mantine apaga sus transiciones.
+  respectReducedMotion: true,
   primaryShade: { light: 8, dark: 4 },
   black: '#1F2433',
   white: '#FFFFFF',
