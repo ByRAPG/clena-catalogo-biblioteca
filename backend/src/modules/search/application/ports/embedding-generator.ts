@@ -20,4 +20,9 @@ export interface EmbeddingGenerator {
   embedQuery(text: string): Promise<EmbeddingVector>;
   embedPassages(texts: string[]): Promise<EmbeddingVector[]>;
   status(): EmbeddingGeneratorStatus;
+  /**
+   * Opcional: inicia la carga del modelo y resuelve al terminar (nunca
+   * rechaza; el fallo queda en `status()`). Idempotente.
+   */
+  warmUp?(): Promise<void>;
 }
