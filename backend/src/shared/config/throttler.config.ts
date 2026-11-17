@@ -1,6 +1,7 @@
 import type { ThrottlerModuleOptions } from '@nestjs/throttler';
 
-const AUTH_PATH = /^\/api\/v1\/auth(\/|$)/;
+// Sin distinguir mayúsculas: Express enruta /API/v1/Auth/login igual que en minúsculas.
+const AUTH_PATH = /^\/api\/v1\/auth(\/|$)/i;
 
 export interface ThrottleSettings {
   ttlSeconds: number;
