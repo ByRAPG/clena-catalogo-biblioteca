@@ -31,6 +31,13 @@ COPY prisma ./prisma
 RUN pnpm install --prod --frozen-lockfile \
     && pnpm store prune
 
+# ---------- Modelo de embeddings: revisión fijada y SHA-256 por archivo ----------
+# Solo esta etapa usa la red; en ejecución el modelo se carga desde /app/models.
+FROM ${NODE_IMAGE} AS model
+WORKDIR /fetch
+COPY scripts/fetch-embedding-model.mjs ./
+RUN node fetch-embedding-model.mjs /models
+
 # ---------- Producción: runtime mínima, sin root ----------
 FROM ${NODE_IMAGE} AS production
 RUN apt-get update \
@@ -41,6 +48,7 @@ ENV NODE_ENV=production \
 WORKDIR /app
 COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/dist ./dist
+COPY --from=model --chown=node:node /models ./models
 COPY --chown=node:node prisma ./prisma
 COPY --chown=node:node package.json ./
 COPY --chown=node:node docker-entrypoint.sh ./docker-entrypoint.sh
