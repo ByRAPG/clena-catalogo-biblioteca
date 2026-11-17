@@ -1,11 +1,18 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { HealthReport } from '../domain/health-report';
 import { HEALTH_REPOSITORY, HealthRepository } from './ports/health.repository';
+import {
+  SEMANTIC_MODEL_STATUS,
+  SemanticModelStatusProvider,
+} from './ports/semantic-model-status';
 
 @Injectable()
 export class GetHealth {
   constructor(
     @Inject(HEALTH_REPOSITORY) private readonly health: HealthRepository,
+    @Optional()
+    @Inject(SEMANTIC_MODEL_STATUS)
+    private readonly semanticModel?: SemanticModelStatusProvider,
   ) {}
 
   async execute(): Promise<HealthReport> {
@@ -13,6 +20,8 @@ export class GetHealth {
     return {
       status: databaseUp ? 'ok' : 'degraded',
       database: databaseUp ? 'up' : 'down',
+      // El estado del modelo es informativo: no cambia `status`.
+      semanticModel: this.semanticModel?.current() ?? 'off',
       uptime: Math.round(process.uptime()),
       timestamp: new Date().toISOString(),
     };
