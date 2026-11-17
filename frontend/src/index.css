@@ -219,3 +219,11 @@ footer :focus-visible {
 html[data-alto-contraste='true'] :is(header, footer) :focus-visible {
   outline-color: #ffff00 !important;
 }
+
+/* La insignia de disponibilidad lleva colores propios en línea; en alto
+   contraste sigue el estilo del modo (el texto ya dice «Disponible»). */
+html[data-alto-contraste='true'] .mantine-Badge-root {
+  background-color: #000 !important;
+  border: 2px solid #ffff00 !important;
+  color: #ffff00 !important;
+}

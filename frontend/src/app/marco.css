@@ -182,7 +182,6 @@ html:not([data-alto-contraste='true'])
   flex: none;
   background: var(--mantine-color-marca-8);
   color: #fff;
-  margin-top: 2rem;
   border-top: 4px solid var(--mantine-color-granate-8);
 }
 
