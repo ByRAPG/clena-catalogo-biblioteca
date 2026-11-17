@@ -61,7 +61,7 @@ export class QueryEmbedder {
     return this.generator.status().state !== 'disabled';
   }
 
-  /** `normalizedQuery` ya viene normalizado: sirve de clave de caché. */
+  /** El texto de la consulta (espacios colapsados) sirve de clave de caché. */
   async embed(normalizedQuery: string): Promise<EmbeddingVector | null> {
     if (this.generator.status().state !== 'ready') {
       this.logger.warn('Modelo de embeddings no listo; se responde con léxica');

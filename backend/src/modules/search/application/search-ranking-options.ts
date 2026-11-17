@@ -13,7 +13,7 @@ export interface SearchRankingOptions extends SemanticCutoff {
  * texto de las obras. Con el generador falso las pruebas los fijan aparte.
  */
 export const DEFAULT_SEARCH_RANKING_OPTIONS: SearchRankingOptions = {
-  minSimilarity: 0.835,
-  relativeCutoff: 0.03,
+  minSimilarity: 0.84,
+  relativeCutoff: 0.04,
   lexicalWeight: 2,
 };

@@ -64,7 +64,11 @@ export class SearchWorks {
     }
 
     const vector = semanticOn
-      ? await this.queryEmbedder.embed(criteria.query)
+      ? await this.queryEmbedder.embed(
+          // El texto original, no el normalizado: sin tildes ni mayúsculas el
+          // modelo entiende peor la consulta («García Márquez» dejaba de coincidir).
+          (input.q ?? '').trim().replace(/\s+/g, ' '),
+        )
       : null;
     const semanticHits = vector
       ? await this.nearest(vector, criteria).catch(() => null)
