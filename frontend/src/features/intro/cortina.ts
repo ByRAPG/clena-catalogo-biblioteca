@@ -32,7 +32,7 @@ function crearCapa() {
     }
     capa.appendChild(lado)
   }
-  // Sin el logo (recurso provisional de terceros, ver docs/recursos-de-terceros.md) la cortina funciona igual.
+  // Sin el logo (recurso de terceros, ver docs/recursos-de-terceros.md) la cortina funciona igual.
   const logo = document.createElement('img')
   logo.className = 'cortina-logo'
   logo.alt = ''

@@ -1,6 +1,6 @@
-# Recursos de terceros en la interfaz (provisional)
+# Recursos de terceros en la interfaz
 
-> **Estado: sin autorización escrita todavía.** Estos archivos se incluyen únicamente para que el profesor pueda **previsualizar la interfaz con la identidad del CLENA y de la Universidad del Norte**. Su uso depende de la autorización escrita del CLENA y de la Universidad del Norte, que gestiona el profesor. **Si el profesor o el CLENA la niegan, se retirarán del repositorio cuando Rafael Potes lo indique.** El código funciona igual sin ellos (ver «Cómo se retiran»).
+> **Estado: incluidos por decisión de Rafael Potes (20 nov 2026, estilo aprobado con logos y fotos).** Los logos pertenecen a sus instituciones (CLENA, Universidad del Norte, Biblioteca Piloto del Caribe) y las fotos a sus titulares; se usan solo con fines académicos, para mostrar la interfaz con la identidad institucional. Sigue pendiente la autorización escrita del CLENA y de la Universidad del Norte, que gestiona el profesor; si la niegan, se retiran del repositorio cuando Rafael lo indique. El código funciona igual sin ellos (ver «Cómo se retiran»).
 
 ## Qué archivos son
 

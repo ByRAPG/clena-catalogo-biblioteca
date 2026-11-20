@@ -44,8 +44,8 @@ Código: `frontend/src/app/layout.tsx` y `marco.css`; marca en `shared/ui/marca.
 - **Movimiento:** solo transiciones de color de 150 ms en enlaces y botones de la cabecera; se anulan con `prefers-reduced-motion`.
 - **Alto contraste y letra grande:** cabecera y pie pasan a fondo negro con texto blanco (relación 16,8:1 o más) y subrayado amarillo en la ruta activa; todo está en rem y crece con la letra grande. Foco de 3 px blanco (amarillo en alto contraste).
 
-### Logos esperados (pendientes de autorización)
-Todavía no hay archivos oficiales. Cuando existan, se sustituye el texto de `CreditosInstitucionales` (único punto de cambio) por imágenes con texto alternativo igual al nombre de la institución. Archivos esperados en `frontend/public/logos/`:
+### Logos esperados
+Los logos y fotos que usa hoy la interfaz están en `frontend/public/` y se describen en [`recursos-de-terceros.md`](recursos-de-terceros.md) (aprobados por Rafael el 20 nov, uso académico). Si se reciben archivos oficiales, se sustituye el texto de `CreditosInstitucionales` (único punto de cambio) por imágenes con texto alternativo igual al nombre de la institución. Archivos esperados en `frontend/public/logos/`:
 
 | Archivo | Formato | Uso |
 |---|---|---|

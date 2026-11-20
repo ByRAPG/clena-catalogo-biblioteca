@@ -13,7 +13,6 @@ export const CONCEPTO_LOGO: ConceptoLogo = 'c'
  * Esquema de color del logotipo C y de su versión compacta «BF» (valor a cambiar):
  * 1 texto blanco y lupa ámbar; 2 texto amarillo CLENA y lupa blanca; 3 placa ámbar
  * con texto marino y lupa granate. Los colores son variables CSS (`logo.css`).
- * En la vista previa (`VITE_PREVIEW_LOGOS=true`) `?logo=1|2|3` lo cambia al vuelo.
  */
 export type EsquemaLogo = 1 | 2 | 3
 

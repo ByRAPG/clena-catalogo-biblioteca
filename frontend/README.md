@@ -86,4 +86,3 @@ export default defineConfig([
 
 - En el concepto C la versión compacta (cabecera móvil, favicon, iconos) es el monograma «BF», con las letras B y F del logotipo; `public/logos-alt/busca-c-mini.svg` es el icono (BF ámbar sobre marino).
 - El esquema de color es la constante `ESQUEMA_LOGO` (`1`, `2` o `3`) de `src/shared/ui/logo-concepto.ts`: 1 texto blanco y lupa ámbar; 2 texto amarillo CLENA y lupa blanca; 3 placa ámbar con texto marino y lupa granate. Los colores son las variables `--logo-texto`, `--logo-lupa` y `--logo-placa` de `src/shared/ui/logo.css` (con sus contrastes).
-- Vista previa: con `VITE_PREVIEW_LOGOS=true` en `.env.local` (y como argumento de build en Docker), `?logo=1|2|3` cambia el esquema al vuelo y lo recuerda durante la sesión. Sin la bandera el código se elimina del build.

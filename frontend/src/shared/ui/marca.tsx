@@ -163,12 +163,11 @@ const BF =
 
 /**
  * Marca de producto para el pie: logo del CLENA y, en pequeño, el nombre de la
- * aplicación. Los logos son recursos provisionales de terceros para la
- * previsualización del profesor: su uso está pendiente de autorización escrita
- * (ver docs/recursos-de-terceros.md).
+ * aplicación. Los logos son recursos de terceros usados con fines
+ * académicos (ver docs/recursos-de-terceros.md).
  */
 export function Marca() {
-  // Sin el archivo (recurso provisional de terceros, ver docs/recursos-de-terceros.md) el logo desaparece sin dejar imagen rota.
+  // Sin el archivo (recurso de terceros, ver docs/recursos-de-terceros.md) el logo desaparece sin dejar imagen rota.
   const [sinLogo, setSinLogo] = useState(false)
   return (
     <span className="marca">
