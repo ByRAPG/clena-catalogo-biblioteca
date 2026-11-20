@@ -1,0 +1,31 @@
+# Túnel rápido de Cloudflare (sin cuenta ni tarjeta): publica `web` en una URL
+# https://<palabras>.trycloudflare.com que cambia cada vez que el túnel arranca.
+# Es un override de docker-compose.prod.yml; guía completa en docs/despliegue.md.
+#   docker compose --env-file .env.prod -f docker-compose.prod.yml -f docker-compose.tunnel.yml up -d --build
+#   docker compose --env-file .env.prod -f docker-compose.prod.yml -f docker-compose.tunnel.yml logs tunnel
+services:
+  tunnel:
+    # Fijada por digest (cloudflared 2026.11.1). Para actualizar: docker pull
+    # cloudflare/cloudflared:latest y copiar el RepoDigest.
+    image: cloudflare/cloudflared@sha256:e613aadbc2d9511785d2e67a86b0c8ac18dd63a3f9af0d06faf04cbfdcb35f2d
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://web:80
+    user: "65532:65532"
+    depends_on:
+      web:
+        condition: service_started
+    # `edge` tiene salida a internet (el túnel sale hacia Cloudflare) y ahí está `web`.
+    networks:
+      - edge
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 128m
+    pids_limit: 100
+
+  # Con el túnel no hace falta abrir puertos en la máquina: se liberan el 80 y el
+  # 443 (pueden estar ocupados) y Caddy sirve HTTP; el HTTPS lo pone Cloudflare.
+  web:
+    ports: !reset []
