@@ -24,6 +24,18 @@ services:
       timeout: 5s
       retries: 10
       start_period: 20s
+    read_only: true
+    tmpfs:
+      - /var/run/postgresql
+      - /tmp
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
     mem_limit: 512m
     pids_limit: 200
     security_opt:
@@ -48,6 +60,13 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       # Un proxy de confianza (Caddy). La API lo lee desde el PR #109; antes se ignora.
       TRUST_PROXY: ${TRUST_PROXY:-1}
+      # Búsqueda semántica (ADR-08). Valores por defecto = los del código. Para activarla con el modelo real: SEMANTIC_SEARCH=on, EMBEDDING_PROVIDER=local.
+      SEMANTIC_SEARCH: ${SEMANTIC_SEARCH:-off}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-fake}
+      EMBEDDING_MODEL_PATH: ${EMBEDDING_MODEL_PATH:-/app/models}
+      SEARCH_MIN_SIMILARITY: ${SEARCH_MIN_SIMILARITY:-0.84}
+      SEARCH_RELATIVE_CUTOFF: ${SEARCH_RELATIVE_CUTOFF:-0.04}
+      SEARCH_LEXICAL_WEIGHT: ${SEARCH_LEXICAL_WEIGHT:-2}
     depends_on:
       db:
         condition: service_healthy

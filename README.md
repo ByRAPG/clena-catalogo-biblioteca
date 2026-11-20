@@ -143,7 +143,7 @@ Notas de seguridad del servidor web (`frontend/Caddyfile`): la política `Conten
 
 ## Aplicación desplegada
 
-Pendiente: el despliegue con URL pública (T-07) se hace en el Sprint 3.
+Despliegue con URL pública (T-07): ver [docs/despliegue.md](docs/despliegue.md) (túnel rápido de Cloudflare con `docker-compose.tunnel.yml`).
 
 ## Documentación
 
