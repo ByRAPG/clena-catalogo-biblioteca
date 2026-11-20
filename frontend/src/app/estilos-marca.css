@@ -1,0 +1,1280 @@
+/*
+ * Marca en toda la interfaz (vista previa): cuadros de marca, gestión,
+ * formularios, tablas, resultados y coincidencias resaltadas.
+ * Paleta: marino #23234E, marino oscuro #1B1B3F, granate #5B113C, ámbar #FCB040
+ * (solo como fondo con texto marino) y, para la iluminación al pasar el
+ * cursor, ámbar con texto marino en todos los cuadros (marino y granate).
+ *
+ * Contrastes (WCAG): blanco/#23234E 14,77 · blanco/#1B1B3F 16,5 ·
+ * blanco/#5B113C 13,21 · #23234E/#FCB040 8,03 (hover de todos los cuadros) · blanco/#34408A 9,3 · #5B113C/#f6f7fb 12,3.
+ */
+
+/* ---------- Hero: sin vidrio ---------- */
+.hero-vidrio {
+  background: #1b1b3f;
+  border: 1px solid #3a3a7a;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* ---------- Cuadros de marca ---------- */
+.rejilla-cuadros {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1rem;
+}
+
+.cuadro {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 13.5rem;
+  padding: 1.25rem;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 16px;
+  color: #fff;
+  text-align: left;
+  text-decoration: none;
+  font: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 2px 5px #0003;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.cuadro-azul {
+  background: #23234e;
+}
+
+.cuadro-granate {
+  background: #5b113c;
+}
+
+/* Capa que ilumina el cuadro hacia el otro color de marca. */
+.cuadro::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.cuadro::before {
+  background: #fcb040;
+}
+
+/* Marino o granate al pasar el cursor o enfocarlos: ámbar con texto marino
+   (8,03:1) y el círculo del icono invertido (ámbar sobre marino 8,03:1). */
+.cuadro-numero,
+.cuadro-titulo,
+.cuadro-descripcion,
+.cuadro-icono {
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.cuadro:is(:hover, :focus-visible) :is(.cuadro-numero, .cuadro-titulo, .cuadro-descripcion) {
+  color: #23234e;
+}
+
+.cuadro:is(:hover, :focus-visible) .cuadro-icono {
+  background: #23234e;
+  color: #fcb040;
+}
+
+.cuadro:hover,
+.cuadro:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(35, 35, 78, 0.35);
+}
+
+.cuadro:hover::before,
+.cuadro:focus-visible::before {
+  opacity: 1;
+}
+
+.cuadro:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+.cuadro:focus-visible {
+  outline: 3px solid #23234e;
+  outline-offset: 3px;
+}
+
+.cuadro-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.cuadro-numero {
+  font-size: 2.75rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+}
+
+.cuadro-icono {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: #fcb040;
+  color: #23234e;
+}
+
+.cuadro-titulo {
+  margin-top: 1.25rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.cuadro-descripcion {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #fff;
+}
+
+.seccion-accesos .rejilla-cuadros {
+  grid-template-columns: repeat(auto-fit, minmax(min(21rem, 100%), 1fr));
+}
+
+.seccion-accesos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ---------- Encabezado de sección: franja a todo el ancho con foto ----------
+ * Filtro al 85 % (peor caso, zona blanca de la foto): marino (68,68,104) con
+ * blanco 9,2:1 y ámbar 5,0:1; granate (115,52,89) con blanco 8,9:1 y ámbar 4,8:1. */
+.pantalla-gestion {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* El panel enlaza sus franjas sin banda blanca entre ellas ni con el pie. */
+.pantalla-gestion-panel {
+  gap: 0;
+  margin-bottom: -2rem;
+}
+
+.pantalla-gestion-panel > .zona-accesos {
+  margin-bottom: 0;
+}
+
+.marco:has(.pantalla-gestion),
+body:has(.pantalla-gestion) {
+  background: #f6f7fb;
+}
+
+.encabezado-seccion.franja {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  margin-top: -1rem;
+  padding-block: 1.5rem 2.25rem;
+  color: #fff;
+}
+
+.pantalla-gestion-panel > .encabezado-seccion.franja {
+  padding-block-end: 2.75rem;
+}
+
+.encabezado-fila {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.migas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.migas li + li::before {
+  content: '/';
+  margin-right: 0.5rem;
+  color: #fff;
+}
+
+.migas a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.migas a:hover {
+  color: #fcb040;
+}
+
+.migas [aria-current='page'] {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: #fcb040;
+  font-weight: 700;
+}
+
+.encabezado-seccion .rotulo {
+  color: #fcb040;
+}
+
+.encabezado-titulo {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.encabezado-titulo::after {
+  content: '';
+  display: block;
+  width: 4.5rem;
+  height: 5px;
+  margin-top: 0.625rem;
+  border-radius: 3px;
+  background: #fcb040;
+}
+
+.encabezado-descripcion {
+  margin: 0;
+  max-width: 44rem;
+  color: #4a5163;
+}
+
+.encabezado-seccion .encabezado-descripcion {
+  color: #fff;
+  font-size: 1.0625rem;
+}
+
+/* ---------- Tarjetas y formularios ---------- */
+.tarjeta-seccion,
+.formulario-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 8px 40px #23234e1a;
+  border-top: 6px solid #5b113c;
+}
+
+.formulario-tarjeta {
+  border-top-color: #23234e;
+}
+
+/* Registrar libro: una tarjeta por grupo, con barra superior de color de marca. */
+.formulario-grupos {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  counter-reset: grupo;
+}
+
+.grupo-campos,
+.grupo-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0;
+  padding: 1.5rem;
+  min-width: 0;
+  border: 0;
+  border-top: 6px solid #23234e;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 8px 40px #23234e1a;
+}
+
+.grupo-granate {
+  border-top-color: #5b113c;
+}
+
+.grupo-acciones {
+  border-top-color: #fcb040;
+}
+
+/* `float` saca la leyenda del borde superior y la deja dentro de la tarjeta. */
+.grupo-campos legend {
+  float: left;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0;
+  margin-bottom: 0.25rem;
+  font-size: 0.9375rem;
+}
+
+/* Número del grupo: círculo ámbar con cifra marino (8,03:1). */
+.grupo-campos legend::before {
+  counter-increment: grupo;
+  content: counter(grupo);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: #fcb040;
+  color: #23234e;
+  font-size: 1.125rem;
+  letter-spacing: 0;
+}
+
+.grupo-acciones {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.grupo-acciones .mantine-Button-root {
+  height: auto;
+  white-space: normal;
+}
+
+.grupo-acciones .mantine-Button-label {
+  white-space: normal;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.boton-guardar {
+  min-width: min(100%, 16rem);
+  min-height: 3.5rem;
+  border-radius: 12px;
+}
+
+html:not([data-alto-contraste='true']) .marco .boton-guardar.mantine-Button-root[data-variant='filled']:not(:disabled, [data-disabled]) {
+  font-size: 1.0625rem;
+  box-shadow: 0 8px 20px #fcb04059;
+}
+
+/* Mensajes con acento de marca: filete grueso a la izquierda. */
+.alerta-exito,
+.alerta-error {
+  border-left: 8px solid #23234e;
+  border-radius: 16px;
+}
+
+.alerta-error {
+  border-left-color: #5b113c;
+}
+
+.campos-en-fila {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1rem;
+}
+
+.acciones-formulario {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.dos-columnas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.pasos-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pasos-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+}
+
+.paso-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-top: 6px solid #23234e;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 8px 40px #23234e1a;
+  counter-increment: paso;
+  overflow-wrap: anywhere;
+}
+
+.paso-granate {
+  border-top-color: #5b113c;
+}
+
+.paso-ambar {
+  border-top-color: #fcb040;
+}
+
+/* Número grande en círculo ámbar con cifra marino (8,03:1). */
+.paso-tarjeta::before {
+  content: counter(paso);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: #fcb040;
+  color: #23234e;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.paso-tarjeta a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: #5b113c;
+  font-weight: 700;
+}
+
+/* Zona para elegir el archivo: borde ámbar discontinuo y fondo suave. El campo
+   conserva su propio borde gris (3:1) sobre blanco. */
+.zona-archivo {
+  padding: 1.25rem;
+  border: 3px dashed #fcb040;
+  border-radius: 16px;
+  background: #fff7e6;
+}
+
+.zona-archivo .mantine-InputWrapper-label {
+  color: #5b113c;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.zona-archivo .mantine-InputWrapper-description {
+  color: #3d4252;
+}
+
+.seccion-cabecera {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.seccion-titulo {
+  margin: 0;
+  color: #5b113c;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.insignia-icono {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: #fcb040;
+  color: #23234e;
+}
+
+.lista-salas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sala-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.sala-item .mantine-Button-root {
+  width: 100%;
+  height: auto;
+  min-height: 2.75rem;
+  padding-block: 0.5rem;
+  white-space: normal;
+  justify-content: flex-start;
+}
+
+.sala-item .mantine-Button-label {
+  line-height: 1.3;
+  white-space: normal;
+  text-align: left;
+}
+
+.estado-vacio {
+  margin: 0;
+  padding: 1.25rem;
+  border: 2px dashed #bcc3e4;
+  border-radius: 12px;
+  color: #4a5163;
+  text-align: center;
+}
+
+.nota-rol {
+  margin: 0;
+  color: #4a5163;
+}
+
+.aviso-discreto {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 4px solid #5b113c;
+  background: #fbedf4;
+  color: #400b2a;
+  font-size: 0.9375rem;
+}
+
+/* ---------- Tablas de gestión ---------- */
+.tabla-gestion {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 0.9375rem;
+}
+
+.tabla-gestion caption {
+  padding-bottom: 0.75rem;
+  color: #5b113c;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  text-align: left;
+}
+
+.tabla-gestion thead th {
+  background: #23234e;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 4px solid #fcb040;
+}
+
+.tabla-gestion tbody td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e4ebf3;
+  vertical-align: top;
+}
+
+.tabla-gestion tbody tr:nth-child(even) {
+  background: #f6f7fb;
+}
+
+.tabla-gestion tbody tr:hover {
+  background: #fdf1de;
+  box-shadow: inset 4px 0 0 #5b113c;
+}
+
+.estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+/* Creado/Actualizado: ámbar con marino (8,03:1). Error: granate con blanco (13,21:1). */
+.estado-ok {
+  color: #23234e;
+  background: #fcb040;
+}
+
+.estado-error {
+  color: #fff;
+  background: #5b113c;
+}
+
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.75rem;
+}
+
+.cifra {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  color: #fff;
+}
+
+.cifra {
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px #23234e26;
+}
+
+.cifra span {
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.8125rem;
+}
+
+.cifra strong {
+  font-size: 2.5rem;
+  line-height: 1.1;
+}
+
+.cifra-azul {
+  background: #23234e;
+}
+
+.cifra-granate {
+  background: #5b113c;
+}
+
+.cifra-ambar {
+  background: #fcb040;
+  color: #23234e;
+}
+
+@media (max-width: 40em) {
+  .tabla-gestion thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .tabla-gestion,
+  .tabla-gestion tbody,
+  .tabla-gestion tr,
+  .tabla-gestion td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .tabla-gestion tbody tr {
+    margin-bottom: 0.75rem;
+    border: 1px solid #bcc3e4;
+    border-left: 6px solid #23234e;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .tabla-gestion tbody td {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+    border-bottom: 1px solid #e4ebf3;
+  }
+
+  .tabla-gestion tbody td::before {
+    content: attr(data-etiqueta);
+    flex: none;
+    color: #5b113c;
+    font-weight: 700;
+  }
+}
+
+/* ---------- Ingreso y mensajes ---------- */
+.ingreso.franja {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  min-height: 60vh;
+  margin-inline: calc(50% - 50vw);
+  margin-block: -1rem -2rem; /* de la cabecera al pie sin bandas blancas */
+  padding: 3rem 1rem;
+  box-sizing: border-box;
+}
+
+.ingreso-tarjeta {
+  width: 100%;
+  max-width: 28rem;
+  border-top: 6px solid #fcb040;
+  border-radius: 20px;
+  box-shadow: 0 12px 40px #00000059;
+}
+
+.ingreso-cabecera {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  text-align: center;
+}
+
+.enlace-centrado {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: #5b113c;
+  font-weight: 600;
+}
+
+.tarjeta-centrada {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 28rem;
+  margin: 1rem auto;
+  padding: 2rem 1.5rem;
+  border-radius: 16px;
+  border-top: 6px solid #5b113c;
+  background: #fff;
+  box-shadow: 0 8px 50px #0000000d;
+  text-align: center;
+}
+
+.tarjeta-centrada p {
+  margin: 0;
+}
+
+.boton-enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 10px;
+  background: #fcb040;
+  color: #23234e;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.boton-enlace:hover {
+  background: #5b113c;
+  color: #fff;
+}
+
+.estado-cargando {
+  padding: 1rem;
+}
+
+/* ---------- Resultados ---------- */
+/* Filete y círculo siempre en granate (#5B113C); al pasar el cursor o enfocar
+   dentro de la tarjeta pasan a ámbar (#FCB040) con el número en marino (8,03:1). */
+.resultado {
+  position: relative;
+  padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 50px #0000000d;
+  border-left: 8px solid #5b113c;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.resultado:is(:hover, :focus-within) {
+  border-left-color: #fcb040;
+  box-shadow: 0 10px 40px #5b113c33;
+}
+
+.resultado-numero {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding-inline: 0.25rem;
+  border-radius: 50%;
+  background: #5b113c;
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.resultado:is(:hover, :focus-within) .resultado-numero {
+  background: #fcb040;
+  color: #23234e;
+}
+
+.insignia-significado {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: #5b113c;
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+/* ---------- Coincidencias resaltadas ---------- */
+mark.marca-termino {
+  padding: 0 0.15em;
+  border-radius: 4px;
+  background: #fcb040;
+  color: #23234e;
+}
+
+mark.marca-frase {
+  padding: 0 0.15em;
+  border-radius: 4px;
+  background: #5b113c;
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] mark.marca-termino {
+  background: #ffff00;
+  color: #000;
+}
+
+html[data-alto-contraste='true'] mark.marca-frase {
+  background: #fff;
+  color: #000;
+  text-decoration: underline;
+}
+
+html[data-alto-contraste='true'] .insignia-significado {
+  background: #000;
+  color: #ffff00;
+  border: 2px solid #ffff00;
+}
+
+/* ---------- Filtros y paginador con la marca ---------- */
+.filtros {
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  background: #fff;
+  border-top: 4px solid #fcb040;
+  box-shadow: 0 8px 50px #0000000d;
+}
+
+.mantine-Pagination-control {
+  border: 2px solid #23234e;
+  color: #23234e;
+  font-weight: 700;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+}
+
+.mantine-Pagination-control:hover:not([data-disabled]) {
+  background: #eef0fa;
+  border-color: #5b113c;
+}
+
+.mantine-Pagination-control[data-active] {
+  background: #23234e;
+  border-color: #23234e;
+  color: #fff;
+}
+
+.mantine-Pagination-control[data-active]:hover {
+  background: #5b113c;
+  border-color: #5b113c;
+}
+
+/* ---------- Detalle ---------- */
+.detalle-cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 16px;
+  background: #fff;
+  border-left: 8px solid #5b113c;
+  box-shadow: 0 8px 50px #0000000d;
+}
+
+.detalle-titulo {
+  margin: 0;
+  color: #23234e;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  line-height: 1.25;
+}
+
+.enlace-volver {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  align-self: flex-start;
+}
+
+/* ---------- Formularios: errores y ayudas ---------- */
+.mantine-InputWrapper-error {
+  font-weight: 600;
+}
+
+.mantine-InputWrapper-description {
+  color: #4a5163;
+}
+
+/* ---------- Movimiento y alto contraste ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .cuadro,
+  .cuadro::before,
+  .resultado,
+  .resultado-numero,
+  .boton-enlace {
+    transition: none !important;
+  }
+
+  .cuadro:hover,
+  .cuadro:focus-visible,
+  .cuadro:active {
+    transform: none;
+  }
+}
+
+html[data-alto-contraste='true'] :is(.cuadro-azul, .cuadro-granate) {
+  background: #000;
+  border: 2px solid #ffff00;
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] :is(.cuadro-azul, .cuadro-granate)::before {
+  display: none;
+}
+
+html[data-alto-contraste='true'] :is(.cuadro-azul, .cuadro-granate):hover {
+  background: #333;
+}
+
+html[data-alto-contraste='true']
+  .cuadro:is(:hover, :focus-visible)
+  :is(.cuadro-numero, .cuadro-titulo, .cuadro-descripcion) {
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] .cuadro:is(:hover, :focus-visible) .cuadro-icono {
+  background: #ffff00;
+  color: #000;
+}
+
+/* ---------- «Coincide en …» ---------- */
+.coincidencia {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #1f2433;
+}
+
+.coincidencia-campo {
+  color: #5b113c;
+  text-decoration: underline;
+  text-decoration-color: #fcb040;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 3px;
+}
+
+html[data-alto-contraste='true'] .coincidencia {
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] .coincidencia-campo {
+  color: #ffff00;
+  text-decoration-color: #ffff00;
+}
+
+html[data-alto-contraste='true'] .cuadro-icono,
+html[data-alto-contraste='true'] .insignia-icono {
+  background: #ffff00;
+  color: #000;
+}
+
+html[data-alto-contraste='true']
+  :is(
+    .grupo-campos,
+    .grupo-acciones,
+    .paso-tarjeta,
+    .tarjeta-seccion,
+    .formulario-tarjeta,
+    .detalle-cabecera,
+    .resultado,
+    .filtros,
+    .tarjeta-centrada,
+    .ingreso-tarjeta
+  ) {
+  background: #000;
+  color: #fff;
+  border: 2px solid #ffff00;
+  box-shadow: none;
+}
+
+html[data-alto-contraste='true']
+  :is(
+    .encabezado-titulo,
+    .detalle-titulo,
+    .encabezado-descripcion,
+    .seccion-titulo,
+    .migas a,
+    .migas [aria-current='page'],
+    .migas li + li::before,
+    .nota-rol,
+    .enlace-centrado
+  ) {
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] .resultado .resultado-numero,
+html[data-alto-contraste='true'] .resultado-numero,
+html[data-alto-contraste='true'] :is(.paso-tarjeta, .grupo-campos legend)::before {
+  background: #ffff00;
+  color: #000;
+}
+
+html[data-alto-contraste='true'] .tabla-gestion thead th {
+  background: #ffff00;
+  color: #000;
+}
+
+html[data-alto-contraste='true'] .tabla-gestion tbody tr,
+html[data-alto-contraste='true'] .tabla-gestion tbody tr:hover {
+  background: #000;
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] .tabla-gestion tbody td {
+  border-color: #fff;
+}
+
+html[data-alto-contraste='true']
+  :is(.estado-ok, .estado-error, .cifra-azul, .cifra-granate, .cifra-ambar) {
+  background: #000;
+  color: #ffff00;
+  border: 2px solid #ffff00;
+}
+
+html[data-alto-contraste='true'] .aviso-discreto,
+html[data-alto-contraste='true'] .estado-vacio {
+  background: #000;
+  color: #fff;
+  border-color: #ffff00;
+}
+
+html[data-alto-contraste='true'] .boton-enlace {
+  background: #ffff00;
+  color: #000;
+}
+
+html[data-alto-contraste='true'] .mantine-Pagination-control[data-active] {
+  background: #ffff00;
+  color: #000;
+}
+
+html[data-alto-contraste='true'] .zona-archivo {
+  background: #000;
+  border-color: #ffff00;
+}
+
+html[data-alto-contraste='true'] :is(.zona-archivo .mantine-InputWrapper-label, .paso-tarjeta a) {
+  color: #ffff00;
+}
+
+html[data-alto-contraste='true'] .zona-archivo .mantine-InputWrapper-description {
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] :is(.alerta-exito, .alerta-error) {
+  border-left-color: #ffff00;
+}
+
+html[data-alto-contraste='true'] .pantalla-gestion,
+html[data-alto-contraste='true'] .marco:has(.pantalla-gestion),
+html[data-alto-contraste='true'] body:has(.pantalla-gestion) {
+  background: #000;
+}
+
+html[data-alto-contraste='true'] .rotulo {
+  color: #ffff00;
+}
+
+html[data-alto-contraste='true'] .hero-vidrio {
+  background: #000;
+}
+
+@media (max-width: 40em) {
+  .grupo-campos,
+  .grupo-acciones,
+  .tarjeta-seccion,
+  .formulario-tarjeta,
+  .detalle-cabecera {
+    padding: 1rem;
+  }
+
+  .cuadro {
+    min-height: 11rem;
+  }
+
+  .resultado {
+    padding: 1rem 1rem 1rem 1.125rem;
+  }
+}
+
+/* Botón «Cerrar sesión» de la cabecera: ámbar con texto marino (8,96:1 sobre fondo #1B1B3F). */
+html:not([data-alto-contraste='true']) .navegacion .mantine-Button-root {
+  background: #fcb040;
+  color: #23234e;
+  border: 0;
+  letter-spacing: 0.04em;
+}
+
+html:not([data-alto-contraste='true']) .navegacion .mantine-Button-root:hover {
+  background: #fff;
+  color: #5b113c;
+}
+
+/* Errores legibles (#8E101A sobre blanco 7,6:1) y bordes de campo con 3:1 o más (#6B7280, 4,8:1). */
+html:not([data-alto-contraste='true']) .mantine-InputWrapper-error {
+  color: #8e101a;
+}
+
+html:not([data-alto-contraste='true']) .mantine-Input-input:not([data-error]) {
+  border-color: #6b7280;
+}
+
+html:not([data-alto-contraste='true']) .mantine-Input-input[data-error] {
+  border-color: #8e101a;
+  color: #1f2433;
+}
+
+html:not([data-alto-contraste='true']) .mantine-InputWrapper-required {
+  color: #8e101a;
+}
+
+/* ---------- Brillo sincronizado ----------
+   UN solo destello de luz cruza la página y se refleja en el banner, los
+   cuadros de marca, las tarjetas de resultado, la cabecera en píldora, el pie y
+   los botones primarios. Cada elemento recibe de brillo-sincronizado.ts el
+   ancho global de la banda (`--brillo-w`) y crea su animación con el recorrido
+   local en px, calculado en coordenadas de documento, de modo que todas las
+   bandas forman el mismo frente diagonal. Mismo ciclo de 12 s (8 s de
+   recorrido lineal y 4 s de pausa) y `startTime = 0` en el reloj del documento
+   para todos; no hay `var()` dentro de los keyframes (cuesta estilos por cuadro).
+   Solo `transform` en el pseudo-elemento:
+   sin Layout ni Paint por fotograma. Queda detrás del texto (z-index -1 en un
+   contexto aislado), así el contraste del texto no cambia. */
+:is(
+  .hero,
+  .cuadro,
+  .resultado,
+  .cabecera-pildora,
+  .pie,
+  .mantine-Button-root[data-variant='filled']
+) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  contain: paint;
+}
+
+:is(
+  .hero,
+  .cuadro,
+  .resultado,
+  .cabecera-pildora,
+  .pie,
+  .mantine-Button-root[data-variant='filled']
+)::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  width: var(--brillo-w, 24vw);
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.16) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  /* Reposo hasta que el script crea la animación (Web Animations API). */
+  transform: translateX(-150%) skewX(-22deg);
+  will-change: transform;
+}
+
+/* Sobre las tarjetas blancas: destello ámbar claro, visible y sin tocar el texto. */
+.resultado.resultado::after {
+  background: linear-gradient(
+    90deg,
+    rgba(252, 176, 64, 0) 0%,
+    rgba(252, 190, 96, 0.55) 50%,
+    rgba(252, 176, 64, 0) 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(
+    .hero,
+    .cuadro,
+    .resultado,
+    .cabecera-pildora,
+    .pie,
+    .mantine-Button-root[data-variant='filled']
+  )::after {
+    animation: none;
+    display: none;
+  }
+}
+
+html[data-alto-contraste='true']
+  :is(
+    .hero,
+    .cuadro,
+    .resultado,
+    .cabecera-pildora,
+    .pie,
+    .mantine-Button-root[data-variant='filled']
+  )::after {
+  animation: none;
+  display: none;
+}

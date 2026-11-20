@@ -1,0 +1,596 @@
+/*
+ * Franjas con foto y filtro de marca (vista previa). La foto vive en un
+ * pseudo-elemento que aparece con un fundido cuando termina de cargar; debajo
+ * siempre está el degradado de marca, así la franja se ve igual sin foto.
+ * Filtros (alfa sobre la foto) y contrastes en el caso peor (zona blanca de la
+ * foto, o sea el filtro mezclado con 255):
+ *   marino  #23234E al 85 % -> (68,68,104)   blanco 9,2:1 · ámbar 5,9:1
+ *   granate #5B113C al 85 % -> (115,52,89)   blanco 8,9:1 · ámbar 4,8:1
+ *   ámbar   #FCB040 al 88 % -> (252,185,87)  marino #23234E 8,8:1
+ *   pie     #23234E al 92 % -> (52,52,92)    blanco 11,6:1
+ * El ámbar solo se usa como fondo con texto marino, nunca como texto sobre blanco.
+ */
+
+.franja {
+  position: relative;
+  isolation: isolate;
+}
+
+.franja::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-position: center;
+  background-size: cover;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.franja-lista::before {
+  opacity: 1;
+}
+
+.franja-marino {
+  background: #23234e;
+  --filtro: rgb(35 35 78 / 0.85);
+}
+
+.franja-granate {
+  background: linear-gradient(135deg, #5b113c 0%, #3a0f2b 100%);
+  --filtro: rgb(91 17 60 / 0.85);
+}
+
+.franja-ambar {
+  background: #fcb040;
+  --filtro: rgb(252 176 64 / 0.88);
+}
+
+.franja-lista::before {
+  background-image: linear-gradient(var(--filtro), var(--filtro)), var(--foto-url);
+}
+
+/* ---------- Zona del hero: ancho completo, foto con filtro marino ----------
+ * La capa de fondo (`.zona-hero-fondo`, que también recibe el brillo) cubre toda
+ * la zona; el contenido va encima, alineado al contenedor central. El filtro
+ * marino pasa del 86 % al 80 % para que la foto se vea más. Peor caso (zona
+ * blanca de la foto): #23234E al 80 % -> (79,79,113): blanco 7,8:1 y el título
+ * ámbar (texto grande) 4,3:1, sobre los 3:1 que pide AA para letra grande. */
+.zona-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  margin-top: 0; /* la foto llega al borde superior; la cabecera flota encima */
+  /* Primer pantallazo: solo el hero. Arriba, el alto de la cabecera flotante;
+     abajo, sitio para el aviso «Ver accesos rápidos». */
+  min-height: 100svh;
+  padding-block: var(--alto-cabecera, 8rem) 4rem;
+  color: #fff;
+}
+
+.zona-hero > .zona-hero-fondo.hero {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  padding: 0;
+}
+
+.zona-hero > .zona-hero-fondo.hero.franja-marino {
+  background: linear-gradient(135deg, #23234e 0%, #2b1a47 55%, #3a0f2b 100%);
+}
+
+.zona-hero > .zona-hero-fondo.hero.franja-lista::before {
+  background-image:
+    linear-gradient(
+      135deg,
+      rgb(35 35 78 / 0.8) 0%,
+      rgb(35 35 78 / 0.8) 55%,
+      rgb(58 15 43 / 0.88) 100%
+    ),
+    var(--foto-url);
+  background-position: center 40%;
+}
+
+/* Sin z-index: el recorrido guiado (z-index 400) sigue por encima de la cabecera. */
+/* Contenido alineado al contenedor central (mismo ancho que .marco-ancho). */
+.zona-fila {
+  width: 100%;
+  max-width: 75rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  box-sizing: border-box;
+}
+
+.zona-hero-contenido {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-block: 1.5rem;
+}
+
+.hero-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+}
+
+.hero-textos {
+  display: flex;
+  flex: 1 1 22rem;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+/* Rótulo bajo el título: dice que es el catálogo de la Biblioteca del CLENA. */
+.hero-eyebrow {
+  margin: 0;
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  text-shadow: 0 1px 8px #00000099;
+}
+
+html[data-alto-contraste='true'] .hero-eyebrow {
+  color: #ffff00;
+  text-shadow: none;
+}
+
+/* «¿Cómo buscar?»: botón secundario claro sobre el filtro (marino sobre blanco 14,8:1). */
+.hero-cabeza > .mantine-Button-root {
+  flex: none;
+  align-self: flex-start;
+  border: 2px solid #fff;
+  border-radius: 10px;
+  background: #fff;
+  color: #23234e;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 6px 20px #00000040;
+}
+
+.hero-cabeza > .mantine-Button-root:hover {
+  background: #fcb040;
+  border-color: #fcb040;
+  color: #23234e;
+}
+
+/* Con búsqueda activa el hero se compacta (los resultados se ven enseguida) y la
+   caja ámbar sobresale del borde inferior de la zona. */
+.zona-hero.zona-hero-compacta {
+  min-height: 0;
+  justify-content: flex-start;
+  margin-bottom: 2.75rem;
+  padding-block: calc(var(--alto-cabecera, 8rem) + 0.5rem) 0;
+}
+
+.zona-hero-compacta .zona-hero-contenido {
+  gap: 0.5rem;
+  padding-block: 1rem 0;
+}
+
+.zona-hero-compacta .filtros.franja-ambar {
+  margin-bottom: -2.75rem;
+}
+
+.filtros .filtro-select {
+  flex: 1 1 12rem;
+}
+
+/* ---------- Escritorio: hero centrado ----------
+ * Título, subtítulo, búsqueda (≈ 650 px) y caja ámbar de filtros quedan centrados
+ * con el mismo ancho compacto; «¿Cómo buscar?» va centrado bajo los filtros (con
+ * la búsqueda activa, bajo el título). La foto se aprecia a ambos lados. En móvil
+ * todo sigue a todo el ancho y alineado a la izquierda. */
+@media (min-width: 48em) {
+  .zona-hero-contenido {
+    align-items: center;
+    text-align: center;
+  }
+
+  .hero-cabeza {
+    justify-content: center;
+  }
+
+  .hero-textos {
+    flex: 0 1 auto;
+    align-items: center;
+  }
+
+  .hero-subtitulo {
+    max-width: 34rem;
+  }
+
+  /* Portada sin búsqueda: el botón pasa bajo los filtros sin cambiar el DOM. */
+  .zona-hero:not(.zona-hero-compacta) .hero-cabeza {
+    display: contents;
+  }
+
+  .zona-hero:not(.zona-hero-compacta) .hero-cabeza > .mantine-Button-root {
+    order: 3;
+    /* El botón trae `align-self` en línea: hace falta !important. */
+    align-self: center !important;
+    margin-top: 0.5rem;
+  }
+
+  .zona-hero:not(.zona-hero-compacta) .hero-textos {
+    align-self: center;
+  }
+
+  /* Mismo ancho para la búsqueda y los filtros: centrados y sin vacío raro. */
+  .hero-vidrio {
+    width: min(100%, 47rem);
+    box-sizing: border-box;
+  }
+
+  .hero-vidrio .mantine-Group-root,
+  .filtros .mantine-Group-root {
+    justify-content: center;
+  }
+
+  /* El campo trae `flex: 1 1 18rem` en línea: hace falta !important. */
+  .hero-vidrio .mantine-TextInput-root {
+    flex: 0 1 36rem !important;
+    text-align: left;
+  }
+
+  .filtros .mantine-InputWrapper-root,
+  .filtros .mantine-Checkbox-root {
+    text-align: left;
+  }
+
+  /* La caja ámbar mide solo lo que necesita y queda más estrecha que la búsqueda. */
+  .zona-hero .filtros.franja-ambar {
+    width: fit-content;
+    max-width: min(100%, 41rem);
+  }
+
+  .filtros .filtro-select {
+    flex: 0 1 12.5rem;
+  }
+
+  /* La foto se aprecia a los lados: el filtro se aclara donde no hay texto. */
+  .zona-hero:not(.zona-hero-compacta) > .zona-hero-fondo.hero.franja-lista::before {
+    background-image:
+      linear-gradient(
+        90deg,
+        rgb(35 35 78 / 0.6) 0%,
+        rgb(35 35 78 / 0.82) 30%,
+        rgb(35 35 78 / 0.82) 70%,
+        rgb(58 15 43 / 0.62) 100%
+      ),
+      var(--foto-url);
+  }
+}
+
+/* ---------- Aviso «Ver accesos rápidos» (borde inferior del hero) ---------- */
+.hero-bajar {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 1rem;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  width: fit-content;
+  min-height: 2.75rem;
+  margin-inline: auto;
+  padding: 0.25rem 1rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  /* Ámbar del branding sobre el filtro marino de la foto (8,03:1 o más). */
+  color: #fcb040;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  cursor: pointer;
+  text-shadow: 0 1px 8px #00000099;
+  transition:
+    opacity 0.3s ease,
+    visibility 0s,
+    text-decoration-color 0.15s ease;
+}
+
+/* Hover sutil: subrayado y la flecha baja un poco; sin caja en reposo. */
+.hero-bajar:hover {
+  text-decoration-color: currentColor;
+}
+
+.hero-bajar:hover svg {
+  translate: 0 3px;
+}
+
+html[data-alto-contraste='true'] .hero-bajar {
+  color: #ffff00;
+  text-shadow: none;
+}
+
+/* Foco visible de 3 px: anillo blanco alrededor. */
+html[data-mantine-color-scheme] .hero-bajar:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+html[data-alto-contraste='true'] .hero-bajar:focus-visible {
+  outline-color: #ffff00;
+}
+
+.hero-bajar svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  transition: translate 0.15s ease;
+}
+
+.hero-bajar[data-oculto='true'] {
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 0.3s ease,
+    visibility 0s 0.3s;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-bajar:not([data-oculto='true']) svg {
+    animation: hero-bajar-rebote 2.4s ease-in-out 1.5s infinite;
+  }
+}
+
+@keyframes hero-bajar-rebote {
+  0%,
+  60%,
+  100% {
+    translate: 0 0;
+  }
+  30% {
+    translate: 0 6px;
+  }
+}
+
+/* ---------- Caja ámbar de filtros ---------- */
+.filtros.franja-ambar {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  margin: 0.25rem 0 0;
+  padding: 1.25rem 1.5rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 0;
+  border-radius: 20px;
+  color: #23234e;
+  background: #fcb040;
+  box-shadow: 0 12px 40px #23234e40;
+}
+
+.filtros.franja-ambar :is(.mantine-InputWrapper-label, .mantine-Checkbox-label) {
+  color: #23234e;
+  font-weight: 600;
+}
+
+.filtros.franja-ambar .mantine-Input-input {
+  background: #fff;
+  border-color: #23234e;
+  border-radius: 12px;
+}
+
+.filtros.franja-ambar .mantine-Checkbox-input:not(:checked) {
+  border-color: #23234e;
+}
+
+.filtros.franja-ambar :focus-visible {
+  outline-color: #23234e !important;
+}
+
+.portada-resultados {
+  padding-top: 1.5rem;
+}
+
+/* ---------- Zona de accesos: ancho completo, granate ---------- */
+.zona-accesos {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  padding: 2.5rem 0 3rem;
+  color: #fff;
+}
+
+.zona-accesos-fila {
+  width: 100%;
+  max-width: 75rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.zona-accesos .rotulo {
+  color: #fff;
+}
+
+/* Cuadros granate sobre zona granate: borde claro y sombra para separarlos. */
+.zona-accesos .cuadro {
+  border: 2px solid rgb(255 255 255 / 0.7);
+  box-shadow: 0 10px 30px #00000059;
+}
+
+/* El anillo de foco marino no se vería sobre el granate: blanco. */
+.zona-accesos .cuadro:focus-visible {
+  outline-color: #fff;
+}
+
+/* ---------- Encabezados de gestión e ingreso: la foto llega al borde superior ---------- */
+.pantalla-gestion > .encabezado-seccion.franja {
+  margin-top: 0;
+  padding-top: calc(var(--alto-cabecera, 8rem) + 1.25rem);
+}
+
+.marco-contenido > .ingreso.franja {
+  margin-top: 0;
+  padding-top: calc(var(--alto-cabecera, 8rem) + 1.5rem);
+}
+
+/* El ancho de 100vw cuenta la barra de desplazamiento: se recorta, no desborda. */
+.marco {
+  overflow-x: clip;
+}
+
+/* ---------- Pie: marino más cerrado ---------- */
+.pie.franja-marino {
+  --filtro: rgb(35 35 78 / 0.92);
+}
+
+/* ---------- Sin foto: ahorro de datos, alto contraste ---------- */
+@media (prefers-reduced-data: reduce) {
+  .franja::before {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .franja::before {
+    transition: none;
+  }
+}
+
+html[data-alto-contraste='true'] .franja::before {
+  display: none;
+}
+
+html[data-alto-contraste='true'] :is(.franja-marino, .franja-granate) {
+  background: #000;
+}
+
+html[data-alto-contraste='true'] .zona-hero > .zona-hero-fondo.hero.franja-marino {
+  background: #000;
+}
+
+html[data-alto-contraste='true'] .zona-hero > .zona-hero-fondo.hero {
+  border-block: 2px solid #ffff00;
+}
+
+html[data-alto-contraste='true'] .hero-cabeza > .mantine-Button-root {
+  background: #000;
+  color: #fff;
+  border: 2px solid #ffff00;
+  box-shadow: none;
+}
+
+html[data-alto-contraste='true'] .filtros.franja-ambar {
+  background: #000;
+  color: #fff;
+  border: 2px solid #ffff00;
+  box-shadow: none;
+}
+
+html[data-alto-contraste='true']
+  .filtros.franja-ambar
+  :is(.mantine-InputWrapper-label, .mantine-Checkbox-label) {
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] .zona-accesos .cuadro {
+  border-color: #fff;
+  box-shadow: none;
+}
+
+@media (max-width: 40em) {
+  .zona-hero-contenido {
+    padding-block: 1.5rem 1.75rem;
+  }
+
+  .filtros.franja-ambar {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+}
+
+/* ---------- Gestión: tareas en granate y códigos QR en ámbar ---------- */
+.zona-accesos .nota-rol {
+  margin-top: 0.75rem;
+  color: #fff;
+}
+
+/* Ámbar #FCB040 al 88 % (peor caso (252,185,87)): marino 8,6:1 y granate 7,7:1. */
+.zona-qr.franja {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  padding: 2.5rem 0 3rem;
+  color: #23234e;
+}
+
+.zona-qr-fila {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.zona-qr .seccion-titulo {
+  color: #5b113c;
+}
+
+.zona-qr .encabezado-descripcion {
+  color: #23234e;
+}
+
+.zona-qr .insignia-icono {
+  background: #23234e;
+  color: #fcb040;
+}
+
+.zona-qr .estado-vacio {
+  background: #fff;
+  border-color: #23234e;
+  color: #23234e;
+}
+
+html:not([data-alto-contraste='true'])
+  .marco
+  .zona-qr
+  .mantine-Button-root:not([data-variant='default'], :disabled, [data-disabled]) {
+  background-color: #23234e !important;
+  color: #fff !important;
+}
+
+html:not([data-alto-contraste='true'])
+  .marco
+  .zona-qr
+  .mantine-Button-root:not([data-variant='default'], :disabled, [data-disabled]):hover {
+  background-color: #5b113c !important;
+  color: #fff !important;
+}
+
+html[data-alto-contraste='true'] .zona-qr.franja {
+  background: #000;
+  color: #fff;
+  border-block: 2px solid #ffff00;
+}
+
+html[data-alto-contraste='true'] :is(.zona-qr .seccion-titulo, .zona-qr .encabezado-descripcion) {
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] .encabezado-seccion.franja,
+html[data-alto-contraste='true'] .ingreso.franja,
+html[data-alto-contraste='true'] .zona-accesos.franja {
+  border-block: 2px solid #ffff00;
+}
