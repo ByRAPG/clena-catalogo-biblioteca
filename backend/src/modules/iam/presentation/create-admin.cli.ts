@@ -38,6 +38,8 @@ export class CreateAdminCliModule {}
  */
 async function main(): Promise<number> {
   const env = { ...process.env };
+  // La contraseña ya está copiada en `env`; se quita del entorno del proceso.
+  delete process.env.ADMIN_PASSWORD;
   const file = env.ADMIN_PASSWORD_FILE?.trim();
   if (file) {
     try {
@@ -46,6 +48,11 @@ async function main(): Promise<number> {
       console.error('No se pudo leer ADMIN_PASSWORD_FILE.');
       return 2;
     }
+  }
+  if (!file && env.ADMIN_PASSWORD) {
+    console.error(
+      'Aviso: ADMIN_PASSWORD quedó expuesta en el entorno; usa ADMIN_PASSWORD_FILE.',
+    );
   }
   let app;
   try {
