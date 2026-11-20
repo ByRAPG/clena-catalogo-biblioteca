@@ -199,6 +199,7 @@ model Work {
   copies             Copy[]
   reservations       Reservation[]
   availabilityAlerts AvailabilityAlert[]
+  embedding          WorkEmbedding?
 
   @@index([categoryId])
   @@index([year])
@@ -255,6 +256,24 @@ model WorkSubject {
   @@id([workId, subjectId])
   @@index([subjectId])
   @@map("work_subjects")
+}
+
+// Embedding de la obra (T-24, módulo search). Una fila por obra; la relación
+// con Work existe solo para la clave foránea con borrado en cascada. Prisma no
+// lee ni escribe `embedding`: el adaptador usa SQL parametrizado. Sin índice
+// HNSW/IVFFlat (búsqueda exacta por decisión de diseño).
+model WorkEmbedding {
+  workId     String                     @id @map("work_id") @db.Uuid
+  embedding  Unsupported("vector(384)")
+  // Nombre y versión del modelo que generó el vector.
+  model      String
+  // SHA-256 (hex) del texto fuente con el que se generó.
+  sourceHash String                     @map("source_hash")
+  updatedAt  DateTime                   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@map("work_embeddings")
 }
 
 // ---------------------------------------------------------------------------
