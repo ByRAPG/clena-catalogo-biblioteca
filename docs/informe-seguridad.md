@@ -30,6 +30,10 @@ Este informe documenta cómo está protegido el Catálogo bibliográfico accesib
 
 **Activos:** cuentas y credenciales (hash de contraseña, secretos JWT), sesión (access token en memoria y refresh token en cookie), catálogo bibliográfico (integridad y disponibilidad) y el servicio mismo.
 
+![Figura 1. Flujo de datos y límites de confianza](img/flujo-datos-seguridad.png)
+
+La figura muestra los tres límites de confianza (Internet, borde opcional y servidor) y la red interna donde solo está la base de datos. Flujos: 1 consultas del lector; 2 credenciales del personal (el refresh token vuelve en cookie `httpOnly` solo a `/auth` y el access token se guarda en memoria); 3 importación de CSV como JSON, solo `ADMIN`; 4 proxy de Caddy a la API; 5 SQL parametrizado hacia PostgreSQL.
+
 Los datos personales son mínimos: solo correo y rol del personal. El producto no usa IA externa; la búsqueda semántica corre en el propio servidor.
 
 ### Resumen STRIDE
@@ -51,20 +55,20 @@ No se incluye diagrama de flujo de datos: la arquitectura ya está en `docs/arqu
 
 | Categoría | Control | Evidencia | PR |
 |---|---|---|---|
-| A01 Control de acceso | `JwtAuthGuard` exige `Authorization: Bearer` y `RolesGuard` aplica el rol; escritura de obras y salas solo `STAFF` y `ADMIN`, importación solo `ADMIN` | `backend/src/modules/iam/presentation/guards/jwt-auth.guard.ts:30-37`; `catalog-works.controller.ts:39-40`; `rooms.controller.ts:61-62`; `import-catalog.controller.ts:55-56` | Base y #83 |
+| A01 Control de acceso | `JwtAuthGuard` exige `Authorization: Bearer` y `RolesGuard` aplica el rol; escritura de obras y salas solo `STAFF` y `ADMIN`, importación solo `ADMIN` | `jwt-auth.guard.ts` (`canActivate`); decorador `@Roles` en `catalog-works.controller.ts`, `rooms.controller.ts` e `import-catalog.controller.ts` | Base y #83 |
 | A01 Control de acceso | Primer administrador creado por línea de comandos, sin ruta HTTP pública de registro | `backend/src/modules/iam/presentation/create-admin.cli.ts`, `create-initial-admin.use-case.ts` | #120 |
-| A02 Fallos criptográficos | Contraseñas con Argon2id; refresh token guardado solo como hash; secretos JWT distintos, de al menos 32 caracteres y sin valores de ejemplo en producción | `argon2-password-hasher.ts:5-7`; `env.validation.ts:88-97` (integración) y `env.validation.ts:55-76` (rechazo de `change-me` e igualdad) | Base y #109 |
-| A02 Fallos criptográficos | TLS automático con Caddy y HSTS de un año | `frontend/Caddyfile:4,20` | #118 |
-| A03 Inyección | `ValidationPipe` con `whitelist` y `forbidNonWhitelisted`; consultas SQL crudas solo con plantilla etiquetada de Prisma (valores parametrizados); sin `innerHTML` ni `dangerouslySetInnerHTML` en la SPA | `app.setup.ts:20-26`; `prisma-search.repository.ts:63-71`; búsqueda sin coincidencias en `frontend/src` | Base |
-| A04 Diseño inseguro | Bloqueo de cuenta tras 5 fallos durante 15 minutos; límite global por IP y límite estricto en rutas de autenticación; tiempo y concurrencia máximos de la búsqueda semántica | `user.entity.ts:70-78`; `throttler.config.ts:21-31`; `env.validation.ts:74-79` | Base, #109, #113 |
-| A05 Configuración incorrecta | Helmet con CSP de la API en `default-src 'none'`; CSP de la SPA sin `unsafe-inline` en scripts; `Server` y `X-Powered-By` eliminados; CORS con lista de orígenes; `trust proxy` solo si `TRUST_PROXY` lo indica | `security-headers.ts:5-26`; `Caddyfile:16-25,54`; `main.ts:15-30` | #109, #118 |
-| A05 Configuración incorrecta | Contenedores de producción sin root, con sistema de archivos de solo lectura, sin capacidades y con límites de memoria; solo `web` publica puertos | `backend/Dockerfile:61`; `frontend/Dockerfile:37`; `docker-compose.prod.yml:29-30,57-65` | #114, #118 |
-| A05 Configuración incorrecta | Puertos de desarrollo ligados a `127.0.0.1` | `docker-compose.yml:10,31,59,69-70` (rama `wt-pgvector`) | #108 |
-| A06 Componentes vulnerables | Dependabot semanal para npm, GitHub Actions y Docker; `pnpm audit`, Trivy y CodeQL en CI | `.github/dependabot.yml`; `codeql.yml`; `seguridad.yml:55-108` | #109, #121 |
-| A07 Fallos de autenticación | Mensaje único para correo inexistente, cuenta inactiva y contraseña mala; refresh token en cookie `httpOnly`, `sameSite=strict` y `secure` en producción; rotación con detección de reutilización que cierra la familia | `login-user.use-case.ts:39-59`; `auth.controller.ts:141-146`; `refresh-session.use-case.ts:35-52` | Base (ADR-03) |
-| A08 Integridad de software y datos | Acciones de GitHub fijadas a SHA; binarios de gitleaks y Trivy con versión y SHA-256 verificados; modelo de embeddings con revisión fija | `ci.yml:24,56-57` (rama `wt-pgvector`); `seguridad.yml:25-31,49-52` | #108, #121, #113 |
-| A09 Registro y monitoreo | Nivel de registro configurable; filtro global de excepciones que no expone trazas; sonda de salud | `app.setup.ts:27`; `main.ts:20`; `all-exceptions.filter.ts:40` | Base |
-| A10 Falsificación de peticiones del servidor (SSRF) | La API no hace peticiones salientes por entrada del usuario; el enlace digital de una obra solo se acepta con `http` o `https` | `frontend/src/shared/texto/url-web.ts:1-6` (rama `wt-cabecera`) | #115 |
+| A02 Fallos criptográficos | Contraseñas con Argon2id; refresh token guardado solo como hash; secretos JWT distintos, de al menos 32 caracteres y sin valores de ejemplo en producción | `argon2-password-hasher.ts` (clase `Argon2PasswordHasher`); `env.validation.ts` (comprobación de longitud en integración; `superRefine` de rechazo de `change-me` e igualdad, rama `wt-seguridad`) | Base y #109 |
+| A02 Fallos criptográficos | TLS automático con Caddy y HSTS de un año | `frontend/Caddyfile` (sitio con TLS automático y cabecera `Strict-Transport-Security`) | #118 |
+| A03 Inyección | `ValidationPipe` con `whitelist` y `forbidNonWhitelisted`; consultas SQL crudas solo con plantilla etiquetada de Prisma (valores parametrizados); sin `innerHTML` ni `dangerouslySetInnerHTML` en la SPA | `app.setup.ts` (`ValidationPipe`); `prisma-search.repository.ts` (`$queryRaw` con `Prisma.sql`); sin `innerHTML` en el código de producción de `frontend/src` (solo aparece en pruebas) | Base |
+| A04 Diseño inseguro | Bloqueo de cuenta tras 5 fallos durante 15 minutos; límite global por IP y límite estricto en rutas de autenticación; tiempo y concurrencia máximos de la búsqueda semántica | `user.entity.ts` (`registerFailedLogin`, `MAX_FAILED_LOGINS`, `LOCK_DURATION_MINUTES`); `throttler.config.ts` (límites `default` y `auth`); `env.validation.ts` (`SEMANTIC_TIMEOUT_MS`, `SEMANTIC_MAX_CONCURRENCY`) | Base, #109, #113 |
+| A05 Configuración incorrecta | Helmet con CSP de la API en `default-src 'none'`; CSP de la SPA sin `unsafe-inline` en scripts; `Server` y `X-Powered-By` eliminados; CORS con lista de orígenes; `trust proxy` solo si `TRUST_PROXY` lo indica | `security-headers.ts` (`apiHeaders`, `docsHeaders`); `Caddyfile` (bloques `header`, `-Server`, `Content-Security-Policy`); `main.ts` (`trust proxy` y `enableCors`) | #109, #118 |
+| A05 Configuración incorrecta | Contenedores de producción sin root, con sistema de archivos de solo lectura, sin capacidades y con límites de memoria; solo `web` publica puertos | `backend/Dockerfile` (`USER node`); `frontend/Dockerfile` (`USER 65532:65532`); `docker-compose.prod.yml` (`read_only`, `cap_drop`, `no-new-privileges`, `mem_limit`) | #114, #118 |
+| A05 Configuración incorrecta | Puertos de desarrollo ligados a `127.0.0.1` | `docker-compose.yml` (mapeos `127.0.0.1:` de `ports`, rama `wt-pgvector`) | #108 |
+| A06 Componentes vulnerables | Dependabot semanal para npm, GitHub Actions y Docker; `pnpm audit`, Trivy y CodeQL en CI | `.github/dependabot.yml`; `codeql.yml`; `seguridad.yml` (trabajos `gitleaks` y Trivy) | #109, #121 |
+| A07 Fallos de autenticación | Mensaje único para correo inexistente, cuenta inactiva y contraseña mala; refresh token en cookie `httpOnly`, `sameSite=strict` y `secure` en producción; rotación con detección de reutilización que cierra la familia | `login-user.use-case.ts` (`execute`); `auth.controller.ts` (opciones de la cookie `httpOnly`, `sameSite`, `secure`); `refresh-session.use-case.ts` (`revokeFamily`) | Base (ADR-03) |
+| A08 Integridad de software y datos | Acciones de GitHub fijadas a SHA; binarios de gitleaks y Trivy con versión y SHA-256 verificados; modelo de embeddings con revisión fija | `ci.yml` (`uses:` con SHA, rama `wt-pgvector`); `seguridad.yml` (variables `*_SHA256` y `sha256sum -c`) | #108, #121, #113 |
+| A09 Registro y monitoreo | Nivel de registro configurable; filtro global de excepciones que no expone trazas; sonda de salud | `app.setup.ts` (`useGlobalFilters`); `main.ts` (`resolveLogLevels`); `all-exceptions.filter.ts` (`AllExceptionsFilter`) | Base |
+| A10 Falsificación de peticiones del servidor (SSRF) | La API no hace peticiones salientes por entrada del usuario; el enlace digital de una obra solo se acepta con `http` o `https` | `frontend/src/shared/texto/url-web.ts` (rama `wt-cabecera`) | #115 |
 
 ### 3.2 Lista ASVS nivel 1 (resumen)
 
@@ -85,7 +89,7 @@ No se incluye diagrama de flujo de datos: la arquitectura ya está en `docs/arqu
 | Riesgo | Mitigación |
 |---|---|
 | Datos importados que alteran el índice | Solo `ADMIN` importa; el texto se valida y se indexa por script, no se ejecuta |
-| Consumo de recursos de la búsqueda | `SEMANTIC_TIMEOUT_MS`, `SEMANTIC_MAX_CONCURRENCY` y caché acotada (`env.validation.ts:74-79`); si falla, cae a la búsqueda léxica |
+| Consumo de recursos de la búsqueda | `SEMANTIC_TIMEOUT_MS`, `SEMANTIC_MAX_CONCURRENCY` y caché acotada (`env.validation.ts`, variables `SEMANTIC_*`); si falla, cae a la búsqueda léxica |
 | Integridad del modelo | Revisión fija del modelo, descarga solo en la construcción y límite de memoria del contenedor (PR #113) |
 
 ## 4. Hallazgos de la auditoría del 20 de noviembre
@@ -96,32 +100,32 @@ Severidad: **Alta** (explotable con impacto serio sin condiciones especiales), *
 
 | Id | Hallazgo | Severidad | Corrección | PR |
 |---|---|---|---|---|
-| H-01 | Puertos de desarrollo (base, API, Vite, correo) publicados en todas las interfaces; acciones de CI referenciadas por etiqueta móvil | Media | Puertos ligados a `127.0.0.1` (`docker-compose.yml:10,31,59,69-70`); acciones fijadas a SHA (`ci.yml:24,56-57`) | #108 |
-| H-02 | En producción se aceptaban secretos JWT de ejemplo o iguales entre sí; sin Dependabot para Docker | Alta | Rechazo de `change-me` y de igualdad entre secretos (`env.validation.ts:55-76`); ecosistema `docker` en `dependabot.yml:25,32` | #109 |
-| H-07 | Enlace digital de una obra aceptaba cualquier esquema, incluido `javascript:` | Media | Solo `http:` y `https:` (`url-web.ts:1-6`) | #115 |
-| H-08 | Caddy no limitaba el cuerpo; solo la API cortaba a 2 MB | Baja | `request_body { max_size 2MB }` para `/api` (`frontend/Caddyfile:31-33`, rama `wt-prod`) | #118 |
-| H-09 | `ADMIN_PASSWORD` seguía en el entorno del proceso tras crear el administrador | Baja | Se elimina del entorno y se admite `ADMIN_PASSWORD_FILE` (`create-admin.cli.ts:42-54`, rama `wt-admin`) | #120 |
+| H-01 | Puertos de desarrollo (base, API, Vite, correo) publicados en todas las interfaces; acciones de CI referenciadas por etiqueta móvil | Media | Puertos ligados a `127.0.0.1` (`docker-compose.yml`, `ports`); acciones fijadas a SHA (`ci.yml`) | #108 |
+| H-02 | En producción se aceptaban secretos JWT de ejemplo o iguales entre sí; sin Dependabot para Docker | Alta | Rechazo de `change-me` y de igualdad entre secretos (`env.validation.ts`, `superRefine`); ecosistema `docker` en `dependabot.yml` | #109 |
+| H-07 | Enlace digital de una obra aceptaba cualquier esquema, incluido `javascript:` | Media | Solo `http:` y `https:` (`url-web.ts`) | #115 |
+| H-08 | Caddy no limitaba el cuerpo; solo la API cortaba a 2 MB | Baja | `request_body { max_size 2MB }` para `/api` (`frontend/Caddyfile`, bloque `request_body`, rama `wt-prod`) | #118 |
+| H-09 | `ADMIN_PASSWORD` seguía en el entorno del proceso tras crear el administrador | Baja | Se elimina del entorno y se admite `ADMIN_PASSWORD_FILE` (`create-admin.cli.ts`, `delete process.env.ADMIN_PASSWORD`, rama `wt-admin`) | #120 |
 
 ### 4.2 Abiertos y asignados
 
 | Id | Hallazgo | Severidad | Recomendación | Responsable |
 |---|---|---|---|---|
-| H-03 | El contador de intentos fallidos no es atómico: dos peticiones simultáneas pueden leer el mismo valor y contar un solo fallo (`login-user.use-case.ts:52-53`, `user.entity.ts:70-78`) | Media | Incremento atómico en SQL (`UPDATE ... SET failed = failed + 1 ... RETURNING`) dentro de una transacción | T-27, Juan Camilo |
-| H-04 | Un tercero puede bloquear la cuenta ajena con cinco intentos, y la respuesta 429 de «cuenta bloqueada» (`login-user.use-case.ts:43-44,55-56`) revela que el correo existe | Media | Mantener la respuesta 401 genérica durante el bloqueo, o bloquear por pareja correo más IP; avisar al titular por otro canal | T-27, Juan Camilo |
-| H-05 | Enumeración de correos por tiempo: con correo inexistente no se calcula ningún hash y la respuesta es más rápida (`login-user.use-case.ts:40`) | Baja | Verificar contra un hash ficticio precalculado cuando el usuario no existe | T-27, Juan Camilo |
+| H-03 | El contador de intentos fallidos no es atómico: dos peticiones simultáneas pueden leer el mismo valor y contar un solo fallo (`login-user.use-case.ts`, `user.entity.ts`: `registerFailedLogin`) | Media | Incremento atómico en SQL (`UPDATE ... SET failed = failed + 1 ... RETURNING`) dentro de una transacción | T-27, Juan Camilo |
+| H-04 | Un tercero puede bloquear la cuenta ajena con cinco intentos, y la respuesta 429 de «cuenta bloqueada» (`login-user.use-case.ts`: `AccountLockedError`) revela que el correo existe | Media | Mantener la respuesta 401 genérica durante el bloqueo, o bloquear por pareja correo más IP; avisar al titular por otro canal | T-27, Juan Camilo |
+| H-05 | Enumeración de correos por tiempo: con correo inexistente no se calcula ningún hash y la respuesta es más rápida (`login-user.use-case.ts`: `findByEmail` y `hasher.verify`) | Baja | Verificar contra un hash ficticio precalculado cuando el usuario no existe | T-27, Juan Camilo |
 | H-06 | La importación CSV no tiene tope de filas ni de longitud por campo; solo el límite global de 2 MB | Media | Máximo de filas (por ejemplo 5 000) y de caracteres por campo en el DTO de importación | T-35 y T-36, Humberto |
 
 ### 4.3 Riesgos aceptados o residuales
 
 | Id | Riesgo | Severidad | Decisión y recomendación |
 |---|---|---|---|
-| R-01 | El access token sigue válido hasta 15 minutos tras cerrar sesión o desactivar la cuenta, porque `JwtAuthGuard` solo verifica la firma (`jwt-auth.guard.ts:30-37`) | Baja | Aceptado (ADR-03): vida corta de 15 minutos. Si se exige, comprobar el estado del usuario en cada petición |
+| R-01 | El access token sigue válido hasta 15 minutos tras cerrar sesión o desactivar la cuenta, porque `JwtAuthGuard` solo verifica la firma (`jwt-auth.guard.ts`: `canActivate`) | Baja | Aceptado (ADR-03): vida corta de 15 minutos. Si se exige, comprobar el estado del usuario en cada petición |
 | R-02 | Password spraying distribuido: el límite es por IP y el bloqueo por cuenta, de modo que muchas IP con pocas pruebas cada una pasan | Baja | Aceptado: Argon2id encarece cada intento y las contraseñas del personal son pocas. Recomendar contraseñas largas y, a futuro, doble factor para `ADMIN` |
 | R-03 | `pnpm audit` del backend: 2 altas transitivas de `prisma > @prisma/config` (`deepmerge-ts` 7.1.5, `effect` 3.21.0, ReDoS) | Baja | Aceptado: solo las usa la CLI de Prisma en migraciones, no la ruta de una petición. Se resolverá al actualizar Prisma (Dependabot) |
-| R-04 | El tope JSON de 2 MB es global, no por ruta (`app.setup.ts:11,16`) | Baja | Aceptado: Caddy ya corta a 2 MB. Si se amplía, reducir el tope en las rutas que no importan |
+| R-04 | El tope JSON de 2 MB es global, no por ruta (`app.setup.ts`: `JSON_BODY_LIMIT`) | Baja | Aceptado: Caddy ya corta a 2 MB. Si se amplía, reducir el tope en las rutas que no importan |
 | R-05 | La CSP estricta está solo en la SPA; la API usa `default-src 'none'` y `/docs` relaja a `unsafe-inline` para Swagger | Baja | Aceptado: `/docs` no contiene datos. Considerar desactivar `/docs` en producción |
 | R-06 | Los secretos viajan en variables de entorno, no en Docker secrets | Baja | Aceptado para una sola máquina. El archivo `.env.prod` no se versiona (`.gitignore`) y se restringe con permisos `600` |
-| R-07 | HSTS sin `preload` (`Caddyfile:20`) | Baja | Aceptado: la precarga es difícil de revertir. Revisar cuando el dominio definitivo esté estable |
+| R-07 | HSTS sin `preload` (`Caddyfile`, cabecera `Strict-Transport-Security`) | Baja | Aceptado: la precarga es difícil de revertir. Revisar cuando el dominio definitivo esté estable |
 
 ## 5. Resultados de los escáneres
 
