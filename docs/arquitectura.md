@@ -127,8 +127,9 @@ Ejemplo: el personal registra un préstamo.
 | Rotación | Cada refresh emite uno nuevo y revoca el anterior. Reutilizar uno revocado invalida la familia completa |
 | Roles | `ADMIN` (todo, usuarios, importación, analítica), `STAFF` (catálogo, préstamos, ayuda), `READER` (su cuenta y préstamos) |
 | Contraseñas | argon2 (o bcrypt de costo 12) |
-| Abuso | Límite de intentos en login y en solicitudes de ayuda (`@nestjs/throttler`) |
-| Cabeceras | Helmet; CORS solo para el dominio del frontend |
+| Abuso | Bloqueo de cuenta tras 5 intentos fallidos (429 con `Retry-After`) y límite por IP con `@nestjs/throttler`: 300 peticiones/min global y 20/min en `/auth/*` (configurable con `THROTTLE_*`); el health check queda excluido. Tras un proxy inverso se activa `TRUST_PROXY` para usar la IP real |
+| Cabeceras | Helmet con CSP `default-src 'none'` y `frame-ancestors 'none'`, HSTS, `nosniff` y sin `X-Powered-By`; CSP relajada solo en `/docs`. CORS solo para los orígenes de `CORS_ORIGIN` (sin `*`). Cuerpo JSON limitado a 2 MB. Swagger deshabilitado en producción |
+| Cadena de suministro | Dependabot semanal (npm y GitHub Actions) y análisis CodeQL en cada PR, en `main` y cada semana |
 | Datos personales | Ley 1581 de 2012: aviso, consentimiento registrado con versión, datos mínimos, exportar y eliminar cuenta. Las búsquedas se registran sin datos personales |
 | Secretos | Solo en variables de entorno; `.env` fuera del repositorio |
 
