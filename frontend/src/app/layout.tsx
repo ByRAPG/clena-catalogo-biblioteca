@@ -1,17 +1,48 @@
-import { useState } from 'react'
-import { Anchor, Button } from '@mantine/core'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, type RefObject } from 'react'
+import { Anchor } from '@mantine/core'
+import { NavLink, Outlet } from 'react-router-dom'
 import { AccesibilidadProvider } from '../features/accessibility/accesibilidad-provider'
-import { ControlesAccesibilidad } from '../features/accessibility/controles-accesibilidad'
-import { useSesion, type Rol } from '../features/auth/sesion-context'
+import { CabeceraContenido } from './cabecera'
 import { CreditosInstitucionales } from '../shared/ui/creditos-institucionales'
+import { FranjaFoto } from '../shared/ui/franja-foto'
 import { Marca } from '../shared/ui/marca'
+import { iniciarRevelado } from '../shared/efectos/revelar'
 import './marco.css'
+import './revelar.css'
 import { useTituloPagina } from './titulo-pagina'
 
-/** Mismo criterio que las rutas de /gestion: solo el personal. */
-function puedeGestionar(rol: Rol) {
-  return rol === 'ADMIN' || rol === 'STAFF'
+/** Intro de marca: solo existe en el build si VITE_INTRO_CINEMATICA=true. */
+const IntroCinematica =
+  import.meta.env.VITE_INTRO_CINEMATICA === 'true'
+    ? lazy(() => import('../features/intro/intro-cinematica'))
+    : null
+
+/**
+ * Publica en <html> el alto que ocupa la cabecera flotante (`--alto-cabecera`,
+ * en px) para que las franjas de foto la despejen y el foco y las anclas no
+ * queden ocultos debajo de ella. Se recalcula con ResizeObserver (cambia con la
+ * letra grande, el ancho y la sesión), nunca por fotograma.
+ */
+function useAltoCabecera(ref: RefObject<HTMLElement | null>) {
+  // Antes de pintar: así el hero no se desplaza al conocerse el alto real.
+  useLayoutEffect(() => {
+    const cabecera = ref.current
+    const pildora = cabecera?.querySelector<HTMLElement>('.cabecera-pildora')
+    if (!cabecera || !pildora) return
+    const raiz = document.documentElement
+    const medir = () => {
+      const alto = pildora.getBoundingClientRect().bottom - cabecera.getBoundingClientRect().top
+      raiz.style.setProperty('--alto-cabecera', `${Math.ceil(alto)}px`)
+    }
+    medir()
+    if (typeof ResizeObserver === 'undefined') return
+    const observador = new ResizeObserver(medir)
+    observador.observe(pildora)
+    return () => {
+      observador.disconnect()
+      raiz.style.removeProperty('--alto-cabecera')
+    }
+  }, [ref])
 }
 
 /**
@@ -21,22 +52,10 @@ function puedeGestionar(rol: Rol) {
  * al <main>. `NavLink` marca la ruta activa con `aria-current="page"`.
  */
 export function Layout() {
-  const { sesion, recuperando, cerrarSesion } = useSesion()
-  const [cerrandoSesion, setCerrandoSesion] = useState(false)
   useTituloPagina()
-
-  async function salir() {
-    if (cerrandoSesion) return
-    setCerrandoSesion(true)
-    try {
-      await cerrarSesion()
-    } catch {
-      // Si el backend no responde, `cerrarSesion` igual deja la sesión cerrada
-      // en este navegador: no hay nada más que mostrar.
-    } finally {
-      setCerrandoSesion(false)
-    }
-  }
+  const cabeceraRef = useRef<HTMLElement | null>(null)
+  useAltoCabecera(cabeceraRef)
+  useEffect(() => iniciarRevelado(), [])
 
   return (
     <AccesibilidadProvider>
@@ -44,42 +63,16 @@ export function Layout() {
         Saltar al contenido
       </Anchor>
 
+      {IntroCinematica && (
+        <Suspense fallback={null}>
+          <IntroCinematica />
+        </Suspense>
+      )}
+
       <div className="marco">
-        <header className="cabecera">
-          <div className="barra-utilidades">
-            <div className="marco-ancho barra-utilidades-fila">
-              <ControlesAccesibilidad />
-            </div>
-          </div>
-          <div className="marco-ancho cabecera-fila">
-            <Link
-              to="/"
-              className="cabecera-marca"
-              aria-label="Consulta Fácil, Biblioteca del CLENA: ir al inicio"
-            >
-              <Marca />
-            </Link>
-            <nav aria-label="Principal" className="navegacion">
-              {!recuperando && sesion && puedeGestionar(sesion.rol) && (
-                <NavLink to="/gestion" className="navegacion-enlace">
-                  Gestión
-                </NavLink>
-              )}
-              {!recuperando && !sesion && (
-                <NavLink to="/ingresar" className="navegacion-enlace">
-                  Ingresar
-                </NavLink>
-              )}
-              {sesion && (
-                <Button
-                  variant="white"
-                  onClick={() => void salir()}
-                  loading={cerrandoSesion}
-                >
-                  Cerrar sesión
-                </Button>
-              )}
-            </nav>
+        <header className="cabecera" ref={cabeceraRef}>
+          <div className="cabecera-pildora">
+            <CabeceraContenido />
           </div>
         </header>
 
@@ -87,7 +80,7 @@ export function Layout() {
           <Outlet />
         </main>
 
-        <footer className="pie">
+        <FranjaFoto as="footer" foto="interior" tono="marino" className="pie">
           <div className="marco-ancho pie-fila">
             <div className="pie-marca">
               <Marca />
@@ -101,10 +94,10 @@ export function Layout() {
           </div>
           <div className="marco-ancho pie-base">
             <small>
-              © {new Date().getFullYear()} Consulta Fácil · Prototipo académico
+              © {new Date().getFullYear()} Busca Fácil · Prototipo académico
             </small>
           </div>
-        </footer>
+        </FranjaFoto>
       </div>
     </AccesibilidadProvider>
   )

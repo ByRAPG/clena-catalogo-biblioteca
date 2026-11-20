@@ -65,7 +65,7 @@ describe('Rutas del catálogo', () => {
     pintar('/')
 
     expect(
-      screen.getByRole('heading', { name: 'Catálogo CLENA' }),
+      screen.getByRole('heading', { name: 'Busca Fácil' }),
     ).toBeDefined()
   })
 

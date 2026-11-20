@@ -7,13 +7,14 @@ import {
   Select,
   Stack,
   Text,
-  TextInput,
   Title,
 } from '@mantine/core'
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ApiError, type Paginado } from '../../shared/api/client'
+import { EVENTO_TUTORIAL } from '../tutorial/pasos'
 import { TutorialBusqueda } from '../tutorial/tutorial-busqueda'
+import { LOGO_LLEVA_NOMBRE, LogoMarca } from '../../shared/ui/marca'
 import {
   buscarObras,
   listarCategorias,
@@ -22,6 +23,18 @@ import {
   type ObraResumen,
   type OpcionDeFiltro,
 } from './busqueda.api'
+import {
+  CuadroMarca,
+  RejillaCuadros,
+} from '../../shared/ui/cuadro-marca'
+import {
+  IconoAyuda,
+  IconoCheck,
+  IconoLupa,
+  IconoSala,
+} from '../../shared/ui/iconos'
+import { CampoBusqueda } from './campo-busqueda'
+import { FranjaFoto } from '../../shared/ui/franja-foto'
 import { Paginador } from './paginador'
 import { esUuid, leerSalaDeLaUrl } from './sala-url'
 import { TarjetaResultado } from './tarjeta-resultado'
@@ -57,6 +70,37 @@ function mensajeDeFallo(causa: unknown): string {
 
 function aOpciones(opciones: OpcionDeFiltro[]) {
   return opciones.map((opcion) => ({ value: opcion.id, label: opcion.name }))
+}
+
+/** Búsqueda de ejemplo del acceso «Busque por una idea». */
+/** Nombre sin tildes ni mayúsculas, para hallar una sala por su nombre. */
+function sinTildes(nombre: string): string {
+  return nombre
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .trim()
+}
+
+/**
+ * Salas de los accesos 4, 5 y 6: las dos primeras y «Sala General»; si esta no
+ * existe en los datos, la tercera sala. Sin repetir ninguna.
+ */
+function salasDeAcceso(salas: OpcionDeFiltro[]): OpcionDeFiltro[] {
+  const general = salas.find((s) => sinTildes(s.name) === 'sala general')
+  const candidatas = [...salas.slice(0, 2), ...(general ? [general] : []), ...salas]
+  return candidatas.filter((s, i) => candidatas.findIndex((c) => c.id === s.id) === i).slice(0, 3)
+}
+
+const BUSQUEDA_DE_EJEMPLO = 'libros para niños'
+
+interface AccesoRapido {
+  clave: string
+  icono: ReactNode
+  titulo: string
+  descripcion: string
+  to?: string
+  onClick?: () => void
 }
 
 export function PaginaBusqueda() {
@@ -150,83 +194,210 @@ export function PaginaBusqueda() {
     cambiar({ q: String(datos.get('q') ?? '').trim() })
   }
 
+  // Aviso «Ver accesos rápidos»: visible mientras el hero ocupa la pantalla; se
+  // oculta al desplazarse (IntersectionObserver, sin escuchar el scroll).
+  const heroRef = useRef<HTMLElement | null>(null)
+  const [heroVisto, setHeroVisto] = useState(true)
+  useEffect(() => {
+    const hero = heroRef.current
+    if (hero === null || typeof IntersectionObserver === 'undefined') return
+    const observador = new IntersectionObserver(
+      ([entrada]) => setHeroVisto(entrada.intersectionRatio > 0.9),
+      { threshold: [0.9] },
+    )
+    observador.observe(hero)
+    return () => observador.disconnect()
+  }, [])
+
+  function bajarAAccesos() {
+    const reducido = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
+    const titulo = document.getElementById('titulo-accesos')
+    document
+      .getElementById('accesos')
+      ?.scrollIntoView({ behavior: reducido ? 'auto' : 'smooth', block: 'start' })
+    titulo?.focus({ preventScroll: true })
+  }
+
+  // Seis accesos: dos fijos de uso (recorrido y disponibles), una búsqueda de
+  // ejemplo por significado y tres salas de los datos ya cargados: las dos
+  // primeras y «Sala General» (por nombre; si no existe, la tercera sala).
+  const accesos: AccesoRapido[] = [
+    {
+      clave: 'como-buscar',
+      icono: <IconoAyuda />,
+      titulo: 'Cómo buscar',
+      descripcion: 'Un recorrido guiado sobre esta pantalla para encontrar un libro.',
+      onClick: () => window.dispatchEvent(new Event(EVENTO_TUTORIAL)),
+    },
+    {
+      clave: 'disponibles',
+      icono: <IconoCheck />,
+      titulo: 'Solo disponibles',
+      descripcion: 'Libros con algún ejemplar para llevar hoy.',
+      to: '/?disponibles=true',
+    },
+    {
+      clave: 'idea',
+      icono: <IconoLupa />,
+      titulo: 'Busque por una idea',
+      descripcion: 'Describa lo que quiere y verá libros por su significado, por ejemplo «libros para niños».',
+      to: `/?q=${encodeURIComponent(BUSQUEDA_DE_EJEMPLO)}`,
+    },
+    ...salasDeAcceso(salas).map((s) => ({
+      clave: `sala-${s.id}`,
+      icono: <IconoSala />,
+      titulo: s.name,
+      descripcion: 'Ver los libros que están en esta sala.',
+      to: `/?sala=${s.id}`,
+    })),
+  ]
+
   const hayFiltros = categoria !== '' || sala !== '' || soloDisponibles
+  const hayBusqueda = q !== '' || hayFiltros
   const total = resultado?.meta.total ?? 0
   const totalDePaginas = Math.max(1, Math.ceil(total / TAMANO_DE_PAGINA))
   const obras = resultado?.data ?? []
 
   return (
-    <Stack gap="lg">
-      <Title order={1} size="h2">Catálogo CLENA</Title>
-      <Text>
-        Busque un libro por título, autor o tema y vea en qué sala, sección y
-        estante está.
-      </Text>
+    <div className="portada">
+      <section
+        ref={heroRef}
+        aria-label="Buscador del catálogo"
+        className={`zona-hero${hayBusqueda ? ' hero-compacto zona-hero-compacta' : ''}`}
+      >
+        {/* Capa de fondo: foto con filtro azul marino a todo el ancho. */}
+        <FranjaFoto foto="pov" tono="marino" className="hero zona-hero-fondo" aria-hidden="true" />
+        <div className="zona-hero-contenido zona-fila">
+          <div className="hero-cabeza">
+            <div className="hero-textos">
+              <Title order={1} className="hero-titulo">
+                {LOGO_LLEVA_NOMBRE ? (
+                  <LogoMarca size={129} titulo="Busca Fácil" className="hero-logo" />
+                ) : (
+                  'Busca Fácil'
+                )}
+              </Title>
+              <p className="hero-eyebrow">Catálogo de la Biblioteca del CLENA</p>
+              <p className="hero-subtitulo">
+                Busque un libro por título, autor o tema y vea en qué sala,
+                sección y estante está.
+              </p>
+            </div>
+            <TutorialBusqueda />
+          </div>
 
-      <TutorialBusqueda />
+          <div className="hero-vidrio" data-tutorial="buscador">
+            <form onSubmit={enviar} role="search" aria-label="Buscar en el catálogo">
+              <Group align="flex-end" gap="sm" wrap="wrap">
+                {/* `key` vuelve a montar el campo cuando la búsqueda de la URL
+                    cambia (por ejemplo al pulsar «atrás»), sin sincronizarlo a mano. */}
+                <CampoBusqueda key={q} valorInicial={q} />
+                <Button type="submit" style={{ minHeight: 44 }}>
+                  Buscar
+                </Button>
+              </Group>
+            </form>
+          </div>
 
-      <form onSubmit={enviar} role="search" aria-label="Buscar en el catálogo">
-        <Group align="flex-end" gap="sm" wrap="wrap">
-          <TextInput
-            // `key` vuelve a montar el campo cuando la búsqueda de la URL
-            // cambia (por ejemplo al pulsar «atrás»), sin sincronizarlo a mano.
-            key={q}
-            name="q"
-            label="Busque por título, autor o tema"
-            placeholder="Por ejemplo: cien años sole"
-            defaultValue={q}
-            maxLength={100}
-            style={{ flex: '1 1 18rem' }}
-          />
-          <Button type="submit" style={{ minHeight: 44 }}>
-            Buscar
-          </Button>
-        </Group>
-      </form>
-
-      <Group align="flex-end" gap="sm" wrap="wrap">
-        <Select
-          label="Categoría"
-          placeholder="Todas"
-          data={aOpciones(categorias)}
-          value={categoria === '' ? null : categoria}
-          onChange={(valor) => cambiar({ categoria: valor })}
-          clearable
-          style={{ flex: '1 1 12rem' }}
-        />
-        <Select
-          label="Sala"
-          placeholder="Todas"
-          data={aOpciones(salas)}
-          value={sala === '' ? null : sala}
-          onChange={(valor) => cambiar({ sala: valor })}
-          clearable
-          style={{ flex: '1 1 12rem' }}
-        />
-        <Checkbox
-          label="Solo disponibles"
-          checked={soloDisponibles}
-          onChange={(evento) =>
-            cambiar({
-              disponibles: evento.currentTarget.checked ? 'true' : null,
-            })
-          }
-          style={{ minHeight: 44, display: 'flex', alignItems: 'center' }}
-        />
-        {hayFiltros && (
-          <Button
-            type="button"
-            variant="default"
-            onClick={() =>
-              cambiar({ categoria: null, sala: null, disponibles: null })
-            }
-            style={{ minHeight: 44 }}
+          <FranjaFoto
+            foto="interior"
+            tono="ambar"
+            className="filtros"
+            data-tutorial="filtros"
           >
-            Quitar filtros
-          </Button>
-        )}
-      </Group>
+            <Group align="flex-end" gap="sm" wrap="wrap">
+              <Select
+                label="Categoría"
+                placeholder="Todas"
+                data={aOpciones(categorias)}
+                value={categoria === '' ? null : categoria}
+                onChange={(valor) => cambiar({ categoria: valor })}
+                clearable
+                className="filtro-select"
+              />
+              <Select
+                label="Sala"
+                placeholder="Todas"
+                data={aOpciones(salas)}
+                value={sala === '' ? null : sala}
+                onChange={(valor) => cambiar({ sala: valor })}
+                clearable
+                className="filtro-select"
+              />
+              <Checkbox
+                label="Solo disponibles"
+                checked={soloDisponibles}
+                onChange={(evento) =>
+                  cambiar({
+                    disponibles: evento.currentTarget.checked ? 'true' : null,
+                  })
+                }
+                style={{ minHeight: 44, display: 'flex', alignItems: 'center' }}
+              />
+              {hayFiltros && (
+                <Button
+                  type="button"
+                  variant="default"
+                  onClick={() =>
+                    cambiar({ categoria: null, sala: null, disponibles: null })
+                  }
+                  style={{ minHeight: 44 }}
+                >
+                  Quitar filtros
+                </Button>
+              )}
+            </Group>
+          </FranjaFoto>
+        </div>
 
+        {!hayBusqueda && (
+          <button
+            type="button"
+            className="hero-bajar"
+            data-oculto={!heroVisto}
+            tabIndex={heroVisto ? 0 : -1}
+            onClick={bajarAAccesos}
+          >
+            Ver accesos rápidos
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+              <path d="M5 9l7 7 7-7" />
+            </svg>
+          </button>
+        )}
+      </section>
+
+      {!hayBusqueda && (
+        <FranjaFoto
+          as="section"
+          aria-labelledby="titulo-accesos"
+          foto="interior"
+          tono="granate"
+          id="accesos"
+          className="seccion-accesos zona-accesos"
+        >
+          <div className="zona-accesos-fila">
+          <h2 id="titulo-accesos" className="rotulo" tabIndex={-1}>
+            Accesos rápidos
+          </h2>
+          <RejillaCuadros etiqueta="Accesos rápidos al catálogo">
+            {accesos.map((acceso, i) => (
+              <CuadroMarca
+                key={acceso.clave}
+                tono={i % 2 === 0 ? 'azul' : 'granate'}
+                numero={String(i + 1).padStart(2, '0')}
+                icono={acceso.icono}
+                titulo={acceso.titulo}
+                descripcion={acceso.descripcion}
+                to={acceso.to}
+                onClick={acceso.onClick}
+              />
+            ))}
+          </RejillaCuadros>
+          </div>
+        </FranjaFoto>
+      )}
+
+      <Stack gap="lg" className="portada-resultados">
       {/* Un lector de pantalla anuncia el conteo sin que haya que ir a buscarlo. */}
       <div aria-live="polite" aria-atomic="true">
         {cargando && (
@@ -236,13 +407,20 @@ export function PaginaBusqueda() {
           </Group>
         )}
         {!cargando && error === null && resultado !== null && (
-          <Text fw={600}>
+          <Text className="rotulo">
             {total === 0
               ? 'Sin resultados'
               : `${total} ${total === 1 ? 'resultado' : 'resultados'}`}
           </Text>
         )}
       </div>
+
+      {!cargando && error === null && resultado?.meta.degraded === true && q !== '' && (
+        <p className="aviso-discreto" role="status">
+          La búsqueda por significado no está disponible en este momento; se
+          muestran las coincidencias por palabras.
+        </p>
+      )}
 
       {error !== null && (
         <Alert color="red.9" title="No se pudo buscar" role="alert">
@@ -276,10 +454,17 @@ export function PaginaBusqueda() {
         <Stack
           component="ul"
           gap="md"
+          data-tutorial="primer-resultado"
+          data-tutorial-hijo="primero"
           style={{ listStyle: 'none', margin: 0, padding: 0 }}
         >
-          {obras.map((obra) => (
-            <TarjetaResultado key={obra.id} obra={obra} />
+          {obras.map((obra, i) => (
+            <TarjetaResultado
+              key={obra.id}
+              obra={obra}
+              consulta={q}
+              numero={(pagina - 1) * TAMANO_DE_PAGINA + i + 1}
+            />
           ))}
         </Stack>
       )}
@@ -296,6 +481,7 @@ export function PaginaBusqueda() {
           }}
         />
       )}
-    </Stack>
+      </Stack>
+    </div>
   )
 }

@@ -9,7 +9,7 @@ export function PaginaPrivacidad() {
   return (
     <Stack gap="lg">
       <Title order={1} size="h2">Aviso de privacidad</Title>
-      <Text>Consulta Fácil · Versión {VERSION_AVISO_PRIVACIDAD}</Text>
+      <Text>Busca Fácil · Versión {VERSION_AVISO_PRIVACIDAD}</Text>
       <Alert title="Prototipo académico" color="yellow">
         Este aviso es provisional. Antes de usar datos reales deben confirmarse
         con el CLENA el responsable del tratamiento, sus datos de contacto y la

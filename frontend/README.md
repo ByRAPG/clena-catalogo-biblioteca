@@ -73,3 +73,17 @@ export default defineConfig([
 ])
 
 ```
+
+## Cambiar el concepto de logo
+
+1. El concepto vigente es la constante `CONCEPTO_LOGO` de `src/shared/ui/logo-concepto.ts` (`a`, `b`, `c` o `bf`).
+2. Comando: `node scripts/aplicar-logo.mjs b` (sin dependencias) actualiza la constante y copia el símbolo del concepto a `public/favicon.svg`.
+3. Los PNG (`favicon-32`, `apple-touch-icon`, `icon-192`, `icon-512`) se regeneran con Chrome o Edge sin interfaz si hay uno instalado; si no, quedan como están y el script avisa.
+4. Los dibujos de los cuatro conceptos están en `public/logos-alt/` (`busca-<c>.svg`, `-oscuro`, `-mini`).
+5. Después, `pnpm test` y `pnpm build`.
+
+### Concepto C: compacto «BF» y esquema de color
+
+- En el concepto C la versión compacta (cabecera móvil, favicon, iconos) es el monograma «BF», con las letras B y F del logotipo; `public/logos-alt/busca-c-mini.svg` es el icono (BF ámbar sobre marino).
+- El esquema de color es la constante `ESQUEMA_LOGO` (`1`, `2` o `3`) de `src/shared/ui/logo-concepto.ts`: 1 texto blanco y lupa ámbar; 2 texto amarillo CLENA y lupa blanca; 3 placa ámbar con texto marino y lupa granate. Los colores son las variables `--logo-texto`, `--logo-lupa` y `--logo-placa` de `src/shared/ui/logo.css` (con sus contrastes).
+- Vista previa: con `VITE_PREVIEW_LOGOS=true` en `.env.local` (y como argumento de build en Docker), `?logo=1|2|3` cambia el esquema al vuelo y lo recuerda durante la sesión. Sin la bandera el código se elimina del build.

@@ -15,6 +15,8 @@ body {
 :root[data-mantine-color-scheme='light'] {
   --mantine-color-dimmed: #4a5163;
   --mantine-color-placeholder: #5f6676;
+  /* Fondo gris muy claro: las tarjetas blancas se despegan sin bordes duros. */
+  --mantine-color-body: #f6f7fb;
 }
 
 /* Foco visible de 3 px en todo control (guía visual). */
@@ -141,8 +143,7 @@ html[data-alto-contraste='true']
 }
 
 html[data-alto-contraste='true'] header {
-  background: #000 !important;
-  border-bottom: 2px solid #fff;
+  background: transparent !important;
 }
 
 html[data-alto-contraste='true'] .mantine-Button-root {
@@ -226,4 +227,183 @@ html[data-alto-contraste='true'] .mantine-Badge-root {
   background-color: #000 !important;
   border: 2px solid #ffff00 !important;
   color: #ffff00 !important;
+}
+
+/* ===================== Marca (propuesta A + vidrio puntual + contención B) ===================== */
+/* Marino #23234E, ámbar #FCB040 (solo como fondo), granate #5B113C. */
+
+/* Botón principal: ámbar con texto marino 8,03:1; hover granate con blanco 13,21:1. */
+html:not([data-alto-contraste='true'])
+  .mantine-Button-root[data-variant='filled']:not(:disabled, [data-disabled]):not(:is(.cabecera-acciones, .menu-movil) *) {
+  background-color: #fcb040;
+  color: #23234e;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  border: 0;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+html:not([data-alto-contraste='true'])
+  .mantine-Button-root[data-variant='filled']:not(:disabled, [data-disabled]):not(:is(.cabecera-acciones, .menu-movil) *):hover {
+  background-color: #5b113c;
+  color: #fff;
+}
+
+/* Botón secundario: contorno marino. */
+html:not([data-alto-contraste='true']) .mantine-Button-root[data-variant='default'] {
+  background-color: #fff;
+  color: #23234e;
+  border: 2px solid #23234e;
+  font-weight: 700;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+html:not([data-alto-contraste='true']) .mantine-Button-root[data-variant='default']:hover {
+  background-color: #23234e;
+  color: #fff;
+}
+
+/* Tarjetas: blancas, radio 16 px, sombra difusa; más marcada al pasar o enfocar. */
+.tarjeta {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 50px #0000000d;
+  transition: box-shadow 0.18s ease;
+}
+
+.tarjeta:hover,
+.tarjeta:focus-within {
+  box-shadow: 0 10px 40px #23234e26;
+}
+
+/* Rótulos pequeños de sección: granate 13,21:1 sobre blanco, mayúsculas, 2 px. */
+.rotulo {
+  margin: 0;
+  color: #5b113c;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+html[data-alto-contraste='true'] .rotulo {
+  color: #ffff00 !important;
+}
+
+/* Hero de la portada: textos y buscador. La zona a todo el ancho, su foto y el
+   filtro viven en app/fondos.css; `.hero` es solo la capa de fondo (la que recibe
+   el brillo) y fija el color del texto de las franjas de gestión. */
+.hero {
+  color: #fff;
+}
+
+.hero-titulo {
+  margin: 0;
+  line-height: 0;
+}
+
+/* El título es el logotipo (un solo h1, con el nombre accesible «Busca Fácil»). */
+.hero-logo {
+  display: block;
+  /* También por alto de pantalla: en pantallas bajas el hero debe caber (con el
+     aviso «Ver accesos rápidos» a la vista) sin pasar el primer pantallazo. */
+  width: clamp(220px, min(38vw, 52svh), 520px);
+  max-width: 100%;
+  height: auto;
+}
+
+/* Pantallas bajas: se quita lo prescindible del hero para que todo quepa. */
+@media (max-height: 800px) {
+  .zona-hero:not(.zona-hero-compacta) .hero-subtitulo {
+    display: none;
+  }
+}
+
+@media (max-height: 700px) {
+  .zona-hero:not(.zona-hero-compacta) .hero-eyebrow {
+    display: none;
+  }
+}
+
+.hero-subtitulo {
+  margin: 0;
+  max-width: 40rem;
+  color: #fff;
+  font-size: 1.125rem;
+}
+
+.hero-vidrio {
+  margin-top: 0.25rem;
+  padding: 1.25rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.hero-vidrio .mantine-InputWrapper-label {
+  color: #fff;
+}
+
+.hero-vidrio .mantine-Input-input {
+  background: #fff;
+  color: #1f2433;
+  border-color: transparent;
+  border-radius: 12px;
+}
+
+.hero-vidrio :focus-visible {
+  outline-color: #fff !important;
+}
+
+.hero-compacto .hero-logo {
+  width: clamp(200px, 26vw, 300px);
+}
+
+.hero-compacto .hero-subtitulo {
+  display: none;
+}
+
+.hero-compacto .hero-vidrio {
+  padding: 1rem;
+}
+
+/* Sin transparencia: fondo opaco (vidrio solo como extra). */
+@supports not (backdrop-filter: blur(1px)) {
+  .hero-vidrio {
+    background: #3a3a66;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .hero-vidrio {
+    background: #3a3a66;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+html[data-alto-contraste='true'] .hero {
+  background: #000;
+}
+
+html[data-alto-contraste='true'] .hero-vidrio {
+  background: #000;
+  border: 2px solid #fff;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta,
+  .mantine-Button-root {
+    transition: none !important;
+  }
 }

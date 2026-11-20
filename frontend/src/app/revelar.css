@@ -1,0 +1,97 @@
+/*
+ * Revelado al desplazarse (ver shared/efectos/revelar.ts). Solo `translate` y
+ * `opacity`: sin Layout ni Paint por fotograma y sin pisar los `transform` de
+ * los estados hover. Lo oculto solo se aplica cuando el mecanismo está activo
+ * (`data-revelar` en <html>); sin JS, sin soporte, con movimiento reducido o en
+ * alto contraste todo se ve de inmediato. No cambia el espacio que ocupa nada:
+ * CLS = 0.
+ */
+@keyframes revelar-sube {
+  from {
+    opacity: 0;
+    translate: 0 24px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* Escalón entre cuadros vecinos (70 ms en el respaldo; 4 % del rango con view()). */
+.rejilla-cuadros > :nth-child(2),
+[data-tutorial='primer-resultado'] > :nth-child(2),
+.pie-base {
+  --i: 1;
+}
+.rejilla-cuadros > :nth-child(3),
+[data-tutorial='primer-resultado'] > :nth-child(3) {
+  --i: 2;
+}
+.rejilla-cuadros > :nth-child(4),
+[data-tutorial='primer-resultado'] > :nth-child(4) {
+  --i: 3;
+}
+.rejilla-cuadros > :nth-child(5),
+[data-tutorial='primer-resultado'] > :nth-child(5) {
+  --i: 4;
+}
+.rejilla-cuadros > :nth-child(n + 6),
+[data-tutorial='primer-resultado'] > :nth-child(n + 6) {
+  --i: 5;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    html[data-revelar='css']:not([data-alto-contraste='true'])
+      :is(
+        .zona-accesos-fila > .rotulo,
+        .zona-accesos .rejilla-cuadros > *,
+        [data-tutorial='primer-resultado'] > *,
+        .pie-fila,
+        .pie-base
+      ) {
+      animation: revelar-sube auto cubic-bezier(0.22, 0.8, 0.3, 1) backwards;
+      animation-timeline: view();
+      animation-range: entry calc(var(--i, 0) * 4%) entry calc(40% + var(--i, 0) * 4%);
+    }
+  }
+
+  html[data-revelar='io']:not([data-alto-contraste='true'])
+    :is(
+      .zona-accesos-fila > .rotulo,
+      .zona-accesos .rejilla-cuadros > *,
+      [data-tutorial='primer-resultado'] > *,
+      .pie-fila,
+      .pie-base
+    ):not(.revelado) {
+    opacity: 0;
+    translate: 0 24px;
+  }
+
+  html[data-revelar='io']:not([data-alto-contraste='true'])
+    :is(
+      .zona-accesos-fila > .rotulo,
+      .zona-accesos .rejilla-cuadros > *,
+      [data-tutorial='primer-resultado'] > *,
+      .pie-fila,
+      .pie-base
+    ).revelado {
+    animation: revelar-sube 0.56s cubic-bezier(0.22, 0.8, 0.3, 1) backwards;
+    animation-delay: calc(var(--i, 0) * 70ms);
+  }
+}
+
+/*
+ * Mientras la intro está pendiente (`data-entrada="espera"`), un fondo de marca
+ * tapa la portada desde el primer fotograma. La intro (z-index 9999) entra encima;
+ * al abrirse el telón la entrada pasa a «corre» y el fondo se quita bajo el telón.
+ * Sin esto, la portada se veía unos instantes antes de que apareciera la intro.
+ */
+html[data-entrada='espera']:not([data-alto-contraste='true'])::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background: linear-gradient(135deg, #23234e 0%, #3a0f2b 100%);
+}

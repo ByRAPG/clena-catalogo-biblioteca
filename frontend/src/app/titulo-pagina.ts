@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { matchPath, useLocation } from 'react-router-dom'
 
-const SUFIJO = 'Consulta Fácil'
+const SUFIJO = 'Busca Fácil'
 
 /** Título por ruta, de la más específica a la más general. */
 const TITULOS: ReadonlyArray<readonly [string, string]> = [
@@ -22,7 +22,7 @@ export function tituloDeRuta(ruta: string): string {
   return `${pagina} · ${SUFIJO}`
 }
 
-/** Mantiene `document.title` con el patrón «Página · Consulta Fácil». */
+/** Mantiene `document.title` con el patrón «Página · Busca Fácil». */
 export function useTituloPagina() {
   const { pathname } = useLocation()
   useEffect(() => {

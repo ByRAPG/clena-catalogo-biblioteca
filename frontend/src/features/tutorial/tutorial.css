@@ -1,0 +1,501 @@
+/*
+ * Recorrido guiado. Marino #23234E, marino oscuro #1B1B3F, granate #5B113C,
+ * ámbar #FCB040 (solo como fondo o anillo; texto marino 8,03:1).
+ * El velo difumina y oscurece (~40 %) lo que hay detrás, para que la tarjeta
+ * destaque; en los pasos son cuatro paneles con un hueco y el elemento resaltado se
+ * ve nítido. No bloquea el scroll (pointer-events: none).
+ */
+.tutorial-capa {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  pointer-events: none;
+}
+
+.tutorial-velo {
+  position: fixed;
+  inset: 0;
+  background: rgba(27, 27, 63, 0.4);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  /* Solo se anima la opacidad (nunca el blur, que parpadea al animarse desde 0). */
+  animation: tutorial-fundido 0.2s ease-out both;
+}
+
+/* Sin transparencia, sin soporte de backdrop-filter o alto contraste: velo opaco. */
+@supports not (backdrop-filter: blur(1px)) {
+  .tutorial-velo {
+    background: rgba(14, 14, 38, 0.84);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .tutorial-velo {
+    background: rgba(14, 14, 38, 0.84);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+html[data-alto-contraste='true'] .tutorial-velo {
+  background: rgba(0, 0, 0, 0.88);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Anillo del objetivo: la posición se escribe cada cuadro desde el código (sin
+   transiciones, que se quedarían atrás del desplazamiento); solo se funde. */
+.tutorial-foco {
+  position: fixed;
+  border-radius: 14px;
+  box-shadow: 0 0 0 3px #fcb040;
+  opacity: 0;
+}
+
+.tutorial-foco[data-visible='true'] {
+  opacity: 1;
+  transition: opacity 0.12s ease-out;
+}
+
+@keyframes tutorial-fundido {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tutorial-tarjeta {
+  position: fixed;
+  pointer-events: auto;
+  box-sizing: border-box;
+  top: 0;
+  left: 0;
+  width: var(--tut-ancho, min(420px, calc(100vw - 32px)));
+  max-height: calc(100vh - 32px);
+  /* Oculta hasta tener su posición final; solo aparece con un fundido. */
+  opacity: 0;
+  visibility: hidden;
+  overflow-y: auto;
+  padding: 1.1rem 1.25rem 1rem;
+  background: #fff;
+  color: #1b1b3f;
+  border-radius: 16px;
+  box-shadow: 0 12px 36px rgba(27, 27, 63, 0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.tutorial-tarjeta[data-lista='true'] {
+  opacity: 1;
+  visibility: visible;
+  animation: tutorial-fundido 0.15s ease-out both;
+}
+
+.tutorial-tarjeta-portada {
+  /* Borde claro y halo ámbar suave: contrasta con cualquier fondo. */
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 0 0 5px rgba(252, 176, 64, 0.35),
+    0 18px 48px rgba(10, 10, 30, 0.5);
+  padding: 0;
+  background: linear-gradient(135deg, #23234e 0%, #5b113c 100%);
+  color: #fff;
+  overflow: hidden;
+}
+
+.tutorial-tarjeta-portada .tutorial-dispositivo,
+.tutorial-tarjeta-portada .tutorial-acciones {
+  padding-inline: 1.25rem;
+}
+
+.tutorial-tarjeta-portada .tutorial-acciones {
+  padding-bottom: 1rem;
+}
+
+.tutorial-tarjeta-portada .tutorial-dispositivo-rotulo,
+.tutorial-tarjeta-portada .tutorial-tarjeta .tutorial-omitir,
+.tutorial-tarjeta.tutorial-tarjeta-portada .tutorial-omitir {
+  color: #fff;
+}
+
+.tutorial-portada {
+  padding: 2rem 1.25rem 0.5rem;
+  text-align: center;
+}
+
+.tutorial-portada-logo-nombre {
+  max-width: 100%;
+  height: auto;
+}
+
+.tutorial-portada-logo {
+  border-radius: 14px;
+}
+
+.tutorial-portada-marca {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tutorial-titulo {
+  margin: 0;
+  font-size: 1.2rem;
+  line-height: 1.25;
+  color: #23234e;
+}
+
+.tutorial-titulo-portada {
+  margin: 0.4rem 0 0.5rem;
+  font-size: 1.6rem;
+  color: #fff;
+}
+
+.tutorial-portada-texto {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.tutorial-cabeza {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  padding-right: 2.5rem;
+}
+
+.tutorial-numero {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: #fcb040;
+  color: #23234e;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.tutorial-rotulo {
+  margin: 0 0 0.15rem;
+}
+
+.tutorial-texto {
+  margin: 0.75rem 0 0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.tutorial-ejemplo {
+  margin: 0.75rem 0 0;
+  padding: 0.6rem 0.8rem;
+  border-left: 4px solid #5b113c;
+  border-radius: 8px;
+  background: #f6f7fb;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+/* Mini tarjetas de ejemplo (decorativas): mismos elementos que una tarjeta de resultado. */
+.tutorial-muestras {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+}
+
+.tutorial-muestra {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.5rem 0.75rem;
+  border-left: 4px solid #5b113c;
+  border-radius: 8px;
+  background: #f6f7fb;
+}
+
+.tutorial-muestra-consulta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #4a5163;
+}
+
+.tutorial-muestra-titulo {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #23234e;
+}
+
+.tutorial-muestra .coincidencia {
+  font-size: 0.9rem;
+}
+
+.tutorial-muestra .insignia-significado {
+  margin-top: 0.1rem;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.tutorial-cerrar {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tutorial-cerrar:hover {
+  background: rgba(35, 35, 78, 0.1);
+}
+
+.tutorial-tarjeta-portada .tutorial-cerrar:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.tutorial-puntos {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.tutorial-punto {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: #c9cce0;
+}
+
+.tutorial-punto-hecho {
+  background: #5b113c;
+}
+
+.tutorial-punto-actual {
+  width: 1.6rem;
+  background: #23234e;
+}
+
+.tutorial-dispositivo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.tutorial-dispositivo-rotulo {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.tutorial-dispositivo .mantine-SegmentedControl-label {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.tutorial-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tutorial-acciones-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tutorial-tarjeta .tutorial-acciones .mantine-Button-root {
+  padding-inline: 0.75rem;
+}
+
+.tutorial-tarjeta .tutorial-primario,
+.tutorial-tarjeta .tutorial-secundario,
+.tutorial-tarjeta .tutorial-omitir {
+  min-height: 44px;
+}
+
+.tutorial-tarjeta .tutorial-secundario {
+  border: 2px solid #23234e;
+  background: #fff;
+  color: #23234e;
+}
+
+.tutorial-tarjeta .tutorial-secundario:disabled {
+  border-color: #c9cce0;
+  color: #6b7080;
+}
+
+.tutorial-tarjeta .tutorial-omitir {
+  color: #5b113c;
+}
+
+/* Móvil: hoja inferior fija a ancho completo con márgenes. */
+/* Pantallas bajas (celular pequeño): hoja más compacta para que quede espacio
+   arriba y el menú de la cabecera, abierto en el paso 6, no quede tapado. */
+@media (max-height: 700px) {
+  .tutorial-capa .tutorial-tarjeta[data-modo='hoja'] {
+    max-height: 57vh;
+    max-height: 57svh;
+    padding: 0.75rem 1rem 0.75rem;
+  }
+
+  .tutorial-tarjeta[data-modo='hoja'] .tutorial-texto {
+    margin-top: 0.5rem;
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+
+  .tutorial-tarjeta[data-modo='hoja'] .tutorial-puntos {
+    display: none;
+  }
+}
+.tutorial-tarjeta[data-modo='hoja'] {
+  top: auto;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  width: auto;
+  max-height: 66vh;
+  max-height: 66svh;
+}
+
+/* Con el ejemplo la tarjeta puede superar su alto máximo: el contenido se desplaza
+   y los botones quedan siempre a la vista, pegados al borde inferior. */
+.tutorial-tarjeta:not(.tutorial-tarjeta-portada) .tutorial-acciones {
+  position: sticky;
+  bottom: -1rem;
+  z-index: 1;
+  margin-bottom: -1rem;
+  padding-block: 0.5rem 1rem;
+  background: #fff;
+}
+
+html[data-alto-contraste='true'] .tutorial-tarjeta:not(.tutorial-tarjeta-portada) .tutorial-acciones {
+  background: #000;
+}
+
+@media (max-width: 40em) {
+  .tutorial-muestras {
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+  }
+
+  .tutorial-muestra {
+    padding: 0.35rem 0.6rem;
+  }
+
+  .tutorial-muestra-titulo {
+    font-size: 0.85rem;
+  }
+
+  .tutorial-acciones,
+  .tutorial-acciones-nav {
+    gap: 0.25rem;
+  }
+}
+
+.tutorial-tarjeta .tutorial-volver {
+  min-height: 44px;
+}
+
+.tutorial-tarjeta .tutorial-volver[hidden] {
+  display: none;
+}
+
+/* Tarjeta compacta en los pasos: «Ver para» se elige en la bienvenida. Así la
+   tarjeta tapa menos y no cambia de alto al cambiar de modo. */
+.tutorial-tarjeta:not(.tutorial-tarjeta-portada) .tutorial-dispositivo {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-velo,
+  .tutorial-tarjeta[data-lista='true'] {
+    animation: none;
+  }
+  .tutorial-foco[data-visible='true'] {
+    transition: none;
+  }
+}
+
+html[data-alto-contraste='true'] .tutorial-tarjeta:not(.tutorial-tarjeta-portada) {
+  background: #000;
+  color: #fff;
+  border: 2px solid #ffff00;
+}
+
+html[data-alto-contraste='true'] .tutorial-titulo:not(.tutorial-titulo-portada),
+html[data-alto-contraste='true'] .tutorial-tarjeta:not(.tutorial-tarjeta-portada) .tutorial-omitir {
+  color: #ffff00;
+}
+
+html[data-alto-contraste='true'] .tutorial-tarjeta-portada {
+  background: #000;
+  border: 2px solid #ffff00;
+}
+
+html[data-alto-contraste='true'] .tutorial-tarjeta .tutorial-secundario {
+  background: #000;
+  color: #fff;
+  border-color: #fff;
+}
+
+html[data-alto-contraste='true'] .tutorial-muestra {
+  background: #000;
+  border: 1px solid #fff;
+}
+
+html[data-alto-contraste='true'] .tutorial-muestra-consulta,
+html[data-alto-contraste='true'] .tutorial-muestra-titulo {
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] .tutorial-ejemplo {
+  background: #000;
+  border: 1px solid #fff;
+}
+
+html[data-alto-contraste='true'] .tutorial-punto-actual,
+html[data-alto-contraste='true'] .tutorial-punto-hecho {
+  background: #ffff00;
+}
+
+/*
+ * Alto contraste: el velo no usa recorte (`clip-path`). Al activar o quitar el
+ * contraste con el recorrido abierto, el navegador podía conservar el recorte
+ * anterior y el velo opaco cubría también el objetivo, que se veía apagado. Con
+ * un objetivo, el propio anillo oscurece el resto con una sombra enorme (nunca
+ * pinta dentro de su caja: el objetivo queda nítido y encima); sin objetivo
+ * (bienvenida o paso sin elemento) rige el velo normal.
+ */
+html[data-alto-contraste='true'] .tutorial-foco {
+  box-shadow: 0 0 0 4px #ffff00;
+}
+
+html[data-alto-contraste='true'] .tutorial-foco[data-visible='true'] {
+  box-shadow:
+    0 0 0 4px #ffff00,
+    0 0 0 100vmax rgba(0, 0, 0, 0.88);
+}
+
+html[data-alto-contraste='true'] .tutorial-capa:has(.tutorial-foco[data-visible='true']) .tutorial-velo {
+  display: none;
+}

@@ -1,0 +1,51 @@
+/* Cortina de transición: solo transform y opacity; cierra, pausa y abre como telón. */
+.cortina {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+  overflow: hidden;
+}
+.cortina-lado,
+.cortina-lado span {
+  position: absolute;
+  inset: 0;
+}
+.cortina-ambar { background: #fcb040; }
+.cortina-i .cortina-ambar { clip-path: polygon(0 0, 57.4% 0, 45.4% 100%, 0 100%); }
+.cortina-i .cortina-color { background: #23234e; clip-path: polygon(0 0, 56% 0, 44% 100%, 0 100%); }
+.cortina-d .cortina-ambar { clip-path: polygon(54.6% 0, 100% 0, 100% 100%, 42.6% 100%); }
+.cortina-d .cortina-color { background: #5b113c; clip-path: polygon(56% 0, 100% 0, 100% 100%, 44% 100%); }
+.cortina[data-fase='cierra'] .cortina-i { animation: cortina-i-entra var(--cierra) cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+.cortina[data-fase='cierra'] .cortina-d { animation: cortina-d-entra var(--cierra) cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+.cortina[data-fase='abre'] .cortina-i { animation: cortina-i-sale var(--abre) cubic-bezier(0.7, 0, 0.84, 0) forwards; }
+.cortina[data-fase='abre'] .cortina-d { animation: cortina-d-sale var(--abre) cubic-bezier(0.7, 0, 0.84, 0) forwards; }
+.cortina-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(150px, 22vw, 320px);
+  translate: -50% -50%;
+  animation: cortina-logo 650ms cubic-bezier(0.16, 1, 0.3, 1) calc(var(--cierra) - 350ms) backwards;
+}
+.cortina[data-fase='abre'] .cortina-logo { opacity: 0; transition: opacity 300ms; }
+@keyframes cortina-i-entra { from { transform: translateX(-100%); } }
+@keyframes cortina-d-entra { from { transform: translateX(100%); } }
+@keyframes cortina-i-sale { to { transform: translateX(-100%); } }
+@keyframes cortina-d-sale { to { transform: translateX(100%); } }
+@keyframes cortina-logo { from { opacity: 0; scale: 0.82; translate: -50% -42%; } }
+@media (max-aspect-ratio: 1/1) {
+  .cortina-i .cortina-ambar { clip-path: polygon(0 0, 100% 0, 100% 45.4%, 0 57.4%); }
+  .cortina-i .cortina-color { clip-path: polygon(0 0, 100% 0, 100% 44%, 0 56%); }
+  .cortina-d .cortina-ambar { clip-path: polygon(0 54.6%, 100% 42.6%, 100% 100%, 0 100%); }
+  .cortina-d .cortina-color { clip-path: polygon(0 56%, 100% 44%, 100% 100%, 0 100%); }
+  .cortina[data-fase='cierra'] .cortina-i { animation-name: cortina-i-entra-v; }
+  .cortina[data-fase='cierra'] .cortina-d { animation-name: cortina-d-entra-v; }
+  .cortina[data-fase='abre'] .cortina-i { animation-name: cortina-i-sale-v; }
+  .cortina[data-fase='abre'] .cortina-d { animation-name: cortina-d-sale-v; }
+  .cortina-logo { width: min(56vw, 300px); }
+}
+@keyframes cortina-i-entra-v { from { transform: translateY(-100%); } }
+@keyframes cortina-d-entra-v { from { transform: translateY(100%); } }
+@keyframes cortina-i-sale-v { to { transform: translateY(-100%); } }
+@keyframes cortina-d-sale-v { to { transform: translateY(100%); } }

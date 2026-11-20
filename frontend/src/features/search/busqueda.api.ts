@@ -39,6 +39,8 @@ export interface ObraResumen {
   year: number | null
   /** Dónde coincidió el término buscado; `null` si la búsqueda no llevó `q`. */
   matchedOn: DondeCoincidio | null
+  /** Cómo coincidió: por palabras, por significado o ambos (opcional). */
+  matchSource?: 'lexical' | 'semantic' | 'both'
   availability: Disponibilidad
   /** Ubicación del primer ejemplar disponible; `null` si la obra no tiene. */
   location: Ubicacion | null

@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import {
   Alert,
   Button,
@@ -11,8 +11,11 @@ import {
   TextInput,
   Title,
 } from '@mantine/core'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { FranjaFoto } from '../../shared/ui/franja-foto'
+import { IconoAlerta, IconoCandado } from '../../shared/ui/iconos'
 import { ApiError } from '../../shared/api/client'
+import { ejecutarConCortina } from '../intro/cortina'
 import { useSesion } from './sesion-context'
 
 type ErrorDeIngreso =
@@ -61,6 +64,8 @@ export function PaginaIngreso() {
   const [mostrarContrasena, setMostrarContrasena] = useState(false)
   const [ocupado, setOcupado] = useState(false)
   const [error, setError] = useState<ErrorDeIngreso | null>(null)
+  // Solo el ingreso con el formulario usa la cortina; recuperar la sesión no.
+  const viaFormulario = useRef(false)
 
   useEffect(() => {
     if (error?.tipo !== 'bloqueo' || error.segundos === null) return
@@ -83,7 +88,14 @@ export function PaginaIngreso() {
   // hacer en esta pantalla: se va al destino.
   useEffect(() => {
     if (sesion === null) return
-    navegar(destinoTrasIngresar(ubicacion.state, sesion.rol), { replace: true })
+    const destino = destinoTrasIngresar(ubicacion.state, sesion.rol)
+    const ir = () => navegar(destino, { replace: true })
+    if (viaFormulario.current) {
+      viaFormulario.current = false
+      ejecutarConCortina(ir).catch(() => undefined)
+      return
+    }
+    ir()
   }, [sesion, ubicacion.state, navegar])
 
   async function ingresar(evento: FormEvent<HTMLFormElement>) {
@@ -92,9 +104,11 @@ export function PaginaIngreso() {
 
     setOcupado(true)
     setError(null)
+    viaFormulario.current = true
     try {
       await iniciarSesion(correo, contrasena)
     } catch (causa: unknown) {
+      viaFormulario.current = false
       if (causa instanceof ApiError && causa.statusCode === 401) {
         setError({
           tipo: 'general',
@@ -124,7 +138,7 @@ export function PaginaIngreso() {
   // saber el resultado no se muestra el formulario.
   if (recuperando) {
     return (
-      <Group gap="sm" aria-live="polite">
+      <Group gap="sm" aria-live="polite" className="estado-cargando">
         <Loader size="sm" />
         <Text>Comprobando su sesión…</Text>
       </Group>
@@ -134,88 +148,94 @@ export function PaginaIngreso() {
   const bloqueado = error?.tipo === 'bloqueo'
 
   return (
-    <Card
-      component="section"
-      aria-labelledby="titulo-ingreso"
-      shadow="sm"
-      padding="lg"
-      radius="md"
-      withBorder
-      maw={448}
-      mx="auto"
-    >
-      <Stack gap="md">
-        <div>
-          <Title id="titulo-ingreso" order={1} size="h2">
-            Iniciar sesión
-          </Title>
-          <Text c="dimmed" size="sm">
-            Acceso exclusivo para el personal bibliotecario.
-          </Text>
-        </div>
+    <FranjaFoto foto="interior" tono="marino" className="ingreso">
+      <Card
+        component="section"
+        aria-labelledby="titulo-ingreso"
+        padding="xl"
+        className="ingreso-tarjeta"
+      >
+        <Stack gap="md">
+          <div className="ingreso-cabecera">
+            <span className="insignia-icono" aria-hidden="true">
+              <IconoCandado />
+            </span>
+            <p className="rotulo">Busca Fácil · CLENA</p>
+            <Title id="titulo-ingreso" order={1} size="h2">
+              Iniciar sesión
+            </Title>
+            <Text c="dimmed" size="sm">
+              Acceso exclusivo para el personal bibliotecario.
+            </Text>
+          </div>
 
-        {error && (
-          <Alert
-            role="alert"
-            color="red"
-            title={
-              error.tipo === 'bloqueo'
-                ? 'Acceso bloqueado tras 5 intentos'
-                : 'No se pudo iniciar sesión'
-            }
-          >
-            {error.tipo === 'bloqueo'
-              ? error.segundos === null
-                ? 'Vuelve a intentarlo más tarde o contacta a la administración de la biblioteca.'
-                : `Espera ${formatearEspera(error.segundos)} antes de volver a intentarlo.`
-              : error.mensaje}
-          </Alert>
-        )}
-
-        <form onSubmit={ingresar}>
-          <Stack gap="md">
-            <TextInput
-              label="Correo institucional"
-              type="email"
-              autoComplete="username"
-              required
-              value={correo}
-              disabled={ocupado}
-              onChange={(evento) => {
-                setCorreo(evento.currentTarget.value)
-                if (!bloqueado) setError(null)
-              }}
-            />
-            <TextInput
-              label="Contraseña"
-              type={mostrarContrasena ? 'text' : 'password'}
-              autoComplete="current-password"
-              required
-              value={contrasena}
-              disabled={ocupado}
-              onChange={(evento) => {
-                setContrasena(evento.currentTarget.value)
-                if (!bloqueado) setError(null)
-              }}
-            />
-            <Checkbox
-              label="Mostrar contraseña"
-              checked={mostrarContrasena}
-              onChange={(evento) =>
-                setMostrarContrasena(evento.currentTarget.checked)
+          {error && (
+            <Alert
+              role="alert"
+              color="red"
+              icon={<IconoAlerta />}
+              title={
+                error.tipo === 'bloqueo'
+                  ? 'Acceso bloqueado tras 5 intentos'
+                  : 'No se pudo iniciar sesión'
               }
-            />
-            <Button
-              type="submit"
-              loading={ocupado}
-              disabled={bloqueado}
-              fullWidth
             >
-              {bloqueado ? 'Acceso bloqueado' : 'Iniciar sesión'}
-            </Button>
-          </Stack>
-        </form>
-      </Stack>
-    </Card>
+              {error.tipo === 'bloqueo'
+                ? error.segundos === null
+                  ? 'Vuelve a intentarlo más tarde o contacta a la administración de la biblioteca.'
+                  : `Espera ${formatearEspera(error.segundos)} antes de volver a intentarlo.`
+                : error.mensaje}
+            </Alert>
+          )}
+
+          <form onSubmit={ingresar}>
+            <Stack gap="md">
+              <TextInput
+                label="Correo institucional"
+                type="email"
+                autoComplete="username"
+                required
+                value={correo}
+                disabled={ocupado}
+                onChange={(evento) => {
+                  setCorreo(evento.currentTarget.value)
+                  if (!bloqueado) setError(null)
+                }}
+              />
+              <TextInput
+                label="Contraseña"
+                type={mostrarContrasena ? 'text' : 'password'}
+                autoComplete="current-password"
+                required
+                value={contrasena}
+                disabled={ocupado}
+                onChange={(evento) => {
+                  setContrasena(evento.currentTarget.value)
+                  if (!bloqueado) setError(null)
+                }}
+              />
+              <Checkbox
+                label="Mostrar contraseña"
+                checked={mostrarContrasena}
+                onChange={(evento) =>
+                  setMostrarContrasena(evento.currentTarget.checked)
+                }
+              />
+              <Button
+                type="submit"
+                loading={ocupado}
+                disabled={bloqueado}
+                fullWidth
+              >
+                {bloqueado ? 'Acceso bloqueado' : 'Iniciar sesión'}
+              </Button>
+            </Stack>
+          </form>
+          <Link to="/" className="enlace-centrado">
+            Volver al catálogo
+          </Link>
+        </Stack>
+      </Card>
+    </FranjaFoto>
   )
 }
