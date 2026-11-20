@@ -1,6 +1,6 @@
 # Acta · Retrospectiva del Sprint 2 (Backend)
 
-- **Fecha:** jueves 19 de noviembre de 2026, minutos 4:30 a 5:30 de la grabación, que empezó a las 4:27 p.m. hora de Colombia (21:27 UTC); duración de esta parte, aproximadamente 1 minuto
+- **Fecha:** jueves 19 de noviembre de 2026, minutos 4:30 a 5:30 de la grabación, que empezó a las 9:27 p.m. hora de Colombia; duración de esta parte, aproximadamente 1 minuto
 - **Medio:** Microsoft Teams (canal General), **grabada**, misma sesión que la [Sprint Review 2](2026-11-19-sprint-review-2.md) y el [Sprint Planning 3](2026-11-19-sprint-planning-3.md). Grabación: [Teams/SharePoint](https://uninorte.sharepoint.com/sites/CLENA-IntroxBackend/Documentos%20compartidos/General/Recordings/Meeting%20in%20General-20261119_212731-Meeting%20Recording.mp4?web=1) (también en [`evidencias.md`](../evidencias.md))
 - **Asistentes de Backend:** Rafael Potes (Scrum Master, modera y es secretario), Humberto Llinás, Juan Camilo Fernández, Daniel Méndez
 - **Ausente:** Orlando Palma

@@ -53,7 +53,7 @@ Una sección por sprint. Se completa el día del Planning, con la grabación enl
 
 ## Sprint 3 · 20 – 25 nov 2026
 
-- **Fecha y hora:** jue 19 nov 2026, 4:27 p.m. (hora de Colombia; la grabación de Teams lleva la hora en UTC, 21:27), Teams, en una sola sesión con la Review 2 y la retrospectiva (unos 8 minutos en total)
+- **Fecha y hora:** jue 19 nov 2026, 9:27 p.m. (hora de Colombia), Teams, en una sola sesión con la Review 2 y la retrospectiva (unos 8 minutos en total)
 - **Asistentes:** Rafael Potes, Humberto Llinás, Juan Camilo Fernández, Daniel Méndez. Ausente: Orlando Palma
 - **Grabación:** en [`evidencias.md`](evidencias.md). Acta: [`actas/2026-11-19-sprint-planning-3.md`](actas/2026-11-19-sprint-planning-3.md)
 - **Objetivo del sprint:** dejar el producto listo para producción. Entrega final: mié 25 nov 2026

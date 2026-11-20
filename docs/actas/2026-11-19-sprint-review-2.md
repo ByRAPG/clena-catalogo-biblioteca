@@ -1,6 +1,6 @@
 # Acta · Sprint Review 2
 
-- **Fecha:** jueves 19 de noviembre de 2026, último día del Sprint 2. La grabación empieza a las 4:27 p.m. hora de Colombia (21:27 UTC; el nombre del archivo de Teams, `20261119_212731`, está en UTC) y termina a las 4:35 p.m. (21:35 UTC); duración de la reunión completa unos 8 minutos y 10 segundos
+- **Fecha:** jueves 19 de noviembre de 2026, último día del Sprint 2. La grabación empieza a las 9:27 p.m. hora de Colombia (21:27) y termina a las 9:35 p.m.; duración de la reunión completa unos 8 minutos y 10 segundos
 - **Medio:** Microsoft Teams (canal General), **grabada**, sin compartir pantalla. Una sola sesión con tres partes: esta Review, la [retrospectiva](2026-11-19-sprint-retrospective-2.md) y el [Sprint Planning 3](2026-11-19-sprint-planning-3.md). Grabación: [Teams/SharePoint](https://uninorte.sharepoint.com/sites/CLENA-IntroxBackend/Documentos%20compartidos/General/Recordings/Meeting%20in%20General-20261119_212731-Meeting%20Recording.mp4?web=1) (también en [`evidencias.md`](../evidencias.md))
 - **Asistentes de Backend:** Rafael Potes (Scrum Master, modera y es secretario), Humberto Llinás, Juan Camilo Fernández, Daniel Méndez
 - **Asistente del Grupo 9:** Emiliano Harvey (Product Owner del Grupo 9)
