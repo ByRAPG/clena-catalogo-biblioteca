@@ -1,0 +1,176 @@
+name: Seguridad
+
+# Escáneres de secretos (gitleaks) y de vulnerabilidades (Trivy). Va aparte de
+# ci.yml para no mezclar los resultados con lint, pruebas y build.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # Lunes 05:17 UTC: detecta CVE nuevas en código que no cambió.
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: seguridad-${{ github.ref }}
+  # Solo se cancelan las ejecuciones viejas de un mismo PR.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  # Binarios oficiales con versión fijada y suma SHA-256 verificada
+  # (sumas tomadas de gitleaks_8.30.1_checksums.txt y trivy_0.76.2_checksums.txt).
+  GITLEAKS_VERSION: "8.30.1"
+  GITLEAKS_SHA256: "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
+  TRIVY_VERSION: "0.76.2"
+  TRIVY_SHA256: "bc0fc726e017b8927a62b2d3531d7a84ee01769daf5c99ed866dced54089fdbf"
+  # Espejos de la base de datos de vulnerabilidades: si ghcr.io limita las
+  # descargas, Trivy prueba el siguiente.
+  TRIVY_DB_REPOSITORY: "mirror.gcr.io/aquasec/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2,public.ecr.aws/aquasecurity/trivy-db:2"
+  TRIVY_JAVA_DB_REPOSITORY: "mirror.gcr.io/aquasec/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1,public.ecr.aws/aquasecurity/trivy-java-db:1"
+  TRIVY_NO_PROGRESS: "true"
+
+jobs:
+  gitleaks:
+    name: Secretos (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Instalar gitleaks
+        run: |
+          curl -fsSL -o gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf gitleaks.tar.gz -C "$RUNNER_TEMP" gitleaks
+      - name: Escanear todo el historial
+        # --redact: el valor del secreto nunca aparece en el registro.
+        run: |
+          "$RUNNER_TEMP/gitleaks" git . --redact --no-banner --verbose --exit-code 1
+
+  trivy-repo:
+    name: Trivy (dependencias y configuración)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Caché de la base de datos de Trivy
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/trivy
+          key: trivy-db-${{ github.run_id }}
+          restore-keys: trivy-db-
+      - name: Instalar Trivy
+        run: |
+          curl -fsSL -o trivy.tar.gz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  trivy.tar.gz" | sha256sum -c -
+          tar -xzf trivy.tar.gz -C "$RUNNER_TEMP" trivy
+
+      # Dependencias: lockfiles de pnpm de backend/ y frontend/.
+      - name: Informe de dependencias (HIGH y CRITICAL)
+        run: |
+          "$RUNNER_TEMP/trivy" fs --scanners vuln --severity HIGH,CRITICAL \
+            --format json --output trivy-fs.json .
+          "$RUNNER_TEMP/trivy" convert --format sarif --output trivy-fs.sarif trivy-fs.json
+          {
+            echo "### Trivy: dependencias (HIGH y CRITICAL)"
+            echo '```'
+            "$RUNNER_TEMP/trivy" convert --format table trivy-fs.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      # Configuración: Dockerfiles (Trivy no analiza docker-compose).
+      - name: Informe de configuración (HIGH y CRITICAL)
+        run: |
+          "$RUNNER_TEMP/trivy" config --severity HIGH,CRITICAL \
+            --format json --output trivy-config.json .
+          "$RUNNER_TEMP/trivy" convert --format sarif --output trivy-config.sarif trivy-config.json
+          {
+            echo "### Trivy: configuración (HIGH y CRITICAL)"
+            echo '```'
+            "$RUNNER_TEMP/trivy" convert --format table trivy-config.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      # Los PR de forks y de Dependabot tienen token de solo lectura.
+      - name: Subir SARIF de dependencias
+        if: ${{ !cancelled() && github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: trivy-fs.sarif
+          category: trivy-dependencias
+      - name: Subir SARIF de configuración
+        if: ${{ !cancelled() && github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: trivy-config.sarif
+          category: trivy-configuracion
+      # Puertas: fallan con CRITICAL que tenga arreglo (dependencias) o con
+      # cualquier HIGH/CRITICAL de configuración.
+      - name: Puerta de dependencias (CRITICAL con arreglo)
+        run: |
+          "$RUNNER_TEMP/trivy" fs --scanners vuln --severity CRITICAL \
+            --ignore-unfixed --exit-code 1 .
+      - name: Puerta de configuración (HIGH y CRITICAL)
+        run: |
+          "$RUNNER_TEMP/trivy" config --severity HIGH,CRITICAL --exit-code 1 .
+
+  trivy-imagenes:
+    name: Trivy (imagen ${{ matrix.componente }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        componente: [backend, frontend]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Caché de la base de datos de Trivy
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/trivy
+          key: trivy-db-${{ github.run_id }}-${{ matrix.componente }}
+          restore-keys: trivy-db-
+      - name: Instalar Trivy
+        run: |
+          curl -fsSL -o trivy.tar.gz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  trivy.tar.gz" | sha256sum -c -
+          tar -xzf trivy.tar.gz -C "$RUNNER_TEMP" trivy
+      - name: Construir la imagen de producción
+        run: docker build --target production --tag "clena-${{ matrix.componente }}:ci" "${{ matrix.componente }}"
+      - name: Informe de la imagen (HIGH y CRITICAL)
+        run: |
+          "$RUNNER_TEMP/trivy" image --severity HIGH,CRITICAL \
+            --format json --output trivy-imagen.json "clena-${{ matrix.componente }}:ci"
+          "$RUNNER_TEMP/trivy" convert --format sarif --output trivy-imagen.sarif trivy-imagen.json
+          {
+            echo "### Trivy: imagen ${{ matrix.componente }} (HIGH y CRITICAL)"
+            echo '```'
+            "$RUNNER_TEMP/trivy" convert --format table trivy-imagen.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Subir SARIF de la imagen
+        if: ${{ !cancelled() && github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: trivy-imagen.sarif
+          category: trivy-imagen-${{ matrix.componente }}
+      - name: Puerta de la imagen (CRITICAL con arreglo)
+        run: |
+          "$RUNNER_TEMP/trivy" image --severity CRITICAL --ignore-unfixed \
+            --exit-code 1 "clena-${{ matrix.componente }}:ci"
