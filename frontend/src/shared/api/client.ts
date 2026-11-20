@@ -20,7 +20,7 @@ export interface Paginado<T> {
     total: number
     /** Modo de la búsqueda, si el backend lo informa. */
     mode?: 'lexical' | 'semantic' | 'hybrid'
-    /** 	rue si la búsqueda por significado no estuvo disponible. */
+    /** true si la búsqueda por significado no estuvo disponible. */
     degraded?: boolean
   }
 }

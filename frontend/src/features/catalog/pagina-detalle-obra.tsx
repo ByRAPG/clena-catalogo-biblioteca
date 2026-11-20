@@ -13,6 +13,7 @@ import {
 import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { Resaltado } from '../../shared/ui/resaltado'
+import { esUrlWeb } from '../../shared/texto/url-web'
 import { ApiError } from '../../shared/api/client'
 import { obtenerObra, type ObraDetalle } from '../search/busqueda.api'
 import { EtiquetaDisponibilidad } from '../search/etiqueta-disponibilidad'
@@ -133,7 +134,7 @@ export function PaginaDetalleObra() {
 
       <EtiquetaDisponibilidad disponibilidad={obra.availability} />
 
-      {obra.digitalUrl !== null && (
+      {esUrlWeb(obra.digitalUrl) && (
         <Button
           component="a"
           href={obra.digitalUrl}
