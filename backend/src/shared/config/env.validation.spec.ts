@@ -27,6 +27,28 @@ describe('validateEnv', () => {
   });
 
   it('acepta secretos JWT largos en producción', () => {
+    expect(() =>
+      validateEnv({
+        ...base,
+        NODE_ENV: 'production',
+        JWT_ACCESS_SECRET: 'a'.repeat(32),
+        JWT_REFRESH_SECRET: 'b'.repeat(32),
+      }),
+    ).not.toThrow();
+  });
+
+  it('rechaza secretos de ejemplo en producción', () => {
+    expect(() =>
+      validateEnv({
+        ...base,
+        NODE_ENV: 'production',
+        JWT_ACCESS_SECRET: 'Change-Me-' + 'a'.repeat(32),
+        JWT_REFRESH_SECRET: 'b'.repeat(32),
+      }),
+    ).toThrow(/JWT_ACCESS_SECRET.*change-me/);
+  });
+
+  it('rechaza secretos JWT iguales en producción', () => {
     const secret = 'x'.repeat(32);
     expect(() =>
       validateEnv({
@@ -35,7 +57,7 @@ describe('validateEnv', () => {
         JWT_ACCESS_SECRET: secret,
         JWT_REFRESH_SECRET: secret,
       }),
-    ).not.toThrow();
+    ).toThrow(/JWT_REFRESH_SECRET.*distinto/);
   });
 
   it('falla si falta DATABASE_URL', () => {

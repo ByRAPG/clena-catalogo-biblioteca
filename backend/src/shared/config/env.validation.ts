@@ -59,6 +59,20 @@ export const envSchema = z
           message: `debe tener al menos ${MIN_SECRET_LENGTH} caracteres en producción`,
         });
       }
+      if (/change-?me/i.test(env[key])) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [key],
+          message: 'no puede ser un valor de ejemplo (change-me) en producción',
+        });
+      }
+    }
+    if (env.JWT_ACCESS_SECRET === env.JWT_REFRESH_SECRET) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['JWT_REFRESH_SECRET'],
+        message: 'debe ser distinto de JWT_ACCESS_SECRET en producción',
+      });
     }
   });
 
