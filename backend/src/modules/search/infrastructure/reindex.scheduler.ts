@@ -1,10 +1,15 @@
 import {
+  Inject,
   Injectable,
   Logger,
   OnApplicationBootstrap,
   OnModuleDestroy,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import {
+  EMBEDDING_GENERATOR,
+  EmbeddingGenerator,
+} from '../application/ports/embedding-generator';
 import { ReindexWorkEmbeddings } from '../application/reindex-work-embeddings.use-case';
 import { readReindexConfig } from './reindex-config';
 
@@ -24,13 +29,18 @@ export class ReindexScheduler
   constructor(
     private readonly reindex: ReindexWorkEmbeddings,
     private readonly config: ConfigService,
+    @Inject(EMBEDDING_GENERATOR) private readonly generator: EmbeddingGenerator,
   ) {}
 
   onApplicationBootstrap(): void {
     const settings = readReindexConfig(this.config);
     if (!settings.enabled) return;
-    // En segundo plano: no bloquea el arranque ni el health.
-    void this.run('arranque', settings.batchSize);
+    // En segundo plano: no bloquea el arranque ni el health. Espera al modelo
+    // para que la pasada de arranque no se omita con `not-ready`.
+    void (async () => {
+      await this.generator.warmUp?.();
+      await this.run('arranque', settings.batchSize);
+    })();
     if (settings.intervalSeconds > 0) {
       this.timer = setInterval(
         () => void this.run('intervalo', settings.batchSize),

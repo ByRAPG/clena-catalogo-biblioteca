@@ -25,25 +25,33 @@ export class PrismaWorkEmbeddingRepository implements WorkEmbeddingRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findStale(model: string, limit: number): Promise<StaleWork[]> {
-    // Texto fuente: «título: subtítulo», autores (por posición), temas y
-    // categoría; las partes vacías se omiten (concat_ws ignora NULL).
+    // Texto fuente en lenguaje natural, que es lo que mejor entiende e5:
+    // «Título: subtítulo. Libro de <categoría> sobre <temas>. Autor: <autores>.»
+    // Las partes vacías se omiten (concat_ws ignora NULL). Medido con
+    // `pnpm search:eval`: con los autores y la frase mejora sobre listas con etiquetas.
     const rows = await this.prisma.$queryRaw<StaleRow[]>(Prisma.sql`
-      WITH src AS (
+      WITH base AS (
         SELECT w.id AS work_id,
-          concat_ws(E'\n',
-            concat_ws(': ', w.title, w.subtitle),
-            'Autores: ' || (
-              SELECT string_agg(a.name, ', ' ORDER BY wa.position, a.name)
-              FROM work_authors wa JOIN authors a ON a.id = wa.author_id
-              WHERE wa.work_id = w.id),
-            'Temas: ' || (
-              SELECT string_agg(s.name, ', ' ORDER BY s.name)
-              FROM work_subjects ws JOIN subjects s ON s.id = ws.subject_id
-              WHERE ws.work_id = w.id),
-            'Categoría: ' || c.name) AS source_text
+          concat_ws(': ', w.title, w.subtitle) AS title,
+          c.name AS category,
+          (SELECT string_agg(a.name, ', ' ORDER BY wa.position, a.name)
+             FROM work_authors wa JOIN authors a ON a.id = wa.author_id
+            WHERE wa.work_id = w.id) AS authors,
+          (SELECT string_agg(s.name, ', ' ORDER BY s.name)
+             FROM work_subjects ws JOIN subjects s ON s.id = ws.subject_id
+            WHERE ws.work_id = w.id) AS subjects
         FROM works w
         LEFT JOIN categories c ON c.id = w.category_id
         WHERE w.deleted_at IS NULL),
+      src AS (
+        SELECT work_id,
+          concat_ws(' ',
+            title || '.',
+            CASE WHEN category IS NOT NULL OR subjects IS NOT NULL THEN
+              'Libro' || coalesce(' de ' || category, '')
+                      || coalesce(' sobre ' || subjects, '') || '.' END,
+            'Autor: ' || authors || '.') AS source_text
+        FROM base),
       cur AS (
         SELECT work_id, source_text,
                encode(sha256(convert_to(source_text, 'UTF8')), 'hex') AS source_hash
