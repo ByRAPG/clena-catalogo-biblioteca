@@ -39,7 +39,7 @@ export class SearchController {
   @ApiOperation({
     summary: 'Buscar obras',
     description:
-      'Búsqueda tolerante a tildes, mayúsculas y errores de escritura por título, autor o tema, con filtros y paginación. Sin resultados responde 200 con `data: []`.',
+      'Búsqueda tolerante a tildes, mayúsculas y errores de escritura por título, autor o tema, con filtros y paginación. Con la búsqueda semántica activa combina la léxica y la vectorial (RRF) y, si el modelo no responde, degrada a léxica (`meta.degraded`). Sin resultados responde 200 con `data: []`.',
   })
   @ApiOkResponse({ type: SearchWorksResponseDto })
   @ApiBadRequestResponse({ description: 'Parámetros inválidos' })
@@ -51,6 +51,7 @@ export class SearchController {
       available: query.available === 'true' ? true : undefined,
       page: query.page,
       pageSize: query.pageSize,
+      mode: query.mode,
     });
   }
 

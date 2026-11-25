@@ -112,6 +112,21 @@ describe('validateEnv', () => {
       validateEnv({ ...base, SEMANTIC_REINDEX_BATCH_SIZE: 'x' }),
     ).toThrow(/SEMANTIC_REINDEX_BATCH_SIZE/);
   });
+
+  it('calidad de la semántica: valores calibrados por defecto y rango válido', () => {
+    expect(validateEnv(base)).toMatchObject({
+      SEARCH_MIN_SIMILARITY: 0.84,
+      SEARCH_RELATIVE_CUTOFF: 0.04,
+      SEARCH_LEXICAL_WEIGHT: 2,
+    });
+    expect(
+      validateEnv({ ...base, SEARCH_MIN_SIMILARITY: '0.7' })
+        .SEARCH_MIN_SIMILARITY,
+    ).toBe(0.7);
+    expect(() =>
+      validateEnv({ ...base, SEARCH_MIN_SIMILARITY: '1.5' }),
+    ).toThrow(/SEARCH_MIN_SIMILARITY/);
+  });
 });
 
 describe('validateEnv · endurecimiento', () => {
