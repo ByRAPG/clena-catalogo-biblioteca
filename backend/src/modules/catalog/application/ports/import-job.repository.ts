@@ -1,3 +1,4 @@
+import type { ImportErrorCsvEntry } from '../../domain/services/import-errors-csv.formatter';
 import type { ImportCatalogReport } from '../dto/import-catalog-report';
 
 export interface SaveImportJobInput {
@@ -6,6 +7,13 @@ export interface SaveImportJobInput {
   report: ImportCatalogReport;
 }
 
+export interface StoredImportJob {
+  id: string;
+  fileName: string;
+  errors: ImportErrorCsvEntry[];
+}
+
 export interface IImportJobRepository {
-  save(input: SaveImportJobInput): Promise<void>;
+  save(input: SaveImportJobInput): Promise<string>;
+  findById(id: string): Promise<StoredImportJob | null>;
 }

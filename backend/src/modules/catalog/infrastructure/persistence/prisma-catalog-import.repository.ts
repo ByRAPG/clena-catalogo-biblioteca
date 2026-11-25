@@ -7,15 +7,30 @@ import type { ImportRow } from '../../domain/entities/import-row';
 import { ImportRowError } from '../../domain/errors/import-row-error';
 import type {
   ICatalogImportRepository,
-  ImportRowOutcome,
+  SaveImportRowResult,
+  SimulatedRowResult,
+  SimulationRowInput,
 } from '../../domain/repositories/catalog-import.repository';
 import { ImportRowMapper } from '../mappers/import-row.mapper';
+
+interface VirtualWorkState {
+  id: string;
+  isbn: string | null;
+  deletedAt: Date | null;
+}
+
+interface VirtualCopyState {
+  dbCopyId?: string;
+  workKey: string;
+  workIsbn: string | null;
+  status: string;
+}
 
 @Injectable()
 export class PrismaCatalogImportRepository implements ICatalogImportRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async saveRow(row: ImportRow): Promise<ImportRowOutcome> {
+  async saveRow(row: ImportRow): Promise<SaveImportRowResult> {
     try {
       return await this.prisma.$transaction(async (tx) => {
         const existingCopy = await tx.copy.findUnique({
@@ -82,7 +97,11 @@ export class PrismaCatalogImportRepository implements ICatalogImportRepository {
           },
           update: { shelfId, status: row.data.status },
         });
-        return existingCopy ? 'updated' : 'created';
+        return {
+          workKey: work.id,
+          workOutcome: existingWork ? 'updated' : 'created',
+          copyOutcome: existingCopy ? 'updated' : 'created',
+        };
       });
     } catch (error: unknown) {
       if (
@@ -96,6 +115,172 @@ export class PrismaCatalogImportRepository implements ICatalogImportRepository {
       }
       throw error;
     }
+  }
+
+  async simulateRows(
+    rows: readonly SimulationRowInput[],
+  ): Promise<SimulatedRowResult[]> {
+    const virtualWorksByIsbn = new Map<string, VirtualWorkState>();
+    const virtualWorksById = new Map<string, VirtualWorkState>();
+    const virtualCopies = new Map<string, VirtualCopyState>();
+    const results: SimulatedRowResult[] = [];
+
+    for (const { row, importRow } of rows) {
+      try {
+        const outcome = await this.simulateSingleRow(
+          row,
+          importRow,
+          virtualWorksByIsbn,
+          virtualWorksById,
+          virtualCopies,
+        );
+        results.push(outcome);
+      } catch (error: unknown) {
+        if (!(error instanceof ImportRowError)) {
+          throw error;
+        }
+        results.push({
+          row,
+          status: 'failed',
+          field: error.field,
+          error: error.message,
+        });
+      }
+    }
+
+    return results;
+  }
+
+  private async simulateSingleRow(
+    rowNumber: number,
+    row: ImportRow,
+    virtualWorksByIsbn: Map<string, VirtualWorkState>,
+    virtualWorksById: Map<string, VirtualWorkState>,
+    virtualCopies: Map<string, VirtualCopyState>,
+  ): Promise<SimulatedRowResult> {
+    const virtualCopy = virtualCopies.get(row.data.inventoryCode);
+    const dbCopy = virtualCopy
+      ? null
+      : await this.prisma.copy.findUnique({
+          where: { inventoryCode: row.data.inventoryCode },
+          include: { work: true },
+        });
+
+    const existingCopyInfo = virtualCopy
+      ? {
+          dbCopyId: virtualCopy.dbCopyId,
+          status: virtualCopy.status,
+          workId: virtualCopy.workKey,
+          workIsbn: virtualCopy.workIsbn,
+        }
+      : dbCopy
+        ? {
+            dbCopyId: dbCopy.id,
+            status: dbCopy.status,
+            workId: dbCopy.work.id,
+            workIsbn: dbCopy.work.isbn,
+          }
+        : null;
+
+    const fallbackId = this.workIdentity(row);
+    const existingWork = await this.resolveWorkForSimulation(
+      row,
+      fallbackId,
+      existingCopyInfo,
+      dbCopy?.work ?? null,
+      virtualWorksByIsbn,
+      virtualWorksById,
+    );
+
+    if (
+      existingCopyInfo &&
+      row.data.isbn &&
+      existingCopyInfo.workIsbn !== row.data.isbn
+    ) {
+      throw new ImportRowError(
+        'codigo_ejemplar',
+        'El ejemplar existente pertenece a una obra con otro ISBN',
+      );
+    }
+
+    if (existingWork?.deletedAt) {
+      throw new ImportRowError('isbn', 'La obra está eliminada del catálogo');
+    }
+
+    if (existingCopyInfo?.dbCopyId) {
+      await this.validateActiveCirculation(
+        this.prisma,
+        { id: existingCopyInfo.dbCopyId, status: existingCopyInfo.status },
+        row,
+      );
+    }
+
+    const workKey =
+      existingWork?.id ??
+      (row.data.isbn ? `isbn:${row.data.isbn}` : fallbackId);
+    const resolvedIsbn = row.data.isbn ?? existingWork?.isbn ?? null;
+    const workOutcome = existingWork ? 'updated' : 'created';
+    const copyOutcome = existingCopyInfo ? 'updated' : 'created';
+
+    const workState: VirtualWorkState = {
+      id: workKey,
+      isbn: resolvedIsbn,
+      deletedAt: null,
+    };
+    virtualWorksById.set(workKey, workState);
+    if (resolvedIsbn) {
+      virtualWorksByIsbn.set(resolvedIsbn, workState);
+    }
+    virtualCopies.set(row.data.inventoryCode, {
+      dbCopyId: existingCopyInfo?.dbCopyId,
+      workKey,
+      workIsbn: resolvedIsbn,
+      status: row.data.status,
+    });
+
+    return {
+      row: rowNumber,
+      status: copyOutcome,
+      workKey,
+      workOutcome,
+    };
+  }
+
+  private async resolveWorkForSimulation(
+    row: ImportRow,
+    fallbackId: string,
+    existingCopyInfo: { workId: string; workIsbn: string | null } | null,
+    dbCopyWork: {
+      id: string;
+      isbn: string | null;
+      deletedAt: Date | null;
+    } | null,
+    virtualWorksByIsbn: Map<string, VirtualWorkState>,
+    virtualWorksById: Map<string, VirtualWorkState>,
+  ): Promise<VirtualWorkState | null> {
+    if (row.data.isbn) {
+      const virtual = virtualWorksByIsbn.get(row.data.isbn);
+      if (virtual) return virtual;
+      const dbWork = await this.prisma.work.findUnique({
+        where: { isbn: row.data.isbn },
+        select: { id: true, isbn: true, deletedAt: true },
+      });
+      return dbWork;
+    }
+
+    if (existingCopyInfo) {
+      const virtual = virtualWorksById.get(existingCopyInfo.workId);
+      if (virtual) return virtual;
+      if (dbCopyWork) return dbCopyWork;
+    }
+
+    const virtualByFallback = virtualWorksById.get(fallbackId);
+    if (virtualByFallback) return virtualByFallback;
+
+    return this.prisma.work.findUnique({
+      where: { id: fallbackId },
+      select: { id: true, isbn: true, deletedAt: true },
+    });
   }
 
   private workIdentity(row: ImportRow): string {
@@ -118,7 +303,7 @@ export class PrismaCatalogImportRepository implements ICatalogImportRepository {
   }
 
   private async validateActiveCirculation(
-    tx: Prisma.TransactionClient,
+    tx: Pick<Prisma.TransactionClient, 'loan' | 'reservation'>,
     copy: { id: string; status: string } | null,
     row: ImportRow,
   ): Promise<void> {

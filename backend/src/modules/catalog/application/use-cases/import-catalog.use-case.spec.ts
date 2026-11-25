@@ -30,16 +30,18 @@ describe('ImportCatalogUseCase', () => {
 
     repository = {
       saveRow: jest.fn(),
+      simulateRows: jest.fn(),
     };
 
     importJobs = {
-      save: jest.fn().mockResolvedValue(undefined),
+      save: jest.fn().mockResolvedValue('job-uuid-1'),
+      findById: jest.fn(),
     };
 
     useCase = new ImportCatalogUseCase(reader, repository, importJobs);
   });
 
-  it('importa las filas válidas aunque otra tenga errores de dominio', async () => {
+  it('importa las filas válidas aunque otra tenga errores de dominio y cuenta obras y ejemplares', async () => {
     reader.read.mockReturnValue([
       { row: 2, success: true, data: validInput('PRUEBA-001') },
       {
@@ -48,11 +50,25 @@ describe('ImportCatalogUseCase', () => {
         data: { ...validInput('PRUEBA-002'), title: ' ' },
       },
       { row: 4, success: true, data: validInput('PRUEBA-003') },
+      { row: 5, success: true, data: validInput('PRUEBA-004') },
     ]);
 
     repository.saveRow
-      .mockResolvedValueOnce('created')
-      .mockResolvedValueOnce('updated');
+      .mockResolvedValueOnce({
+        workKey: 'work-1',
+        workOutcome: 'created',
+        copyOutcome: 'created',
+      })
+      .mockResolvedValueOnce({
+        workKey: 'work-1',
+        workOutcome: 'updated',
+        copyOutcome: 'created',
+      })
+      .mockResolvedValueOnce({
+        workKey: 'work-2',
+        workOutcome: 'updated',
+        copyOutcome: 'updated',
+      });
 
     const report = await useCase.execute(
       'contenido CSV',
@@ -61,9 +77,13 @@ describe('ImportCatalogUseCase', () => {
     );
 
     expect(report).toEqual({
-      created: 1,
+      importId: 'job-uuid-1',
+      dryRun: false,
+      created: 2,
       updated: 1,
       failed: 1,
+      works: { created: 1, updated: 1 },
+      copies: { created: 2, updated: 1 },
       rows: [
         { row: 2, status: 'created' },
         {
@@ -72,20 +92,26 @@ describe('ImportCatalogUseCase', () => {
           field: 'titulo',
           error: 'El campo titulo es obligatorio',
         },
-        { row: 4, status: 'updated' },
+        { row: 4, status: 'created' },
+        { row: 5, status: 'updated' },
       ],
     });
 
-    expect(repository.saveRow).toHaveBeenCalledTimes(2);
+    expect(repository.saveRow).toHaveBeenCalledTimes(3);
     expect(
       repository.saveRow.mock.calls.map(([row]) => row.data.inventoryCode),
-    ).toEqual(['PRUEBA-001', 'PRUEBA-003']);
+    ).toEqual(['PRUEBA-001', 'PRUEBA-003', 'PRUEBA-004']);
 
     expect(importJobs.save).toHaveBeenCalledTimes(1);
     expect(importJobs.save).toHaveBeenCalledWith({
       fileName: 'catalogo.csv',
       userId: 'admin-id',
-      report,
+      report: expect.objectContaining({
+        dryRun: false,
+        created: 2,
+        updated: 1,
+        failed: 1,
+      }),
     });
   });
 
@@ -100,7 +126,11 @@ describe('ImportCatalogUseCase', () => {
       { row: 3, success: true, data: validInput('PRUEBA-001') },
     ]);
 
-    repository.saveRow.mockResolvedValue('created');
+    repository.saveRow.mockResolvedValue({
+      workKey: 'work-1',
+      workOutcome: 'created',
+      copyOutcome: 'created',
+    });
 
     const report = await useCase.execute(
       'contenido CSV',
@@ -110,6 +140,8 @@ describe('ImportCatalogUseCase', () => {
 
     expect(report.created).toBe(1);
     expect(report.failed).toBe(1);
+    expect(report.works).toEqual({ created: 1, updated: 0 });
+    expect(report.copies).toEqual({ created: 1, updated: 0 });
     expect(report.rows).toEqual([
       {
         row: 2,
@@ -147,7 +179,11 @@ describe('ImportCatalogUseCase', () => {
       { row: 3, success: true, data: validInput('PRUEBA-OK') },
     ]);
 
-    repository.saveRow.mockResolvedValue('created');
+    repository.saveRow.mockResolvedValue({
+      workKey: 'work-ok',
+      workOutcome: 'created',
+      copyOutcome: 'created',
+    });
 
     const report = await useCase.execute(
       new Uint8Array([1, 2, 3]),
@@ -156,9 +192,13 @@ describe('ImportCatalogUseCase', () => {
     );
 
     expect(report).toEqual({
+      importId: 'job-uuid-1',
+      dryRun: false,
       created: 1,
       updated: 0,
       failed: 1,
+      works: { created: 1, updated: 0 },
+      copies: { created: 1, updated: 0 },
       rows: [
         {
           row: 2,
