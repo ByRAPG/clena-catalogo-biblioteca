@@ -36,3 +36,21 @@ export function textoDeLaCoincidencia(
   if (donde === 'subject') return 'Coincide en el tema'
   return ''
 }
+
+/** Marcador estático del buscador (visible con movimiento reducido y para lectores). */
+export const PLACEHOLDER_BUSCADOR = 'Por ejemplo: cien años de soledad'
+
+/**
+ * Guion del mini tutorial que se escribe solo en el campo de búsqueda. Entre
+ * dos frases se borra solo lo que no comparten («Busque por título» pasa a
+ * «Busque por autor» borrando únicamente «título») y la última vuelve a la primera.
+ */
+export const GUION_BUSCADOR: readonly string[] = [
+  '¿Qué busca hoy?',
+  'Busque por título',
+  'Busque por autor',
+  'Busque por tema',
+  'Busque por palabras clave',
+  'Pruebe con una idea: libros sobre el mar',
+  'Filtre por sala o categoría',
+]

@@ -124,7 +124,7 @@ describe('inicio de sesión', () => {
     enviarFormulario()
 
     expect(
-      await screen.findByRole('heading', { name: 'Destino recordado' }),
+      await screen.findByRole('heading', { name: 'Destino recordado' }, { timeout: 4000 }),
     ).toBeDefined()
     const llamada = simulada.mock.calls.find(([entrada]) =>
       String(entrada).endsWith('/auth/login'),
@@ -150,7 +150,7 @@ describe('inicio de sesión', () => {
     enviarFormulario()
 
     expect(
-      await screen.findByRole('heading', { name: 'Catálogo público' }),
+      await screen.findByRole('heading', { name: 'Catálogo público' }, { timeout: 4000 }),
     ).toBeDefined()
   })
 

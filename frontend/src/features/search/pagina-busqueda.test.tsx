@@ -48,7 +48,12 @@ let urlesPedidas: string[] = []
  * Responde según la ruta. `obras` es lo que devuelve `/search/works`; si es un
  * `Error`, la petición de búsqueda falla y las de los filtros siguen bien.
  */
-function simularApi(obras: ObraResumen[] | Error, total?: number) {
+function simularApi(
+  obras: ObraResumen[] | Error,
+  total?: number,
+  meta: Record<string, unknown> = {},
+  salas: { id: string; name: string }[] = [{ id: ID_SALA, name: 'Sala General' }],
+) {
   vi.stubGlobal(
     'fetch',
     vi.fn((entrada: string) => {
@@ -61,14 +66,14 @@ function simularApi(obras: ObraResumen[] | Error, total?: number) {
       }
       if (entrada.includes('/search/rooms')) {
         return Promise.resolve(
-          Response.json({ data: [{ id: ID_SALA, name: 'Sala General' }] }),
+          Response.json({ data: salas }),
         )
       }
       if (obras instanceof Error) return Promise.reject(obras)
       return Promise.resolve(
         Response.json({
           data: obras,
-          meta: { page: 1, pageSize: 10, total: total ?? obras.length },
+          meta: { page: 1, pageSize: 10, total: total ?? obras.length, ...meta },
         }),
       )
     }),
@@ -109,6 +114,23 @@ describe('Pantalla de búsqueda', () => {
     ).toBeDefined()
     expect(screen.getByRole('button', { name: 'Buscar' })).toBeDefined()
     await screen.findByText('Sin resultados')
+  })
+
+  it('ofrece «Ver accesos rápidos» solo sin búsqueda y baja a la sección de accesos', async () => {
+    simularApi([])
+    const { unmount } = pintar()
+    const bajar = screen.getByRole('button', { name: 'Ver accesos rápidos' })
+    const sinMover = vi.fn()
+    HTMLElement.prototype.scrollIntoView = sinMover
+    fireEvent.click(bajar)
+    expect(sinMover).toHaveBeenCalledTimes(1)
+    await screen.findByText('Sin resultados')
+    unmount()
+
+    simularApi([CIEN_ANOS])
+    pintar('/?q=cien')
+    expect(screen.queryByRole('button', { name: 'Ver accesos rápidos' })).toBeNull()
+    await screen.findByRole('listitem')
   })
 
   it('lista los resultados con autor, tema, disponibilidad y ubicación', async () => {
@@ -213,7 +235,7 @@ describe('Pantalla de búsqueda', () => {
   it('quita los filtros activos sin borrar la búsqueda', async () => {
     simularApi([CIEN_ANOS])
     pintar(`/?q=cien&sala=${ID_SALA}&disponibles=true`)
-    await screen.findByText('Cien años de soledad')
+    await screen.findByRole('link', { name: 'Cien años de soledad' })
 
     fireEvent.click(screen.getByRole('button', { name: 'Quitar filtros' }))
 
@@ -231,5 +253,87 @@ describe('Pantalla de búsqueda', () => {
     await screen.findByText('Sin resultados')
 
     expect(screen.getByRole('button', { name: '¿Cómo buscar?' })).toBeDefined()
+  })
+
+  it('resalta los términos de la consulta sin tildes ni mayúsculas', async () => {
+    simularApi([CIEN_ANOS])
+    const { container } = pintar('/?q=ANOS cien')
+    await screen.findByRole('link', { name: 'Cien años de soledad' })
+
+    const marcas = [...container.querySelectorAll('mark')].map((m) => m.textContent)
+    expect(marcas).toContain('Cien')
+    expect(marcas).toContain('años')
+  })
+
+  it('muestra la insignia solo cuando la coincidencia es por significado', async () => {
+    simularApi([
+      { ...CIEN_ANOS, matchSource: 'semantic' },
+      { ...PRESTADA, matchSource: 'lexical' },
+    ])
+    pintar('/?q=soledad')
+    await screen.findByRole('link', { name: 'Cien años de soledad' })
+
+    expect(screen.getAllByText('Coincide por significado')).toHaveLength(1)
+  })
+
+  it('avisa con discreción si la búsqueda por significado no está disponible', async () => {
+    simularApi([CIEN_ANOS], undefined, { mode: 'lexical', degraded: true })
+    pintar('/?q=cien')
+    await screen.findByRole('link', { name: 'Cien años de soledad' })
+
+    expect(screen.getByText(/búsqueda por significado no está disponible/)).toBeDefined()
+  })
+
+  it('en la portada ofrece accesos rápidos reales', async () => {
+    simularApi([CIEN_ANOS])
+    pintar()
+    const accesos = await screen.findByRole('group', { name: 'Accesos rápidos al catálogo' })
+
+    expect(within(accesos).getByRole('link', { name: /Solo disponibles/ })).toBeDefined()
+    expect(await within(accesos).findByRole('link', { name: /Sala General/ })).toBeDefined()
+    expect(within(accesos).getByRole('button', { name: /Cómo buscar/ })).toBeDefined()
+    const idea = within(accesos).getByRole('link', { name: /Busque por una idea/ })
+    expect(idea.getAttribute('href')).toBe('/?q=libros%20para%20ni%C3%B1os')
+    expect(within(accesos).getAllByRole('link').length + 1).toBeLessThanOrEqual(6)
+  })
+
+  it('ordena los accesos 4, 5 y 6 como Hemeroteca, Sala Caribe y Sala General', async () => {
+    simularApi([CIEN_ANOS], undefined, {}, [
+      { id: 'a', name: 'Hemeroteca' },
+      { id: 'b', name: 'Sala Caribe' },
+      { id: 'c', name: 'Sala Infantil' },
+      { id: 'd', name: 'Sala General' },
+    ])
+    pintar()
+    const accesos = await screen.findByRole('group', { name: 'Accesos rápidos al catálogo' })
+
+    await within(accesos).findByRole('link', { name: /Sala General/ })
+    const titulos = within(accesos)
+      .getAllByRole('link')
+      .map((enlace) => enlace.querySelector('.cuadro-titulo')?.textContent)
+    expect(titulos.slice(-3)).toEqual(['Hemeroteca', 'Sala Caribe', 'Sala General'])
+    expect(within(accesos).queryByRole('link', { name: /Sala Infantil/ })).toBeNull()
+  })
+
+  it('si no existe «Sala General» el acceso 6 es la tercera sala', async () => {
+    simularApi([CIEN_ANOS], undefined, {}, [
+      { id: 'a', name: 'Hemeroteca' },
+      { id: 'b', name: 'Sala Caribe' },
+      { id: 'c', name: 'Sala Infantil' },
+    ])
+    pintar()
+    const accesos = await screen.findByRole('group', { name: 'Accesos rápidos al catálogo' })
+
+    expect(await within(accesos).findByRole('link', { name: /Sala Infantil/ })).toBeDefined()
+    expect(within(accesos).getAllByRole('link')).toHaveLength(5)
+  })
+
+  it('titula la portada «Busca Fácil» con un solo h1 y el rótulo del catálogo', () => {
+    simularApi([CIEN_ANOS])
+    const { container } = pintar()
+
+    expect(container.querySelectorAll('h1')).toHaveLength(1)
+    expect(screen.getByRole('heading', { level: 1, name: 'Busca Fácil' })).toBeDefined()
+    expect(screen.getByText('Catálogo de la Biblioteca del CLENA')).toBeDefined()
   })
 })

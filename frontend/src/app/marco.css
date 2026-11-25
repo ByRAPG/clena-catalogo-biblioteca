@@ -1,0 +1,912 @@
+/*
+ * Marco de la aplicación (T-22): cabecera, contenido y pie. Colores de la
+ * paleta `marca` del tema; el modo de alto contraste los reemplaza al final.
+ * Las medidas van en rem para que la «letra más grande» las escale.
+ */
+:root {
+  /* Alto de la cabecera antes de medirla (layout.tsx lo reemplaza): una sola fila. */
+  --alto-cabecera: 72px;
+}
+
+.marco {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.marco-ancho {
+  width: 100%;
+  max-width: 75rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  box-sizing: border-box;
+}
+
+.marco-contenido {
+  flex: 1 0 auto;
+  /* La cabecera flota sobre la página (no ocupa altura): el contenido sin franja
+     de foto deja libre su alto (`--alto-cabecera`, medido en layout.tsx). */
+  padding-block: calc(var(--alto-cabecera, 8rem) + 1.5rem) 2rem;
+}
+
+/* Páginas que abren con una franja de foto: la foto llega hasta el borde superior
+   y la propia franja despeja la cabecera con su relleno superior. */
+.marco-contenido:has(
+    > .portada > .zona-hero:first-child,
+    > .pantalla-gestion > .encabezado-seccion:first-child,
+    > .ingreso
+  ) {
+  padding-top: 0;
+}
+
+/* ---------- Cabecera ----------
+ * La caja de la cabecera mide 0 de alto y la píldora la desborda hacia abajo:
+ * flota encima de la foto de la primera franja, sin banda blanca arriba. */
+.cabecera {
+  position: relative;
+  z-index: 50;
+  height: 0;
+  padding: 0 0.5rem;
+  color: #fff;
+}
+
+.cabecera-pildora {
+  top: 0.5rem; /* ya es `position: relative` por el brillo */
+}
+
+@media (min-width: 40.0625em) {
+  .cabecera {
+    position: sticky;
+    top: 0;
+  }
+
+  /* Ni el foco ni las anclas quedan ocultos bajo la cabecera pegajosa (WCAG 2.4.11). */
+  html {
+    scroll-padding-top: calc(var(--alto-cabecera, 8rem) + 0.75rem);
+  }
+}
+
+/*
+ * Píldora flotante opaca, más oscura que el azul marino de marca (sin vidrio
+ * ni desenfoque): #1B1B3F. Blanco encima 16,5:1; ámbar encima 8,96:1.
+ */
+.cabecera-pildora {
+  container: cabecera / inline-size;
+  width: 95%;
+  max-width: 75rem;
+  margin-inline: auto;
+  box-sizing: border-box;
+  border-radius: 16px;
+  background: #1b1b3f;
+  border: 1px solid #34346b;
+  box-shadow: 0 6px 18px rgba(14, 14, 38, 0.35);
+}
+
+/* Los botones de la cabecera pueden partir el texto en dos líneas en vez de cortarlo. */
+.cabecera .mantine-Button-root,
+.menu-movil .mantine-Button-root {
+  height: auto;
+  border-radius: 10px;
+  min-height: 44px;
+  min-width: 44px;
+  max-width: 100%;
+  padding-block: 0.25rem;
+}
+
+.cabecera .mantine-Button-inner,
+.menu-movil .mantine-Button-inner {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.cabecera .mantine-Button-label,
+.menu-movil .mantine-Button-label {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  text-align: center;
+  line-height: 1.2;
+}
+/*
+ * Botones conmutables sobre fondo oscuro. Mantine fija sus colores con
+ * variables en línea, así que se pisan las propiedades directamente (el modo
+ * de alto contraste conserva sus propias reglas).
+ */
+html:not([data-alto-contraste='true']) :is(.cabecera-acciones, .menu-movil) .mantine-Button-root:not([data-variant='white']) {
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding-inline: 0.625rem;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+html:not([data-alto-contraste='true'])
+  :is(.cabecera-acciones, .menu-movil)
+  .mantine-Button-root:not([data-variant='white']):hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: #fcb040;
+}
+
+html:not([data-alto-contraste='true'])
+  :is(.cabecera-acciones, .menu-movil)
+  .mantine-Button-root[aria-pressed='true'] {
+  color: var(--mantine-color-marca-8);
+  background: #fff;
+  border-color: #fff;
+}
+
+html:not([data-alto-contraste='true'])
+  :is(.cabecera-acciones, .menu-movil)
+  .mantine-Button-root[aria-pressed='true']:hover {
+  background: var(--mantine-color-marca-1);
+}
+
+/*
+ * UNA sola fila: los cuatro logos a la izquierda (siempre visibles, se achican
+ * juntos con el ancho) y las acciones, o el botón «Menú», a la derecha. Las
+ * alturas de logo van en px (con `width`/`height` del HTML el ancho se reserva
+ * antes de cargar: sin saltos de diseño) y se reducen con vw hasta 320 px.
+ */
+.cabecera-fila {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding-block: 0.5rem;
+}
+
+.cabecera-logos {
+  --h-logo: clamp(12px, 4.1vw, 32px);
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: 0;
+  gap: clamp(0px, 0.6vw, 6px);
+}
+
+.cabecera-logos img,
+.cabecera-logos .logo-bf {
+  display: block;
+  flex: 0 1 auto;
+  min-width: 0;
+  width: auto;
+  height: var(--h-logo);
+  object-fit: contain;
+}
+
+/* Uninorte: versión blanca sin fondo (la «UN» vaciada), aproximación a la
+   versión invertida del manual de marca; sin placa ni caja. Un poco más alta
+   que los demás logos para que se lea el nombre. */
+.cabecera-logos img.logo-uninorte {
+  height: calc(var(--h-logo) * 1.2);
+}
+
+.cabecera-logos .logo-bf {
+  flex: none;
+  width: max(22px, calc(var(--h-logo) * 1.35));
+  height: max(22px, calc(var(--h-logo) * 1.35));
+}
+
+.cabecera-marca {
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.cabecera-marca .marca-textos {
+  display: none;
+}
+
+/* El nombre escrito aparece solo si cabe: 
+em en una consulta de contenedor sigue
+   al tamaño de letra de la página (una media query no), así que con letra grande
+   o el zoom del navegador se oculta antes y nada se encima. */
+@container cabecera (min-width: 36rem) {
+  .cabecera-marca .marca-textos {
+    display: flex;
+  }
+}
+
+/*
+ * Niveles de compactación (`data-nivel` en la fila; lo fija cabecera.tsx por
+ * medida real, ver cabecera-ajuste.ts). Se acumulan: 1 sin «Biblioteca del
+ * CLENA», 2 logos más bajos, 3 botones con menos relleno, 4 sin iconos de
+ * «Gestión»/«Ingresar», 5 sin el texto «Busca Fácil» (queda el logo). Con las
+ * acciones recogidas en el menú (`data-nivel='menu'`) rige solo la consulta de
+ * contenedor de arriba.
+ */
+.cabecera-fila[data-compacta='false'] .cabecera-marca .marca-textos {
+  display: flex;
+}
+
+.cabecera-fila:is([data-nivel='1'], [data-nivel='2'], [data-nivel='3'], [data-nivel='4'], [data-nivel='5'])
+  .marca-linea {
+  display: none;
+}
+
+.cabecera-fila:is([data-nivel='2'], [data-nivel='3'], [data-nivel='4'], [data-nivel='5'])
+  .cabecera-logos {
+  --h-logo: clamp(12px, 3.4vw, 26px);
+}
+
+.cabecera-fila:is([data-nivel='3'], [data-nivel='4'], [data-nivel='5']) .cabecera-acciones {
+  gap: 0.25rem;
+}
+
+.cabecera-fila:is([data-nivel='3'], [data-nivel='4'], [data-nivel='5'])
+  .cabecera-acciones
+  :is(.mantine-Button-root, .navegacion-enlace) {
+  padding-inline: 0.5rem;
+}
+
+.cabecera-fila:is([data-nivel='3'], [data-nivel='4'], [data-nivel='5']) .cabecera-acciones .mantine-Group-root {
+  gap: 0.25rem;
+}
+
+.cabecera-fila:is([data-nivel='4'], [data-nivel='5']) .cabecera-acciones .navegacion-enlace svg {
+  display: none;
+}
+
+.cabecera-fila[data-compacta='false'][data-nivel='5'] .cabecera-marca .marca-textos {
+  display: none;
+}
+
+/*
+ * Concepto C (logotipo horizontal «Busca Fácil»): el nombre ya va dibujado, así
+ * que no hay texto aparte. El logotipo (con «Biblioteca del CLENA» debajo si
+ * cabe) pasa a su versión compacta (el «BF») en el nivel 5 de compactación
+ * y siempre en contenedores de menos de 24rem (móviles de 320-360 px).
+ */
+.cabecera-marca-completo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.cabecera-logos .logo-bf-completo {
+  display: block;
+  flex: none;
+  width: auto;
+  height: max(22px, calc(var(--h-logo) * 1.42));
+  /* El logotipo lleva margen transparente (para la placa): no suma alto a la cabecera
+     y queda centrado en vertical con los demás logos. */
+  margin-block: -2px;
+}
+
+/* «BF» compacto: letras de la altura de los demás logos (~20 px); la caja deja la placa del esquema 3. */
+.cabecera-logos .logo-bf.logo-bf-simbolo {
+  width: auto;
+  height: clamp(24px, calc(var(--h-logo) * 1.75), 30px);
+}
+
+.cabecera-marca .logo-bf-simbolo,
+.cabecera-marca-completo .marca-linea {
+  display: none;
+}
+
+@container cabecera (min-width: 36rem) {
+  .cabecera-marca-completo .marca-linea {
+    display: block;
+  }
+}
+
+@container cabecera (max-width: 23.99rem) {
+  .cabecera-marca .logo-bf-simbolo {
+    display: block;
+  }
+
+  .cabecera-marca-completo {
+    display: none;
+  }
+}
+
+.cabecera-fila[data-compacta='false'][data-nivel='0'] .cabecera-marca-completo .marca-linea {
+  display: block;
+}
+
+.cabecera-fila[data-compacta='false'][data-nivel='5'] .cabecera-marca .logo-bf-simbolo {
+  display: block;
+}
+
+.cabecera-fila[data-compacta='false'][data-nivel='5'] .cabecera-marca-completo {
+  display: none;
+}
+
+/* Recién decidido el menú, hasta que React lo monte, las acciones ya no ocupan sitio
+   (así el alto de la cabecera que mide el marco es el definitivo). */
+.cabecera-fila[data-nivel='menu'] .cabecera-acciones {
+  display: none;
+}
+
+/* Fila de prueba (viene del menú): el botón «Menú» no ocupa sitio mientras se mide. */
+.cabecera-fila[data-sonda] .boton-menu {
+  display: none;
+}
+
+/* Medición: los bloques toman su ancho natural (sin encogerse ni partirse). */
+.cabecera-fila[data-midiendo] :is(.cabecera-logos, .cabecera-acciones, .cabecera-logos img, .cabecera-logos .logo-bf, .enlace-logo) {
+  flex: none;
+}
+
+.cabecera-fila[data-midiendo] .cabecera-acciones {
+  width: max-content;
+}
+
+.cabecera-acciones {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* Texto oculto a la vista que completa el nombre accesible de los enlaces con logo. */
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Logos que enlazan a sitios externos: objetivo de 44 px, hover ámbar sutil y foco de 3 px. */
+.enlace-logo {
+  position: relative;
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: 24px;
+  min-height: 44px;
+  padding-inline: clamp(1px, 0.7vw, 5px);
+  box-sizing: border-box;
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.enlace-logo:hover {
+  background: rgba(252, 176, 64, 0.2);
+}
+
+.enlace-logo:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.marca-logo {
+  flex: none;
+  display: block;
+  height: 40px; /* en px: con `width`/`height` del HTML el ancho se reserva antes de cargar */
+  width: auto;
+}
+
+.marca-logo-clena {
+  height: 32px;
+}
+
+.marca-textos {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+/* Amarillo original del CLENA #FCBF01: 9,3:1 sobre #1B1B3F (y 8,5:1 sobre #23234E). */
+.marca-nombre {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #fcbf01;
+  white-space: nowrap;
+}
+
+/* Blanco atenuado #DDE1F3: 12,5:1 sobre #1B1B3F. */
+.marca-linea {
+  font-size: 0.75rem;
+  color: #dde1f3;
+  white-space: nowrap;
+}
+
+.navegacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  gap: 0.25rem 0.5rem;
+}
+
+.menu-movil .navegacion-reserva {
+  display: none;
+}
+
+/* Copia invisible de «Ingresar»: reserva su ancho exacto mientras se recupera la sesión. */
+.navegacion .navegacion-reserva {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.navegacion-enlace,
+.pie-enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 0.75rem;
+  color: #fff;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+/* Hover: texto ámbar (8,96:1 sobre #1B1B3F). */
+.navegacion-enlace:hover,
+.pie-enlace:hover {
+  color: #fcb040;
+  border-bottom-color: rgba(252, 176, 64, 0.6);
+}
+
+/* Enlace activo: subrayado ámbar grueso y más peso, no solo color. */
+.navegacion-enlace[aria-current='page'],
+.pie-enlace[aria-current='page'] {
+  border-bottom-color: #fcb040;
+  font-weight: 700;
+}
+
+/* «Cerrar sesión»: relleno ámbar con texto marino (8,8:1). */
+html:not([data-alto-contraste='true']) :is(.navegacion, .menu-movil) .mantine-Button-root[data-variant='white'] {
+  background: #fcb040;
+  color: #1b1b3f;
+  font-weight: 700;
+}
+
+html:not([data-alto-contraste='true']) :is(.navegacion, .menu-movil) .mantine-Button-root[data-variant='white']:hover {
+  background: #ffc766;
+}
+
+/* Acciones de la cabecera («Ingresar», «Gestión»): botones con contorno, del
+   mismo alto y radio que «Letra más grande» y «Alto contraste». */
+.navegacion .navegacion-enlace,
+.menu-movil .navegacion-enlace {
+  box-sizing: border-box;
+  gap: 0.5rem;
+  padding-inline: 0.875rem;
+  font-size: 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+}
+
+.navegacion .navegacion-enlace:hover,
+.menu-movil .navegacion-enlace:hover {
+  background: rgba(252, 176, 64, 0.14);
+  border-color: #fcb040;
+}
+
+/* Página actual: relleno ámbar con texto marino (8,8:1) y más peso. */
+.navegacion .navegacion-enlace[aria-current='page'],
+.menu-movil .navegacion-enlace[aria-current='page'] {
+  color: #1b1b3f;
+  background: #fcb040;
+  border-color: #fcb040;
+  font-weight: 700;
+}
+
+/* ---------- Botón «Menú» (cabecera compacta) ---------- */
+.boton-menu-texto {
+  display: none;
+}
+
+@media (min-width: 36em) {
+  .boton-menu-texto {
+    display: inline;
+  }
+}
+
+.boton-menu {
+  flex: none;
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  box-sizing: border-box;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.boton-menu:hover {
+  border-color: #fcb040;
+  background: rgba(252, 176, 64, 0.14);
+}
+
+.boton-menu[aria-expanded='true'] {
+  background: #fff;
+  color: #1b1b3f;
+  border-color: #fff;
+}
+
+.boton-menu:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Hoja del menú: misma píldora oscura, en portal (por eso no cuelga de .cabecera). */
+.menu-movil {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-sizing: border-box;
+  width: min(22rem, calc(100vw - 1rem));
+  margin-top: 0.5rem;
+  max-height: calc(100dvh - 5rem);
+  overflow-y: auto;
+  padding: 1rem;
+  border: 1px solid #34346b;
+  border-radius: 16px;
+  background: #1b1b3f;
+  color: #fff;
+  box-shadow: 0 12px 30px rgba(14, 14, 38, 0.5);
+}
+
+.menu-movil .mantine-Group-root {
+  flex-direction: row;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+/* Dos por fila si caben (cada uno pide al menos 9 rem); si no, uno bajo otro. */
+.menu-movil .mantine-Button-root {
+  flex: 1 1 9rem;
+  width: auto;
+  font-size: 0.9375rem;
+}
+
+.menu-movil-sesion {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.menu-movil .navegacion-enlace {
+  flex: 1 1 9rem;
+  justify-content: center;
+  min-height: 44px;
+}
+
+@media (max-width: 40em) {
+  .cabecera {
+    padding: 0 0.25rem;
+  }
+
+  .cabecera-pildora {
+    top: 0.375rem;
+    width: 98%;
+  }
+
+  .cabecera-fila.marco-ancho {
+    padding-inline: 0.375rem;
+    gap: 0.25rem;
+  }
+}
+
+/* ---------- Pie ---------- */
+.pie {
+  flex: none;
+  background: var(--mantine-color-marca-8);
+  color: #fff;
+  border-top: 4px solid #fcb040;
+}
+
+.pie-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem 2rem;
+  padding-block: 1.75rem 1.25rem;
+}
+
+.pie-marca {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.creditos {
+  font-size: 0.9375rem;
+}
+
+.creditos-linea {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.pie-enlaces {
+  display: flex;
+  flex-direction: column;
+}
+
+.pie-base {
+  padding-block: 0.75rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--mantine-color-marca-1);
+  font-size: 0.875rem;
+}
+
+/* ---------- Foco y movimiento ---------- */
+.cabecera-marca:focus-visible,
+.navegacion-enlace:focus-visible,
+.pie-enlace:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navegacion-enlace,
+  .pie-enlace,
+  .cabecera-acciones .mantine-Button-root {
+    transition: none !important;
+  }
+}
+
+/* ---------- Alto contraste (HU-04) ---------- */
+html[data-alto-contraste='true'] .cabecera {
+  background: transparent;
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] .cabecera-pildora {
+  background: #000;
+  border: 2px solid #fff;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+html[data-alto-contraste='true'] .pie {
+  background: #000;
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] .pie {
+  border-top: 2px solid #fff;
+}
+
+html[data-alto-contraste='true'] .marca-linea,
+html[data-alto-contraste='true'] .pie-base {
+  color: #e6e6e6;
+}
+
+html[data-alto-contraste='true'] .cabecera .marca-nombre {
+  color: #ffff00;
+}
+
+html[data-alto-contraste='true'] .pie-base {
+  border-top-color: #fff;
+}
+
+html[data-alto-contraste='true'] .navegacion-enlace:hover,
+html[data-alto-contraste='true'] .pie-enlace:hover {
+  color: #ffff00;
+  background: #333;
+  border-bottom-color: #ffff00;
+}
+
+html[data-alto-contraste='true'] .navegacion-enlace[aria-current='page'],
+html[data-alto-contraste='true'] .pie-enlace[aria-current='page'] {
+  border-bottom-color: #ffff00;
+}
+
+html[data-alto-contraste='true'] .cabecera-marca:focus-visible,
+html[data-alto-contraste='true'] .navegacion-enlace:focus-visible,
+html[data-alto-contraste='true'] .pie-enlace:focus-visible {
+  outline-color: #ffff00 !important;
+}
+
+html[data-alto-contraste='true'] .boton-menu {
+  background: #000;
+  color: #fff;
+  border: 2px solid #fff;
+}
+
+html[data-alto-contraste='true'] .boton-menu[aria-expanded='true'] {
+  background: #ffff00;
+  color: #000;
+  border-color: #ffff00;
+}
+
+html[data-alto-contraste='true'] .menu-movil {
+  background: #000;
+  border: 2px solid #fff;
+  box-shadow: none;
+}
+
+html[data-alto-contraste='true']
+  :is(.navegacion, .menu-movil)
+  .navegacion-enlace {
+  background: #000;
+  color: #ffff00;
+  border: 2px solid #ffff00;
+}
+
+html[data-alto-contraste='true']
+  :is(.navegacion, .menu-movil)
+  .navegacion-enlace:hover {
+  background: #333;
+}
+
+html[data-alto-contraste='true']
+  :is(.navegacion, .menu-movil)
+  .navegacion-enlace[aria-current='page'] {
+  background: #ffff00;
+  color: #000;
+}
+
+html[data-alto-contraste='true'] .enlace-logo:hover {
+  background: #333;
+}
+
+html[data-alto-contraste='true'] :is(.boton-menu, .enlace-logo):focus-visible {
+  outline-color: #ffff00;
+}
+
+.cabecera-acciones .mantine-Group-root {
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.pie-enlaces {
+  margin-inline: -0.75rem;
+}
+
+/* ---------- Entrada de la portada (primera vez en la sesión) ----------
+   `data-entrada` en <html> lo fija shared/efectos/entrada-portada.ts: «espera»
+   mantiene bajo el telón los CONTENIDOS (nunca el fondo del hero, que siempre se
+   ve) y «corre» los desliza con escalones de 70 ms; arranca cuando el telón
+   empieza a abrirse. Solo transform y opacity; `backwards` aplica el estado
+   inicial durante el retraso y, al acabar, vuelve a los estilos normales (así no
+   se pisan los hover con transform). Sin movimiento reducido no corre. */
+@keyframes entrada-sube {
+  from {
+    opacity: 0.01;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Orden de la entrada: cabecera, título, subtítulo, «¿Cómo buscar?», buscador,
+   filtros y aviso de scroll. Parte de 0,01 (no 0): Chrome no cuenta como LCP lo
+   que está a opacidad 0. */
+html[data-entrada] .cabecera-pildora { --entrada: 0; }
+html[data-entrada] .hero-titulo { --entrada: 1; }
+html[data-entrada] :is(.hero-eyebrow, .hero-subtitulo) { --entrada: 2; }
+html[data-entrada] .hero-cabeza > .mantine-Button-root { --entrada: 3; }
+html[data-entrada] .hero-vidrio { --entrada: 4; }
+html[data-entrada] .filtros { --entrada: 5; }
+html[data-entrada] .hero-bajar { --entrada: 6; }
+
+html[data-entrada='espera']
+  :is(
+    .cabecera-pildora,
+    .hero-eyebrow,
+    .hero-titulo,
+    .hero-subtitulo,
+    .hero-cabeza > .mantine-Button-root,
+    .hero-vidrio,
+    .filtros,
+    .hero-bajar
+  ) {
+  opacity: 0.01;
+}
+
+html[data-entrada='corre']
+  :is(
+    .cabecera-pildora,
+    .hero-eyebrow,
+    .hero-titulo,
+    .hero-subtitulo,
+    .hero-cabeza > .mantine-Button-root,
+    .hero-vidrio,
+    .filtros,
+    .hero-bajar
+  ) {
+  animation: entrada-sube 0.56s cubic-bezier(0.22, 0.8, 0.3, 1) backwards;
+  animation-delay: calc(var(--entrada, 0) * 70ms);
+}
+
+
+/* ---------- Botón de regreso de las pantallas de gestión ---------- */
+.boton-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+  box-sizing: border-box;
+  min-height: 2.75rem;
+  max-width: 100%;
+  margin-bottom: 0.25rem;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  background: #fff;
+  color: #23234e;
+  font-weight: 700;
+  line-height: 1.25;
+  text-decoration: none;
+  box-shadow: 0 4px 14px #00000033;
+  transition: background-color 0.18s ease;
+}
+.boton-volver:hover {
+  background: #fcb040;
+  color: #23234e;
+}
+.boton-volver:focus-visible {
+  outline: 3px solid #fcb040;
+  outline-offset: 3px;
+}
+html[data-alto-contraste='true'] .boton-volver {
+  background: #000;
+  color: #ffff00;
+  border: 2px solid #ffff00;
+  box-shadow: none;
+}
+html[data-alto-contraste='true'] .boton-volver:focus-visible {
+  outline-color: #fff;
+}
+@media (max-width: 30em) {
+  .boton-volver {
+    align-self: stretch;
+    justify-content: center;
+    text-align: center;
+  }
+}
+.acciones-mensaje {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+/* El título de 403/404 caía en blanco sobre la tarjeta blanca. */
+.tarjeta-centrada .encabezado-titulo {
+  color: #23234e;
+}
+.tarjeta-centrada .encabezado-titulo::after {
+  margin-inline: auto;
+}
+html[data-alto-contraste='true'] .tarjeta-centrada .encabezado-titulo {
+  color: #ffff00;
+}

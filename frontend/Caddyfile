@@ -27,6 +27,10 @@
 	# API: el navegador usa el mismo origen, así no hace falta CORS.
 	@api path /api/* /health
 	handle @api {
+		# El backend acepta JSON hasta 2 MB (importación CSV): se corta antes aquí.
+		request_body {
+			max_size 2MB
+		}
 		reverse_proxy backend:3000 {
 			# Si la API tarda más de 30 s se corta, en vez de colgar al visitante.
 			transport http {

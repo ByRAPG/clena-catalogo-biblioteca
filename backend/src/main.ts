@@ -9,6 +9,14 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   const config = app.get<ConfigService<Env, true>>(ConfigService);
 
+  // Detrás de un proxy inverso la IP real llega en X-Forwarded-For. Solo se
+  // confía en ese encabezado si TRUST_PROXY lo indica; de lo contrario cualquiera
+  // podría falsearlo y esquivar el límite de peticiones por IP.
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .set('trust proxy', config.get('TRUST_PROXY', { infer: true }));
+
   app.useLogger(resolveLogLevels(config.get('LOG_LEVEL', { infer: true })));
   app.enableCors({
     origin: config

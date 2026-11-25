@@ -1,0 +1,4 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Busca Fácil">
+  <rect width="64" height="64" rx="14" fill="#23234E"/>
+  <path transform="translate(32 32) scale(1.25) translate(-25.5 -17)" fill="none" stroke="#FCBF01" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" d="M6 4V30M6 4H14A6.5 6.5 0 0 1 14 17H6M6 17H15.5A6.5 6.5 0 0 1 15.5 30H6 M29 30V4M29 4H45M29 16H41"/>
+</svg>

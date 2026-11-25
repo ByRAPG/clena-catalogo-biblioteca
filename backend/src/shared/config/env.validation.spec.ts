@@ -27,6 +27,28 @@ describe('validateEnv', () => {
   });
 
   it('acepta secretos JWT largos en producción', () => {
+    expect(() =>
+      validateEnv({
+        ...base,
+        NODE_ENV: 'production',
+        JWT_ACCESS_SECRET: 'a'.repeat(32),
+        JWT_REFRESH_SECRET: 'b'.repeat(32),
+      }),
+    ).not.toThrow();
+  });
+
+  it('rechaza secretos de ejemplo en producción', () => {
+    expect(() =>
+      validateEnv({
+        ...base,
+        NODE_ENV: 'production',
+        JWT_ACCESS_SECRET: 'Change-Me-' + 'a'.repeat(32),
+        JWT_REFRESH_SECRET: 'b'.repeat(32),
+      }),
+    ).toThrow(/JWT_ACCESS_SECRET.*change-me/);
+  });
+
+  it('rechaza secretos JWT iguales en producción', () => {
     const secret = 'x'.repeat(32);
     expect(() =>
       validateEnv({
@@ -35,12 +57,95 @@ describe('validateEnv', () => {
         JWT_ACCESS_SECRET: secret,
         JWT_REFRESH_SECRET: secret,
       }),
-    ).not.toThrow();
+    ).toThrow(/JWT_REFRESH_SECRET.*distinto/);
   });
 
   it('falla si falta DATABASE_URL', () => {
     expect(() => validateEnv({ ...base, DATABASE_URL: undefined })).toThrow(
       /DATABASE_URL/,
     );
+  });
+
+  it('la búsqueda semántica está desactivada y con proveedor fake por defecto', () => {
+    const env = validateEnv(base);
+    expect(env.SEMANTIC_SEARCH).toBe('off');
+    expect(env.EMBEDDING_PROVIDER).toBe('fake');
+  });
+
+  it('rechaza valores desconocidos de SEMANTIC_SEARCH y EMBEDDING_PROVIDER', () => {
+    expect(() => validateEnv({ ...base, SEMANTIC_SEARCH: 'maybe' })).toThrow(
+      /SEMANTIC_SEARCH/,
+    );
+    expect(() => validateEnv({ ...base, EMBEDDING_PROVIDER: 'x' })).toThrow(
+      /EMBEDDING_PROVIDER/,
+    );
+  });
+
+  it('falla con semántica activa y proveedor local no implementado', () => {
+    expect(() =>
+      validateEnv({
+        ...base,
+        SEMANTIC_SEARCH: 'on',
+        EMBEDDING_PROVIDER: 'local',
+      }),
+    ).toThrow(/EMBEDDING_PROVIDER.*no está implementado/);
+    expect(() =>
+      validateEnv({
+        ...base,
+        SEMANTIC_SEARCH: 'off',
+        EMBEDDING_PROVIDER: 'local',
+      }),
+    ).not.toThrow();
+  });
+
+  it('valida el reindexado de embeddings', () => {
+    const env = validateEnv(base);
+    expect(env.SEMANTIC_REINDEX_INTERVAL_SECONDS).toBe(300);
+    expect(env.SEMANTIC_REINDEX_BATCH_SIZE).toBe(16);
+    expect(
+      validateEnv({ ...base, SEMANTIC_REINDEX_INTERVAL_SECONDS: '0' })
+        .SEMANTIC_REINDEX_INTERVAL_SECONDS,
+    ).toBe(0);
+    expect(() =>
+      validateEnv({ ...base, SEMANTIC_REINDEX_INTERVAL_SECONDS: '-1' }),
+    ).toThrow(/SEMANTIC_REINDEX_INTERVAL_SECONDS/);
+    expect(() =>
+      validateEnv({ ...base, SEMANTIC_REINDEX_BATCH_SIZE: '0' }),
+    ).toThrow(/SEMANTIC_REINDEX_BATCH_SIZE/);
+    expect(() =>
+      validateEnv({ ...base, SEMANTIC_REINDEX_BATCH_SIZE: 'x' }),
+    ).toThrow(/SEMANTIC_REINDEX_BATCH_SIZE/);
+  });
+});
+
+describe('validateEnv · endurecimiento', () => {
+  const base = {
+    DATABASE_URL: 'postgresql://u:p@localhost:5432/db',
+    JWT_ACCESS_SECRET: 'a',
+    JWT_REFRESH_SECRET: 'b',
+  };
+
+  it('rechaza el comodín en CORS_ORIGIN, incluso entre otros orígenes', () => {
+    expect(() => validateEnv({ ...base, CORS_ORIGIN: '*' })).toThrow(
+      /CORS_ORIGIN/,
+    );
+    expect(() =>
+      validateEnv({ ...base, CORS_ORIGIN: 'http://a.test, *' }),
+    ).toThrow(/CORS_ORIGIN/);
+  });
+
+  it('TRUST_PROXY: desactivado por defecto, acepta enteros y rechaza el resto', () => {
+    expect(validateEnv(base).TRUST_PROXY).toBe(false);
+    expect(validateEnv({ ...base, TRUST_PROXY: '1' }).TRUST_PROXY).toBe(1);
+    expect(() => validateEnv({ ...base, TRUST_PROXY: 'true' })).toThrow(
+      /TRUST_PROXY/,
+    );
+  });
+
+  it('límites de peticiones con valores por defecto', () => {
+    const env = validateEnv(base);
+    expect(env.THROTTLE_TTL_SECONDS).toBe(60);
+    expect(env.THROTTLE_LIMIT).toBe(300);
+    expect(env.THROTTLE_AUTH_LIMIT).toBe(20);
   });
 });

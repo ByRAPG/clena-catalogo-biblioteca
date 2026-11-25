@@ -11,3 +11,10 @@ export class WorkNotFoundError extends Error {
     this.name = 'WorkNotFoundError';
   }
 }
+
+export class SemanticSearchDisabledError extends Error {
+  constructor() {
+    super('La búsqueda semántica está desactivada');
+    this.name = 'SemanticSearchDisabledError';
+  }
+}
