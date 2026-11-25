@@ -27,7 +27,7 @@ export class ImportCatalogUseCase {
   ) {}
 
   async execute(
-    content: string,
+    content: string | Uint8Array,
     fileName: string,
     userId: string,
   ): Promise<ImportCatalogReport> {
