@@ -1,6 +1,6 @@
 import { Alert, Anchor, List, Stack, Text, Title } from '@mantine/core'
 
-export const VERSION_AVISO_PRIVACIDAD = '2026-11-11'
+export const VERSION_AVISO_PRIVACIDAD = '2026-11-25'
 
 export const TEXTO_CONSENTIMIENTO =
   'He leído el aviso de privacidad y autorizo el tratamiento de mis datos para gestionar mi cuenta y los servicios de biblioteca que solicite.'
@@ -22,6 +22,11 @@ export function PaginaPrivacidad() {
         Los préstamos y las reservas requieren identificar al lector; los datos
         de contacto solo deben solicitarse cuando sean necesarios para el
         servicio.
+      </Text>
+      <Text>
+        La búsqueda semántica funciona con un modelo de embeddings de código
+        abierto que corre en el propio servidor. Las consultas no se envían a
+        servicios externos de inteligencia artificial ni a terceros.
       </Text>
       <Text>
         La importación CSV recibe datos bibliográficos y registra la cuenta del
@@ -61,6 +66,13 @@ export function PaginaPrivacidad() {
         El formulario de registro deberá solicitar aceptación expresa y guardar
         la versión del aviso y la fecha de autorización. Leer esta página no
         registra consentimiento.
+      </Text>
+      <Title order={2} size="h3">Licencia del código</Title>
+      <Text>
+        El código fuente de este prototipo académico se distribuye bajo licencia
+        MIT por decisión del equipo, sin confirmación formal del CLENA ni del
+        docente. Esta licencia no cubre datos reales, catálogos, logotipos ni
+        archivos digitales de terceros.
       </Text>
       <Anchor
         href="https://normograma.dian.gov.co/dian/compilacion/docs/ley_1581_2012.htm"

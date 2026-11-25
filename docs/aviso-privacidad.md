@@ -1,6 +1,6 @@
 # Aviso de privacidad · Consulta Fácil
 
-Versión: 2026-11-11. T-14 · Issue #18 · Plane CLENA-35.
+Versión: 2026-11-25. T-14 · Issue #18 · Plane CLENA-35.
 
 ## Estado y responsable
 
@@ -9,6 +9,8 @@ Este es un aviso provisional del prototipo académico del catálogo bibliográfi
 ## Finalidades y datos mínimos
 
 La consulta pública del catálogo no requiere una cuenta. Las cuentas prevén nombre, correo, credenciales protegidas, rol y datos de consentimiento. Los préstamos y reservas requieren identificar al lector; solo deben solicitarse datos de contacto cuando sean necesarios para prestar el servicio.
+
+La búsqueda híbrida y semántica utiliza un modelo de embeddings de código abierto que corre en el propio servidor (ADR-08). Las consultas de búsqueda no se envían a servicios externos de IA ni a terceros.
 
 La importación CSV trata datos bibliográficos. Su historial conserva la cuenta del administrador, el nombre del archivo, la fecha, los totales y los errores por fila. No se deben incluir datos personales de lectores en el archivo, su nombre o sus celdas. El importador no almacena el archivo CSV completo.
 
@@ -28,8 +30,8 @@ La eliminación de cuentas desde la aplicación corresponde a HU-17 y aún no es
 
 Texto propuesto: «He leído el aviso de privacidad y autorizo el tratamiento de mis datos para gestionar mi cuenta y los servicios de biblioteca que solicite».
 
-El registro de lectores deberá presentar una aceptación expresa no preseleccionada y guardar `privacyVersion = 2026-11-11` y `consentAt` al aceptar. El esquema existente ya contiene esos campos en User y Reader. La integración corresponde a IAM/HU-16 y está pendiente. Leer la página pública no registra consentimiento.
+El registro de lectores deberá presentar una aceptación expresa no preseleccionada y guardar `privacyVersion = 2026-11-25` y `consentAt` al aceptar. El esquema existente ya contiene esos campos en User y Reader. La integración corresponde a IAM/HU-16 y está pendiente. Leer la página pública no registra consentimiento.
 
-## Licencia propuesta
+## Licencia del código
 
-El equipo propone MIT para el código y ya existe un archivo LICENSE en el repositorio. Debe consultarse con el CLENA y el docente; no se afirma que exista confirmación. La licencia del código no autoriza el uso de datos reales, catálogos o archivos digitales de terceros.
+El equipo adopta la licencia MIT ([`LICENSE`](../LICENSE)) para el código fuente del prototipo académico. Ni el CLENA ni el docente emitieron confirmación formal sobre la licencia, por lo que esta adopción refleja únicamente la decisión del equipo y no implica autorización institucional. La licencia del código no cubre ni autoriza el uso de datos reales, catálogos, logotipos ni archivos digitales de terceros.

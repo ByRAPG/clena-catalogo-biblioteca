@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "API de la Biblioteca CLENA (NestJS + Prisma, Clean Architecture)",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "node": ">=20"
   },
