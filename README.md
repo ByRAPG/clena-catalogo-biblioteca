@@ -44,7 +44,7 @@ Docente: Daniel Romero.
 |---|---|
 | Backend | NestJS + TypeScript, Clean Architecture, Prisma |
 | Frontend | React + TypeScript + Vite + Mantine |
-| Base de datos | PostgreSQL 16 (`pg_trgm`, `unaccent`) |
+| Base de datos | PostgreSQL 16 (`pg_trgm`, `unaccent`; imagen `pgvector` para la futura búsqueda semántica) |
 | Contenedores | Docker y docker-compose |
 | Calidad | Jest, Supertest, Vitest, GitHub Actions |
 | Gestión | Scrum, GitHub Flow, GitHub Projects y Plane |
