@@ -29,6 +29,8 @@ pnpm run search:reindex:dist   # producción: sobre un build ya hecho (node dist
 
 No usa `tsx` porque Nest necesita los metadatos de decoradores que `tsx` no emite.
 
+Búsqueda semántica: `SEMANTIC_SEARCH=on|off` (por defecto `off`) y `EMBEDDING_PROVIDER=fake|local` (por defecto `fake`; `local` aún no está implementado y falla al arrancar con la semántica activa).
+
 ## Probar
 
 ```bash
