@@ -335,6 +335,133 @@ describe('Importación CSV con PostgreSQL (e2e)', () => {
     });
   });
 
+  it('simula obras y ejemplares sin escribir en BD y sin detenerse ante filas inválidas', async () => {
+    const worksBefore = await database.work.count();
+    const copiesBefore = await database.copy.count();
+    const jobsBefore = await database.importJob.count();
+
+    await request(app.getHttpServer())
+      .post('/api/v1/catalog/imports/preview')
+      .send({ fileName: 'catalogo.csv', content: HEADER })
+      .expect(401);
+
+    await request(app.getHttpServer())
+      .post('/api/v1/catalog/imports/preview')
+      .set('Authorization', `Bearer ${accessTokens.get('STAFF')}`)
+      .send({ fileName: 'catalogo.csv', content: HEADER })
+      .expect(403);
+
+    const simulationCsv = [
+      HEADER,
+      csvRow('SIM-NEW-1', 'Obra simulada', isbnFicticio(900)),
+      csvRow('SIM-NEW-2', 'Obra simulada', isbnFicticio(900)),
+      csvRow('SIM-BAD-TITLE', ''),
+      csvRow('BULK-0', 'Obra existente actualizada', isbnFicticio(100)),
+      csvRow('BULK-0', 'Conflicto de ISBN', isbnFicticio(2)),
+    ].join('\n');
+
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/catalog/imports/preview')
+      .set('Authorization', `Bearer ${accessTokens.get('ADMIN')}`)
+      .send({ fileName: 'simulacion.csv', content: simulationCsv })
+      .expect(200);
+
+    expect(response.body).toMatchObject({
+      dryRun: true,
+      created: 2,
+      updated: 1,
+      failed: 2,
+      works: { created: 1, updated: 1 },
+      copies: { created: 2, updated: 1 },
+    });
+    expect(response.body.importId).toBeUndefined();
+    expect(
+      response.body.rows.map((row: { row: number; status: string }) => [
+        row.row,
+        row.status,
+      ]),
+    ).toEqual([
+      [2, 'created'],
+      [3, 'created'],
+      [4, 'failed'],
+      [5, 'updated'],
+      [6, 'failed'],
+    ]);
+
+    expect(await database.work.count()).toBe(worksBefore);
+    expect(await database.copy.count()).toBe(copiesBefore);
+    expect(await database.importJob.count()).toBe(jobsBefore);
+    expect(
+      await database.copy.findUnique({ where: { inventoryCode: 'SIM-NEW-1' } }),
+    ).toBeNull();
+  });
+
+  it('descarga el informe de errores en CSV desde la simulación y desde una importación guardada', async () => {
+    const mixedCsv = [
+      HEADER,
+      csvRow('ERR-CSV-OK', 'Libro válido para reporte'),
+      csvRow('ERR-CSV-BAD', ''),
+      'Fila incompleta',
+    ].join('\n');
+
+    const previewErrors = await request(app.getHttpServer())
+      .post('/api/v1/catalog/imports/preview/errors')
+      .set('Authorization', `Bearer ${accessTokens.get('ADMIN')}`)
+      .send({ fileName: 'simulacion.csv', content: mixedCsv })
+      .expect(200);
+
+    expect(previewErrors.headers['content-type']).toContain('text/csv');
+    expect(previewErrors.headers['content-disposition']).toContain(
+      'errores-simulacion.csv',
+    );
+    expect(previewErrors.text).toContain('fila,campo,error\n');
+    expect(previewErrors.text).toContain(
+      '3,titulo,El campo titulo es obligatorio',
+    );
+    expect(previewErrors.text).toContain('4,,');
+    expect(
+      await database.copy.findUnique({
+        where: { inventoryCode: 'ERR-CSV-OK' },
+      }),
+    ).toBeNull();
+
+    const imported = await importCsv(mixedCsv).expect(200);
+    const importId = imported.body.importId as string;
+    expect(importId).toEqual(expect.any(String));
+    expect(imported.body).toMatchObject({
+      dryRun: false,
+      works: { created: 1, updated: 0 },
+      copies: { created: 1, updated: 0 },
+    });
+
+    const jobErrors = await request(app.getHttpServer())
+      .get(`/api/v1/catalog/imports/${importId}/errors`)
+      .set('Authorization', `Bearer ${accessTokens.get('ADMIN')}`)
+      .expect(200);
+
+    expect(jobErrors.headers['content-type']).toContain('text/csv');
+    expect(jobErrors.headers['content-disposition']).toContain(
+      `errores-importacion-${importId}.csv`,
+    );
+    expect(jobErrors.text).toContain('fila,campo,error\n');
+    expect(jobErrors.text).toContain('3,titulo,El campo titulo es obligatorio');
+
+    await request(app.getHttpServer())
+      .get(`/api/v1/catalog/imports/${randomUUID()}/errors`)
+      .set('Authorization', `Bearer ${accessTokens.get('ADMIN')}`)
+      .expect(404);
+
+    await request(app.getHttpServer())
+      .get('/api/v1/catalog/imports/no-es-uuid/errors')
+      .set('Authorization', `Bearer ${accessTokens.get('ADMIN')}`)
+      .expect(400);
+
+    await request(app.getHttpServer())
+      .get(`/api/v1/catalog/imports/${importId}/errors`)
+      .set('Authorization', `Bearer ${accessTokens.get('STAFF')}`)
+      .expect(403);
+  });
+
   it('importa la plantilla oficial sin errores y de forma idempotente', async () => {
     const template = await request(app.getHttpServer())
       .get('/api/v1/catalog/imports/template')
