@@ -44,7 +44,7 @@ Docente: Daniel Romero.
 |---|---|
 | Backend | NestJS + TypeScript, Clean Architecture, Prisma |
 | Frontend | React + TypeScript + Vite + Mantine |
-| Base de datos | PostgreSQL 16 (`pg_trgm`, `unaccent`) |
+| Base de datos | PostgreSQL 16 (`pg_trgm`, `unaccent`; imagen `pgvector` para la futura búsqueda semántica) |
 | Contenedores | Docker y docker-compose |
 | Calidad | Jest, Supertest, Vitest, GitHub Actions |
 | Gestión | Scrum, GitHub Flow, GitHub Projects y Plane |
@@ -148,7 +148,7 @@ El docente permite usar IA como asistente. El equipo la usa de forma transparent
 - **Qué no se delega:** las decisiones de producto (las toman el Product Owner y el Grupo 9), la aprobación de los Pull Requests y la aceptación de riesgos. Las actas reflejan reuniones reales con su grabación.
 - **Responsabilidad:** quien sube un cambio lo entiende, lo prueba y puede explicarlo y modificarlo en la sustentación. Todo código, con o sin ayuda de IA, pasa por Pull Request, CI, revisión de un compañero y aprobación de Rafael Potes o Humberto Llinás.
 - **Datos:** no se comparten con herramientas de IA datos personales, credenciales ni información del CLENA que no sea pública.
-- **Producto:** la aplicación **no usa IA** en esta etapa.
+- **Producto:** la aplicación **no usa IA generativa ni servicios externos de IA**. Solo está aprobado un modelo de embeddings de código abierto que corre en el propio servidor, sin enviar datos a terceros, para ordenar resultados de búsqueda (ADR-08, pendiente de implementar).
 
 ## Datos y privacidad
 

@@ -65,7 +65,7 @@ Solo Rafael o Humberto aprueban y fusionan (CODEOWNERS). Antes, un compañero de
 - **GitHub:** repo público, squash merge, ramas borradas al fusionar, `main` protegida.
 - **Licencia:** MIT (propuesta del equipo; confirmar con el CLENA).
 - **Chat de atención:** fuera del alcance. Pertenece a la Sala de Internet (P1). Mapa, cita y analítica son solo sugerencias.
-- **IA:** permitida como asistente en el desarrollo. El producto **no usa IA**.
+- **IA:** permitida como asistente en el desarrollo. El producto **no usa IA generativa ni servicios externos de IA**; solo un modelo de embeddings de código abierto que corre en el propio servidor, sin enviar datos a terceros, para ordenar resultados de búsqueda (ADR-08, decisión del 16 nov 2026 tras el pedido del docente).
 - **Datos:** solo semillas ficticias hasta tener autorización escrita del CLENA. El CLENA no entregó información (9 nov), así que la semilla y la plantilla CSV son ficticias o de dominio público (T-17, Issue #55). Nunca se copia el catálogo actual del CLENA.
 - **Alcance del Sprint 1 (10 nov):** se mantienen los 58 puntos con orden de corte: 1) modelo de datos y semilla (T-06, T-17); 2) HU-01, 02, 03, 06, 09, 10, 19 y 12; 3) HU-04, 08, 11, 18, 16, 05 y 15. Lo que no esté completo el jue 12 a las 12:00 m. no se muestra el 13 y pasa al Sprint 2.
 - **T-06 (10 nov):** Rafael Potes asume el esquema, la migración y la semilla; Daniel Méndez conserva el diagrama entidad-relación y `modelo-datos.pdf`.

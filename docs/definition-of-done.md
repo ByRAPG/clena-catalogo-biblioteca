@@ -17,6 +17,9 @@ Una historia o tarea está **terminada** solo si cumple todo lo siguiente.
 - [ ] Prueba e2e si el cambio toca un endpoint.
 - [ ] `lint`, `test`, `test:e2e` y `build` en verde en GitHub Actions.
 - [ ] Cobertura global ≥ 70 % (obligatoria desde el Sprint 2).
+  - Backend: `pnpm run test:cov` mide `domain` y `application` de cada módulo (sin puertos, tokens ni barriles). Umbral en `backend/jest.config.js`: 70 % de líneas, funciones y sentencias, y 80 % de ramas.
+  - Frontend: `pnpm run test:cov` mide `src/` (sin pruebas ni puntos de entrada). Umbral en `frontend/vite.config.ts`: 80 % de líneas, funciones y sentencias, y 70 % de ramas (medido el 16 nov 2026: 93 % de líneas y 81 % de ramas).
+  - El CI ejecuta ambos comandos y falla si la cobertura baja del umbral. El informe se genera en `coverage/` (no se versiona).
 
 ## API e interfaz
 - [ ] Endpoints nuevos documentados en Swagger (`/docs`) con ejemplos y códigos de respuesta.
