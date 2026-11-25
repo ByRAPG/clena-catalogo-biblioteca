@@ -174,6 +174,15 @@ describe('Registrar un libro (HU-10)', () => {
       subjects: ['Tema ficticio'],
       year: 2024,
     })
+    // Estado final: registrar otro o volver al panel.
+    expect(
+      screen.getByRole('button', { name: 'Registrar otro libro' }),
+    ).toBeDefined()
+    expect(
+      screen
+        .getAllByRole('link', { name: /Volver al panel de gestión/ })[0]
+        .getAttribute('href'),
+    ).toBe('/gestion')
     // El formulario queda listo para el siguiente libro.
     expect((campo(/^Título/) as HTMLInputElement).value).toBe('')
   }, LARGO)

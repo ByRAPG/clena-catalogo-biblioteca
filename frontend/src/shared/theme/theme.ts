@@ -5,7 +5,7 @@ import {
 } from '@mantine/core'
 
 /**
- * Tema de marca de Consulta Fácil (HU-04, T-21). Decisiones:
+ * Tema de marca de Busca Fácil (HU-04, T-21). Decisiones:
  * - Marca: azul marino, el color del logo del CLENA (aún sin manual oficial).
  *   Se usa el tono 8 (#23234E) como color principal: blanco encima da 14,77:1.
  * - Granate (#5B113C) como segundo color de la guía visual; verde de estado
@@ -42,6 +42,24 @@ const granate: MantineColorsTuple = [
   '#721F4D',
   '#5B113C',
   '#400B2A',
+]
+
+/**
+ * Ámbar de la Biblioteca Piloto del Caribe (#FCB040): acento de marca. Solo
+ * como fondo con texto azul marino (8,03:1); nunca como texto sobre blanco
+ * (1,84:1). Los tonos 6 a 8 son el ámbar de marca; el 9 es el granate del hover.
+ */
+const ambar: MantineColorsTuple = [
+  '#FFF6E5',
+  '#FFEBC7',
+  '#FEDD9F',
+  '#FDCB6F',
+  '#FDBB4F',
+  '#FCB040',
+  '#FCB040',
+  '#FCB040',
+  '#FCB040',
+  '#5B113C',
 ]
 
 /** Estado «Disponible». Siempre se acompaña de texto, nunca solo color. */
@@ -86,7 +104,7 @@ const error: MantineColorsTuple = [
   '#6E0B13',
 ]
 
-export const colores = { marca, granate, disponible, aviso, error }
+export const colores = { marca, granate, ambar, disponible, aviso, error }
 
 const alturaControl = '2.75rem'
 
@@ -103,7 +121,7 @@ export const theme: MantineThemeOverride = createTheme({
   focusRing: 'auto',
   cursorType: 'pointer',
   fontFamily:
-    'Poppins, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    'Poppins, "Poppins Respaldo", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
   fontFamilyMonospace:
     'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace',
   fontSizes: {
@@ -137,7 +155,7 @@ export const theme: MantineThemeOverride = createTheme({
   },
   headings: {
     fontFamily:
-      'Poppins, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+      'Poppins, "Poppins Respaldo", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
     fontWeight: '600',
     sizes: {
       h1: { fontSize: '2rem', lineHeight: '1.3' },
@@ -148,7 +166,7 @@ export const theme: MantineThemeOverride = createTheme({
   },
   components: {
     Button: {
-      defaultProps: { size: 'md', fw: 600 },
+      defaultProps: { size: 'md', fw: 700, color: 'ambar', radius: '10px' },
       styles: { root: { minHeight: alturaControl } },
     },
     ActionIcon: {
@@ -175,7 +193,9 @@ export const theme: MantineThemeOverride = createTheme({
       styles: { label: { fontWeight: 500 } },
     },
     Card: {
-      defaultProps: { radius: 'lg', shadow: 'sm', withBorder: true },
+      // Tarjetas sobrias: sin borde duro, sombra difusa (ver .tarjeta en index.css).
+      defaultProps: { radius: 'lg', shadow: 'none', withBorder: false },
+      classNames: { root: 'tarjeta' },
     },
     Paper: {
       defaultProps: { radius: 'lg' },

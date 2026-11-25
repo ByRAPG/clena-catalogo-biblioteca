@@ -122,6 +122,12 @@ describe('Importación CSV', () => {
     )
     expect(screen.getByText('titulo: Falta el título')).toBeDefined()
     expect(screen.getByText('Importado correctamente')).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Importar otro archivo' })).toBeDefined()
+    expect(
+      screen
+        .getAllByRole('link', { name: /Volver al panel de gestión/ })[0]
+        .getAttribute('href'),
+    ).toBe('/gestion')
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const [, options] = fetchMock.mock.calls[0]
     expect(options.headers.get('Authorization')).toBe('Bearer token-prueba')

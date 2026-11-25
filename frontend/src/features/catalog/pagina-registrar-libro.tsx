@@ -3,14 +3,16 @@ import {
   Alert,
   Anchor,
   Button,
+  Group,
   Select,
   Stack,
   TagsInput,
   Text,
   TextInput,
-  Title,
 } from '@mantine/core'
 import { Link } from 'react-router-dom'
+import { EncabezadoSeccion } from '../../shared/ui/encabezado-seccion'
+import { IconoAlerta, IconoCheck } from '../../shared/ui/iconos'
 import { useSesion } from '../auth/sesion-context'
 import { listarCategorias, type OpcionDeFiltro } from '../search/busqueda.api'
 import { registrarObra, type ObraRegistrada } from './registrar-obra.api'
@@ -120,40 +122,80 @@ export function PaginaRegistrarLibro() {
   }
 
   return (
-    <Stack gap="lg">
-      <Title order={2}>Registrar un libro nuevo</Title>
-      <Text>
-        Los campos con asterisco son obligatorios. Los ejemplares y su ubicación
-        se registran después.
-      </Text>
-      <Anchor component={Link} to="/gestion">
-        Volver a gestión del catálogo
-      </Anchor>
+    <div className="pantalla-gestion pantalla-formulario">
+      <EncabezadoSeccion
+        migas={[
+          { texto: 'Inicio', to: '/' },
+          { texto: 'Gestión', to: '/gestion' },
+          { texto: 'Registrar libro' },
+        ]}
+        volver={{ texto: 'Volver al panel de gestión', to: '/gestion' }}
+        foto="interior"
+        tono="granate"
+        rotulo="Catálogo"
+        titulo="Registrar un libro nuevo"
+        descripcion="Los campos con asterisco son obligatorios. Los ejemplares y su ubicación se registran después."
+      />
 
       {registrada && (
-        <Alert color="green" title="Libro registrado">
+        <Alert
+          color="green"
+          className="alerta-exito"
+          title="Libro registrado"
+          icon={<IconoCheck />}
+          role="status"
+        >
           <Stack gap="xs">
             <Text>«{registrada.title}» ya aparece en la búsqueda pública.</Text>
             <Anchor component={Link} to={`/obras/${registrada.id}`}>
               Ver la ficha del libro
             </Anchor>
+            <Group gap="sm">
+              <Button
+                type="button"
+                variant="default"
+                style={{ minHeight: 44 }}
+                onClick={() => {
+                  setRegistrada(null)
+                  document.getElementById('campo-titulo-libro')?.focus()
+                }}
+              >
+                Registrar otro libro
+              </Button>
+              <Button
+                component={Link}
+                to="/gestion"
+                variant="default"
+                style={{ minHeight: 44 }}
+              >
+                Volver al panel de gestión
+              </Button>
+            </Group>
           </Stack>
         </Alert>
       )}
       {errorGeneral && (
-        <Alert color="red" title="No se pudo registrar el libro">
+        <Alert
+          color="red"
+          className="alerta-error"
+          title="No se pudo registrar el libro"
+          icon={<IconoAlerta />}
+          role="alert"
+        >
           {errorGeneral}
         </Alert>
       )}
 
-      <form onSubmit={guardar} noValidate>
-        <Stack>
+      <form onSubmit={guardar} noValidate className="formulario-grupos">
+        <fieldset className="grupo-campos grupo-marino" disabled={ocupado}>
+          <legend className="rotulo">Datos principales</legend>
           <TextInput
+            id="campo-titulo-libro"
             label="Título"
+            description="Como aparece en la portada del libro."
             withAsterisk
             value={titulo}
             error={errores.titulo}
-            disabled={ocupado}
             onChange={(e) => setTitulo(e.currentTarget.value)}
           />
           <TagsInput
@@ -167,9 +209,12 @@ export function PaginaRegistrarLibro() {
             onSearchChange={setAutorEscrito}
             splitChars={[';']}
             error={errores.autores}
-            disabled={ocupado}
             clearable
           />
+        </fieldset>
+
+        <fieldset className="grupo-campos grupo-granate" disabled={ocupado}>
+          <legend className="rotulo">Clasificación</legend>
           <TagsInput
             label="Temas"
             description={AYUDA_LISTA}
@@ -179,33 +224,40 @@ export function PaginaRegistrarLibro() {
             searchValue={temaEscrito}
             onSearchChange={setTemaEscrito}
             splitChars={[';']}
-            disabled={ocupado}
             clearable
           />
-          <Select
-            label="Categoría"
-            placeholder="Sin categoría"
-            data={categorias.map((c) => ({ value: c.id, label: c.name }))}
-            value={categoria}
-            onChange={setCategoria}
-            disabled={ocupado}
-            searchable
-            clearable
-          />
-          <TextInput
-            label="Año"
-            inputMode="numeric"
-            maxLength={4}
-            value={anio}
-            error={errores.anio}
-            disabled={ocupado}
-            onChange={(e) => setAnio(e.currentTarget.value)}
-          />
-          <Button type="submit" loading={ocupado}>
+          <div className="campos-en-fila">
+            <Select
+              label="Categoría"
+              description="Opcional."
+              placeholder="Sin categoría"
+              data={categorias.map((c) => ({ value: c.id, label: c.name }))}
+              value={categoria}
+              onChange={setCategoria}
+              searchable
+              clearable
+            />
+            <TextInput
+              label="Año"
+              description="Opcional, de 1 a 4 cifras."
+              inputMode="numeric"
+              maxLength={4}
+              value={anio}
+              error={errores.anio}
+              onChange={(e) => setAnio(e.currentTarget.value)}
+            />
+          </div>
+        </fieldset>
+
+        <div className="acciones-formulario grupo-acciones">
+          <Button type="submit" loading={ocupado} size="lg" className="boton-guardar">
             Guardar libro
           </Button>
-        </Stack>
+          <Button component={Link} to="/gestion" variant="default">
+            Volver a gestión del catálogo
+          </Button>
+        </div>
       </form>
-    </Stack>
+    </div>
   )
 }

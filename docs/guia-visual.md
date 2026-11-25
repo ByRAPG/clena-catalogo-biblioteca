@@ -33,3 +33,25 @@ Regla: amarillo y naranja de relleno solo con texto oscuro (con blanco no pasan)
 - Diseñar a 360 px de ancho sin desplazamiento horizontal.
 - Textos en español sencillo; evitar jerga como «signatura» o «call number»: decir «Sala, sección y estante».
 - Sin datos reales del catálogo del CLENA en el repositorio ni en capturas.
+
+## Marco de la aplicación (T-22)
+Código: `frontend/src/app/layout.tsx` y `marco.css`; marca en `shared/ui/marca.tsx`; créditos en `shared/ui/creditos-institucionales.tsx`.
+
+- **Isotipo propio:** un libro abierto, geométrico, dibujado con `currentColor` (toma el color del texto: blanco sobre el azul marino y sobre el negro del alto contraste; el trazo interior usa `--isotipo-trazo`). Es decorativo (`aria-hidden`); el nombre «Consulta Fácil» y la línea «Biblioteca del CLENA» van como texto. No imita ningún logo institucional.
+- **Cabecera** (`header`): una barra de utilidades con «Letra más grande» y «Alto contraste» (siempre visibles, `aria-pressed`) y, debajo, la marca a la izquierda (enlace al inicio) y la navegación `nav` «Principal» a la derecha (Gestión, Ingresar o Cerrar sesión). La ruta activa lleva `aria-current="page"` y un subrayado grueso. A 360 px la marca y la navegación pasan a dos filas, sin menú desplegable; todos los destinos miden al menos 44 px de alto.
+- **Pie** (`footer`): marca, créditos en texto («Corporación Luis Eduardo Nieto Arteta (CLENA)» y «Proyecto académico · Universidad del Norte»), enlace al aviso de privacidad y línea de año y «Prototipo académico». Queda pegado al fondo en páginas cortas (columna con `min-height: 100dvh`) y lleva un filete granate arriba.
+- **Pestaña del navegador:** `favicon.svg` (isotipo blanco sobre azul marino), `favicon-32.png`, `apple-touch-icon.png` (180 px, sin transparencia), `icon-192.png`, `icon-512.png`, `manifest.webmanifest`, `theme-color` `#23234E`, `lang="es"`, descripción y metadatos Open Graph sin URL absolutas. El título del documento sigue el patrón «Página · Consulta Fácil» (`app/titulo-pagina.ts`).
+- **Movimiento:** solo transiciones de color de 150 ms en enlaces y botones de la cabecera; se anulan con `prefers-reduced-motion`.
+- **Alto contraste y letra grande:** cabecera y pie pasan a fondo negro con texto blanco (relación 16,8:1 o más) y subrayado amarillo en la ruta activa; todo está en rem y crece con la letra grande. Foco de 3 px blanco (amarillo en alto contraste).
+
+### Logos esperados
+Los logos y fotos que usa hoy la interfaz están en `frontend/public/` y se describen en [`recursos-de-terceros.md`](recursos-de-terceros.md) (aprobados por Rafael el 20 nov, uso académico). Si se reciben archivos oficiales, se sustituye el texto de `CreditosInstitucionales` (único punto de cambio) por imágenes con texto alternativo igual al nombre de la institución. Archivos esperados en `frontend/public/logos/`:
+
+| Archivo | Formato | Uso |
+|---|---|---|
+| `clena.svg` (o `clena.png`, mínimo 2x) | SVG o PNG de al menos 2x | Logo del CLENA sobre fondo claro |
+| `clena-oscuro.svg` | SVG o PNG de al menos 2x | Versión para fondo oscuro (pie y cabecera) |
+| `uninorte.svg` (o `.png`, mínimo 2x) | SVG o PNG de al menos 2x | Logo de la Universidad del Norte sobre fondo claro |
+| `uninorte-oscuro.svg` | SVG o PNG de al menos 2x | Versión para fondo oscuro |
+
+Se respetará el manual de marca de Uninorte y la autorización escrita del CLENA (ver `LISTA-CLENA.md`).
