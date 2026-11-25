@@ -327,9 +327,7 @@ export class PrismaCatalogImportRepository implements ICatalogImportRepository {
     workId: string,
     names: readonly string[],
   ) {
-    const uniqueNames = new Map(
-      names.map((name) => [normalizeText(name), name]),
-    );
+    const uniqueNames = this.deduplicateNames(names);
     await tx.workAuthor.deleteMany({ where: { workId } });
     let position = 0;
     for (const [normalizedName, name] of uniqueNames) {
@@ -350,9 +348,7 @@ export class PrismaCatalogImportRepository implements ICatalogImportRepository {
     workId: string,
     names: readonly string[],
   ) {
-    const uniqueNames = new Map(
-      names.map((name) => [normalizeText(name), name]),
-    );
+    const uniqueNames = this.deduplicateNames(names);
     await tx.workSubject.deleteMany({ where: { workId } });
     for (const [normalizedName, name] of uniqueNames) {
       const subject = await tx.subject.upsert({
@@ -362,6 +358,17 @@ export class PrismaCatalogImportRepository implements ICatalogImportRepository {
       });
       await tx.workSubject.create({ data: { workId, subjectId: subject.id } });
     }
+  }
+
+  private deduplicateNames(names: readonly string[]): Map<string, string> {
+    const uniqueNames = new Map<string, string>();
+    for (const name of names) {
+      const normalized = normalizeText(name);
+      if (normalized && !uniqueNames.has(normalized)) {
+        uniqueNames.set(normalized, name);
+      }
+    }
+    return uniqueNames;
   }
 
   private async saveLocation(

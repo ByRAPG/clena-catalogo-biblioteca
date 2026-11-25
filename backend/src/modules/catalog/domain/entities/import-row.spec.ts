@@ -131,4 +131,58 @@ describe('ImportRow', () => {
       () => new ImportRow({ ...validInput(), subjects: [longSubject] }),
     ).toThrow(ImportRowError);
   });
+
+  it('normaliza ISBN-13 e ISBN-10 válidos con guiones', () => {
+    const isbn13 = new ImportRow({
+      ...validInput(),
+      isbn: '978-999-000001-6',
+    });
+    const isbn10 = new ImportRow({
+      ...validInput(),
+      isbn: '0-8044-2957-x',
+    });
+
+    expect(isbn13.data.isbn).toBe('9789990000016');
+    expect(isbn10.data.isbn).toBe('080442957X');
+  });
+
+  it('rechaza un ISBN con dígito de control inválido', () => {
+    expect.assertions(2);
+
+    try {
+      new ImportRow({ ...validInput(), isbn: '978-999-000001-9' });
+    } catch (error) {
+      expect(error).toBeInstanceOf(ImportRowError);
+      expect((error as ImportRowError).field).toBe('isbn');
+    }
+  });
+
+  it('neutraliza prefijos de fórmula (=, +, -, @) en todos los campos textuales', () => {
+    const row = new ImportRow({
+      ...validInput(),
+      title: '=HYPERLINK("https://example.org")',
+      authors: ['+Autor Uno', '-Autor Dos'],
+      subjects: ['@Tema'],
+      classification: '=863',
+      publisher: '+Editorial',
+      category: '-Literatura',
+      room: '@Sala',
+      section: '=Seccion',
+      shelf: '+E-01',
+      inventoryCode: '-EJEMP-1',
+    });
+
+    expect(row.data).toMatchObject({
+      title: '\'=HYPERLINK("https://example.org")',
+      authors: ["'+Autor Uno", "'-Autor Dos"],
+      subjects: ["'@Tema"],
+      classification: "'=863",
+      publisher: "'+Editorial",
+      category: "'-Literatura",
+      room: "'@Sala",
+      section: "'=Seccion",
+      shelf: "'+E-01",
+      inventoryCode: "'-EJEMP-1",
+    });
+  });
 });
