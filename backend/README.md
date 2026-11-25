@@ -16,7 +16,18 @@ pnpm run prisma:migrate:deploy
 pnpm run start:dev
 ```
 
-Variables validadas al arrancar (zod, `src/shared/config/env.validation.ts`): `PORT`, `DATABASE_URL`, `CORS_ORIGIN`, `LOG_LEVEL`, `JWT_*`. Si falta una obligatoria, la API no inicia.
+Variables validadas al arrancar (zod, `src/shared/config/env.validation.ts`): `PORT`, `DATABASE_URL`, `CORS_ORIGIN`, `TRUST_PROXY`, `THROTTLE_TTL_SECONDS`, `THROTTLE_LIMIT`, `THROTTLE_AUTH_LIMIT`, `LOG_LEVEL`, `JWT_*`. Si falta una obligatoria, la API no inicia.
+
+Búsqueda semántica: `SEMANTIC_SEARCH=on|off` (por defecto `off`) y `EMBEDDING_PROVIDER=fake|local` (por defecto `fake`; `local` aún no está implementado y falla al arrancar con la semántica activa).
+
+Reindexado de embeddings (solo con `SEMANTIC_SEARCH=on`): `SEMANTIC_REINDEX_INTERVAL_SECONDS` (por defecto 300; `0` lo limita a una pasada al arrancar) y `SEMANTIC_REINDEX_BATCH_SIZE` (por defecto 16). La API reindexa en segundo plano al arrancar y por intervalo; solo procesa obras sin vector, con otro modelo o con el texto cambiado. Para forzarlo a mano:
+
+```bash
+pnpm run search:reindex        # compila y ejecuta; imprime el resumen JSON y sale con código 1 si hubo fallos
+pnpm run search:reindex:dist   # producción: sobre un build ya hecho (node dist/modules/search/presentation/search-reindex.cli.js)
+```
+
+No usa `tsx` porque Nest necesita los metadatos de decoradores que `tsx` no emite.
 
 ## Probar
 
@@ -50,7 +61,8 @@ Solo migraciones versionadas en `prisma/migrations/` (nunca `db push` fuera de l
 
 El `ValidationPipe` global usa `whitelist` y `forbidNonWhitelisted`: si el cliente envía un campo que el DTO no declara, la API responde 400. Declare todos los campos en el DTO.
 
-En producción, `JWT_ACCESS_SECRET` y `JWT_REFRESH_SECRET` deben tener al menos 32 caracteres. `CORS_ORIGIN` admite varios orígenes separados por coma.
+Los secretos JWT deben tener al menos 32 caracteres. Se pasan por variables de entorno, nunca dentro de la imagen. La imagen trae `HEALTHCHECK` contra `/api/v1/health`. El desarrollo sigue usando `--target development` (lo hace `docker-compose.yml`).
+En producción, `JWT_ACCESS_SECRET` y `JWT_REFRESH_SECRET` deben tener al menos 32 caracteres. `CORS_ORIGIN` admite varios orígenes separados por coma y rechaza `*`. Detrás de un proxy inverso (Render, Railway) define `TRUST_PROXY=1` para que el límite de peticiones use la IP real; con el valor por defecto (`false`) se ignora `X-Forwarded-For`. Swagger (`/docs`) no se monta con `NODE_ENV=production`.
 
 ## Imagen de producción
 
@@ -64,4 +76,3 @@ docker run -d --name clena-backend -p 3000:3000 \
   clena-backend:prod
 ```
 
-Los secretos JWT deben tener al menos 32 caracteres. Se pasan por variables de entorno, nunca dentro de la imagen. La imagen trae `HEALTHCHECK` contra `/api/v1/health`. El desarrollo sigue usando `--target development` (lo hace `docker-compose.yml`).

@@ -18,7 +18,28 @@ export const envSchema = z
       .default('development'),
     PORT: z.coerce.number().int().positive().default(3000),
     DATABASE_URL: z.string().min(1),
-    CORS_ORIGIN: z.string().default('http://localhost:5173'),
+    CORS_ORIGIN: z
+      .string()
+      .default('http://localhost:5173')
+      .refine(
+        (value) => !value.split(',').some((origin) => origin.trim() === '*'),
+        'no admite comodín (*): la API usa cookies con credenciales',
+      ),
+    // Saltos de proxy inverso de confianza: 'false' (por defecto) o un entero >= 1.
+    TRUST_PROXY: z
+      .string()
+      .default('false')
+      .refine(
+        (value) => value === 'false' || /^[1-9]\d*$/.test(value),
+        "debe ser 'false' o un entero positivo (número de proxies de confianza)",
+      )
+      .transform((value) => (value === 'false' ? false : Number(value))),
+    // Límite global por IP: THROTTLE_LIMIT peticiones cada THROTTLE_TTL_SECONDS.
+    // 300 y no menos: los equipos de la biblioteca salen por una misma IP.
+    THROTTLE_TTL_SECONDS: z.coerce.number().int().positive().default(60),
+    THROTTLE_LIMIT: z.coerce.number().int().positive().default(300),
+    // Límite más estricto para /auth/* (mismo intervalo).
+    THROTTLE_AUTH_LIMIT: z.coerce.number().int().positive().default(20),
     PUBLIC_WEB_URL: z
       .url({ protocol: /^https?$/ })
       .default('http://localhost:5173'),
@@ -27,6 +48,20 @@ export const envSchema = z
     JWT_ACCESS_TTL: z.string().default('15m'),
     JWT_REFRESH_SECRET: z.string().min(1),
     JWT_REFRESH_TTL: z.string().default('7d'),
+    SEMANTIC_SEARCH: z.enum(['on', 'off']).default('off'),
+    EMBEDDING_PROVIDER: z.enum(['fake', 'local']).default('fake'),
+    // Segundos entre reindexados de embeddings; 0 desactiva el intervalo.
+    SEMANTIC_REINDEX_INTERVAL_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .default(300),
+    SEMANTIC_REINDEX_BATCH_SIZE: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(500)
+      .default(16),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== 'production') return;
@@ -38,6 +73,30 @@ export const envSchema = z
           message: `debe tener al menos ${MIN_SECRET_LENGTH} caracteres en producción`,
         });
       }
+      if (/change-?me/i.test(env[key])) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [key],
+          message: 'no puede ser un valor de ejemplo (change-me) en producción',
+        });
+      }
+    }
+    if (env.JWT_ACCESS_SECRET === env.JWT_REFRESH_SECRET) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['JWT_REFRESH_SECRET'],
+        message: 'debe ser distinto de JWT_ACCESS_SECRET en producción',
+      });
+    }
+  })
+  .superRefine((env, ctx) => {
+    if (env.SEMANTIC_SEARCH === 'on' && env.EMBEDDING_PROVIDER === 'local') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['EMBEDDING_PROVIDER'],
+        message:
+          'local aún no está implementado; usa fake o SEMANTIC_SEARCH=off',
+      });
     }
   });
 
