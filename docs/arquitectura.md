@@ -9,13 +9,13 @@ El sistema permite que los visitantes de la Biblioteca del CLENA busquen materia
 
 ### Nivel 1 · Contexto
 
-![Figura 1. Contexto del sistema Consulta Fácil (C4 nivel 1)](img/c4-1-contexto.png)
+![Figura 1. Contexto del sistema Busca Fácil (C4 nivel 1)](img/c4-1-contexto.png)
 
 Dos tipos de personas usan el sistema: el visitante, que busca y consulta, y el personal del CLENA, que mantiene el catálogo y los préstamos. El único sistema externo es el servicio de correo para las alertas. El QR impreso en sala solo abre la web.
 
 ### Nivel 2 · Contenedores
 
-![Figura 2. Contenedores de Consulta Fácil (C4 nivel 2)](img/c4-2-contenedores.png)
+![Figura 2. Contenedores de Busca Fácil (C4 nivel 2)](img/c4-2-contenedores.png)
 
 | Contenedor | Tecnología | Responsabilidad |
 |---|---|---|
