@@ -1,13 +1,14 @@
 # Imagen base fijada por etiqueta y digest (Debian bookworm, glibc: necesario
 # para ONNX Runtime más adelante). Para actualizarla, cambiar etiqueta y digest.
-ARG NODE_IMAGE=node:22.23.5-bookworm-slim@sha256:e9f565d32859f0cbfb52125eafe8be39390f24dac302dc3cdf566e8ba3ab21ee
+ARG NODE_IMAGE=node:26.13.1-bookworm-slim@sha256:0042e17d232a87a2cd485be1da7900fca4d10a4ad11b29e9285da1d2e54798c9
 
 # ---------- Base común: OpenSSL (lo necesita Prisma en slim) y pnpm ----------
 FROM ${NODE_IMAGE} AS base
 RUN apt-get update \
     && apt-get install -y --no-install-recommends openssl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-RUN corepack enable pnpm
+# Node 25+ ya no incluye corepack: pnpm se instala con la versión de packageManager.
+RUN npm install -g pnpm@12.18.0
 WORKDIR /app
 
 # ---------- Desarrollo (docker-compose.yml, target: development) ----------
