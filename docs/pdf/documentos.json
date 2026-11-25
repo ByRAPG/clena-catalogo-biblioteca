@@ -6,5 +6,6 @@
   { "id": "daily-scrum", "fuente": "../daily-scrum.md", "titulo": "Daily Scrum", "version": "1.0" },
   { "id": "informe-seguridad", "fuente": "../informe-seguridad.md", "titulo": "Informe de seguridad", "version": "1.0" },
   { "id": "evidencias", "fuente": "../evidencias.md", "titulo": "Evidencias", "version": "1.0", "horizontal": true },
-  { "id": "informe-evaluacion-busqueda", "fuente": "../informe-evaluacion-busqueda.md", "titulo": "Evaluación de la búsqueda semántica", "version": "1.0" }
+  { "id": "informe-evaluacion-busqueda", "fuente": "../informe-evaluacion-busqueda.md", "titulo": "Evaluación de la búsqueda semántica", "version": "1.0" },
+  { "id": "manual-usuario", "fuente": "../manual-usuario.md", "titulo": "Manual de usuario", "version": "1.0" }
 ]

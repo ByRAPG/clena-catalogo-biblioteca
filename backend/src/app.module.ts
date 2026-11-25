@@ -5,6 +5,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { Env, validateEnv } from './shared/config/env.validation';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { IamModule } from './modules/iam/iam.module';
+import { LoansModule } from './modules/loans/loans.module';
 import { SearchReindexModule } from './modules/search/search-reindex.module';
 import { SearchModule } from './modules/search/search.module';
 import { AppThrottlerGuard } from './shared/http/app-throttler.guard';
@@ -32,6 +33,7 @@ import { SharedModule } from './shared/shared.module';
     SearchReindexModule,
     CatalogModule,
     IamModule,
+    LoansModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: AppThrottlerGuard }],
 })

@@ -203,7 +203,8 @@ El docente permite usar IA como asistente. El equipo la usa de forma transparent
 
 - Las semillas de demostración son ficticias. No se publican datos reales del CLENA sin autorización escrita.
 - El aviso provisional está en `/privacidad` y en [`docs/aviso-privacidad.md`](docs/aviso-privacidad.md). La integración de aceptación expresa y registro de versión/fecha depende de IAM (HU-16); la eliminación de cuentas depende de HU-17. El responsable institucional y el canal de contacto requieren confirmación antes de tratar datos reales.
+- La búsqueda semántica (ADR-08) corre en el propio servidor y no envía consultas ni datos personales a terceros.
 
 ## Licencia
 
-El repositorio contiene una licencia MIT propuesta por el equipo. Su confirmación con el CLENA y la universidad está pendiente; no cubre automáticamente datos bibliográficos, archivos digitales ni otros contenidos de terceros.
+El código fuente del prototipo académico se distribuye bajo la licencia MIT ([`LICENSE`](LICENSE)) por decisión del equipo, sin confirmación formal del CLENA ni del docente. Esta licencia no cubre datos bibliográficos reales, logotipos, archivos digitales ni otros contenidos de terceros.
