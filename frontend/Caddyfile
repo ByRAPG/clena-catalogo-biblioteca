@@ -6,6 +6,15 @@
 {
 	# Sin API de administración expuesta dentro del contenedor.
 	admin off
+
+	# IP real del visitante. Con el túnel de Cloudflare (docker-compose.tunnel.yml)
+	# la petición llega desde cloudflared, una IP privada de Docker; solo de esos
+	# rangos se creen las cabeceras que indican el cliente. Una petición directa
+	# desde internet (IP pública) no es de confianza y no puede falsearlas.
+	servers {
+		trusted_proxies static private_ranges
+		client_ip_headers Cf-Connecting-IP X-Forwarded-For
+	}
 }
 
 {$SITE_ADDRESS::80} {
@@ -32,6 +41,9 @@
 			max_size 2MB
 		}
 		reverse_proxy backend:3000 {
+			# Una sola IP (la real del visitante) para que TRUST_PROXY=1 en la
+			# API tome esa y no la del contenedor de cloudflared.
+			header_up X-Forwarded-For {client_ip}
 			# Si la API tarda más de 30 s se corta, en vez de colgar al visitante.
 			transport http {
 				response_header_timeout 30s
