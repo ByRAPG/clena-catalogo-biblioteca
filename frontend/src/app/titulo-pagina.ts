@@ -11,6 +11,7 @@ const TITULOS: ReadonlyArray<readonly [string, string]> = [
   ['/privacidad', 'Aviso de privacidad'],
   ['/gestion/importar', 'Importar catálogo'],
   ['/gestion/registrar-libro', 'Registrar libro'],
+  ['/gestion/prestamos', 'Préstamos y devoluciones'],
   ['/gestion', 'Gestión del catálogo'],
   ['/sin-permiso', 'Sin permiso'],
 ]
