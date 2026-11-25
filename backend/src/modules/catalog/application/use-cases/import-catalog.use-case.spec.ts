@@ -136,4 +136,50 @@ describe('ImportCatalogUseCase', () => {
 
     expect(importJobs.save).not.toHaveBeenCalled();
   });
+
+  it('rechaza filas con ISBN inválido y neutraliza fórmulas en las válidas', async () => {
+    reader.read.mockReturnValue([
+      {
+        row: 2,
+        success: true,
+        data: { ...validInput('PRUEBA-ISBN-BAD'), isbn: '9789990000019' },
+      },
+      {
+        row: 3,
+        success: true,
+        data: {
+          ...validInput('PRUEBA-FORMULA'),
+          title: '=SUM(1,2)',
+          isbn: '978-999-000001-6',
+        },
+      },
+    ]);
+
+    repository.saveRow.mockResolvedValue('created');
+
+    const report = await useCase.execute(
+      'contenido CSV',
+      'catalogo.csv',
+      'admin-id',
+    );
+
+    expect(report).toEqual({
+      created: 1,
+      updated: 0,
+      failed: 1,
+      rows: [
+        {
+          row: 2,
+          status: 'failed',
+          field: 'isbn',
+          error: 'El ISBN debe ser un ISBN-10 o ISBN-13 válido',
+        },
+        { row: 3, status: 'created' },
+      ],
+    });
+    expect(repository.saveRow).toHaveBeenCalledTimes(1);
+    const [savedRow] = repository.saveRow.mock.calls[0];
+    expect(savedRow.data.title).toBe("'=SUM(1,2)");
+    expect(savedRow.data.isbn).toBe('9789990000016');
+  });
 });
