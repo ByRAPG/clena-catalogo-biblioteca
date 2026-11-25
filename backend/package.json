@@ -20,6 +20,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
+    "search:reindex": "nest build && node dist/modules/search/presentation/search-reindex.cli.js",
+    "search:reindex:dist": "node dist/modules/search/presentation/search-reindex.cli.js",
     "postinstall": "prisma generate"
   },
   "dependencies": {
