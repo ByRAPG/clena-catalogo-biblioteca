@@ -133,6 +133,7 @@ Ejemplo: el personal registra un préstamo.
 | Cadena de suministro | Dependabot semanal (npm y GitHub Actions) y análisis CodeQL en cada PR, en `main` y cada semana |
 | Datos personales | Ley 1581 de 2012: aviso, consentimiento registrado con versión, datos mínimos, exportar y eliminar cuenta. Las búsquedas se registran sin datos personales |
 | Secretos | Solo en variables de entorno; `.env` fuera del repositorio |
+| Escaneo en CI | `.github/workflows/seguridad.yml` (PR, push a `main` y cada lunes). **gitleaks** recorre todo el historial de git y falla con cualquier secreto (salida redactada). **Trivy** revisa los lockfiles de pnpm, la configuración de los Dockerfiles (HIGH y CRITICAL) y las dos imágenes de producción construidas en el job; falla con vulnerabilidades CRITICAL que ya tengan arreglo (`--ignore-unfixed`). El informe completo (HIGH y CRITICAL) se sube como SARIF a la pestaña Security y se resume en cada ejecución. Los hallazgos sin arreglo se aceptan por escrito en el informe de seguridad |
 
 ## 8. Búsqueda
 
