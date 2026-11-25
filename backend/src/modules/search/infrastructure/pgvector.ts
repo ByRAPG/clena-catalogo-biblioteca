@@ -1,16 +1,13 @@
-/**
- * Dimensiones de `work_embeddings.embedding` (vector(384)), fijadas por la
- * migración. Deben coincidir con las del modelo de embeddings.
- */
-export const WORK_EMBEDDING_DIMENSIONS = 384;
+import { EMBEDDING_DIMENSIONS } from '../domain/embedding';
 
 /**
  * Valida el vector y lo serializa al literal de pgvector (`[0.1,0.2,...]`),
- * que se pasa como parámetro y se convierte con `::vector`.
+ * que se pasa como parámetro y se convierte con `::vector`. Las dimensiones
+ * por defecto son las del dominio y coinciden con `vector(384)` de la migración.
  */
 export function toVectorLiteral(
   vector: readonly number[],
-  dimensions: number = WORK_EMBEDDING_DIMENSIONS,
+  dimensions: number = EMBEDDING_DIMENSIONS,
 ): string {
   if (vector.length !== dimensions) {
     throw new Error(
