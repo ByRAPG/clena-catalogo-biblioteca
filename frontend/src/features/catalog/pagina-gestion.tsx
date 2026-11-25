@@ -43,10 +43,18 @@ export function PaginaGestion() {
           descripcion="Dar de alta un libro con sus autores, temas, categoría y año."
           to="/gestion/registrar-libro"
         />
+        <CuadroMarca
+          tono="granate"
+          numero="02"
+          icono={<IconoCatalogo />}
+          titulo="Préstamos y devoluciones"
+          descripcion="Registrar préstamos de ejemplares a lectores y marcar devoluciones."
+          to="/gestion/prestamos"
+        />
         {esAdmin && (
           <CuadroMarca
-            tono="granate"
-            numero="02"
+            tono="azul"
+            numero="03"
             icono={<IconoSubir />}
             titulo="Importar catálogo"
             descripcion="Cargar muchos libros a la vez desde un archivo CSV."
@@ -54,16 +62,16 @@ export function PaginaGestion() {
           />
         )}
         <CuadroMarca
-          tono={esAdmin ? 'azul' : 'granate'}
-          numero={esAdmin ? '03' : '02'}
+          tono={esAdmin ? 'granate' : 'azul'}
+          numero={esAdmin ? '04' : '03'}
           icono={<IconoQr />}
           titulo="Códigos QR"
           descripcion="Descargar los códigos para imprimir en la entrada y en cada sala."
           href="#codigos-qr"
         />
         <CuadroMarca
-          tono={esAdmin ? 'granate' : 'azul'}
-          numero={esAdmin ? '04' : '03'}
+          tono={esAdmin ? 'azul' : 'granate'}
+          numero={esAdmin ? '05' : '04'}
           icono={<IconoCatalogo />}
           titulo="Ver el catálogo"
           descripcion="Revisar cómo ve el público las búsquedas y las fichas."
