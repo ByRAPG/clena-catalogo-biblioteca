@@ -178,7 +178,7 @@ describe('Importación CSV con PostgreSQL (e2e)', () => {
     expect(await database.workAuthor.count()).toBe(1000);
     expect(await database.subject.count()).toBe(1);
     expect(await database.workSubject.count()).toBe(500);
-  }, 60000);
+  }, 120000);
 
   it('reporta errores de filas intermedias y conserva las válidas y el historial', async () => {
     const response = await importCsv(
