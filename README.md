@@ -44,7 +44,7 @@ Docente: Daniel Romero.
 |---|---|
 | Backend | NestJS + TypeScript, Clean Architecture, Prisma |
 | Frontend | React + TypeScript + Vite + Mantine |
-| Base de datos | PostgreSQL 16 (`pg_trgm`, `unaccent`) |
+| Base de datos | PostgreSQL 16 (`pg_trgm`, `unaccent`; imagen `pgvector` para la futura búsqueda semántica) |
 | Contenedores | Docker y docker-compose |
 | Calidad | Jest, Supertest, Vitest, GitHub Actions |
 | Gestión | Scrum, GitHub Flow, GitHub Projects y Plane |
@@ -105,6 +105,42 @@ docker compose exec frontend pnpm run build
 
 Las pruebas e2e de importación crean una base temporal, aplican las migraciones versionadas y la eliminan al terminar. La conexión de pruebas debe permitir crear bases de datos. Las pruebas de búsqueda y QR leen la semilla ficticia de la base indicada en `E2E_DATABASE_URL`. No se vacía la base configurada.
 
+## Despliegue en producción
+
+`docker-compose.prod.yml` levanta todo en una sola máquina Linux (2 a 4 GB de RAM) con un único origen: Caddy sirve el frontend, reenvía `/api/*` al backend y obtiene el certificado HTTPS solo. Solo `web` publica puertos (80 y 443); la base de datos y la API viven en una red interna sin salida a internet. No corre la semilla de demostración.
+
+Requisitos: Docker con Compose v2 y un dominio con registro DNS apuntando a la máquina (puertos 80 y 443 abiertos).
+
+```bash
+cp .env.prod.example .env.prod
+# Edita .env.prod: SITE_ADDRESS y PUBLIC_WEB_URL con tu dominio, y los secretos:
+openssl rand -hex 24   # POSTGRES_PASSWORD
+openssl rand -hex 32   # JWT_ACCESS_SECRET (genera otro distinto para JWT_REFRESH_SECRET)
+
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+docker compose --env-file .env.prod -f docker-compose.prod.yml ps   # los 3 servicios en "healthy"
+curl -i https://TU-DOMINIO/api/v1/health
+```
+
+`.env.prod` está ignorado por git; no lo subas. Con `SITE_ADDRESS=:80` el sitio se sirve por HTTP sin TLS (solo pruebas): la cookie de sesión es `Secure` y el navegador no la guarda fuera de `localhost`.
+
+**Actualizar**: `git pull` y repetir el comando `up -d --build`. El backend aplica las migraciones al arrancar.
+
+**Registros**: `docker compose --env-file .env.prod -f docker-compose.prod.yml logs -f --tail=100 backend` (o `web`, `db`).
+
+**Copia de seguridad y restauración** (leen las credenciales del propio contenedor `db`):
+
+```bash
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T db   sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > backups/clena-$(date +%F).dump
+
+# Restaurar sobre una base vacía (detén antes el backend: ... stop backend)
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T db   sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists' < backups/clena-AAAA-MM-DD.dump
+```
+
+`backups/` está ignorado por git. Guarda las copias fuera de la máquina.
+
+Notas de seguridad del servidor web (`frontend/Caddyfile`): la política `Content-Security-Policy` no permite scripts en línea; Mantine inserta una etiqueta `<style>` con sus variables CSS al arrancar, por lo que `style-src-elem` admite `'unsafe-inline'` (solo para etiquetas `<style>`; los atributos `style=""` del HTML siguen bloqueados). `TRUST_PROXY=1` (valor por defecto del compose) indica a la API que hay un proxy de confianza delante, para que el límite de peticiones use la IP real del visitante.
+
 ## Aplicación desplegada
 
 Pendiente: el despliegue con URL pública (T-07) se hace en el Sprint 3.
@@ -148,7 +184,7 @@ El docente permite usar IA como asistente. El equipo la usa de forma transparent
 - **Qué no se delega:** las decisiones de producto (las toman el Product Owner y el Grupo 9), la aprobación de los Pull Requests y la aceptación de riesgos. Las actas reflejan reuniones reales con su grabación.
 - **Responsabilidad:** quien sube un cambio lo entiende, lo prueba y puede explicarlo y modificarlo en la sustentación. Todo código, con o sin ayuda de IA, pasa por Pull Request, CI, revisión de un compañero y aprobación de Rafael Potes o Humberto Llinás.
 - **Datos:** no se comparten con herramientas de IA datos personales, credenciales ni información del CLENA que no sea pública.
-- **Producto:** la aplicación **no usa IA** en esta etapa.
+- **Producto:** la aplicación **no usa IA generativa ni servicios externos de IA**. Solo está aprobado un modelo de embeddings de código abierto que corre en el propio servidor, sin enviar datos a terceros, para ordenar resultados de búsqueda (ADR-08, pendiente de implementar).
 
 ## Datos y privacidad
 

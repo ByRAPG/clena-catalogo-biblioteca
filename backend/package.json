@@ -20,6 +20,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
+    "search:reindex": "nest build && node dist/modules/search/presentation/search-reindex.cli.js",
+    "search:reindex:dist": "node dist/modules/search/presentation/search-reindex.cli.js",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -29,12 +31,16 @@
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-express": "11.2.8",
     "@nestjs/swagger": "11.4.8",
+    "@nestjs/throttler": "^6.7.1",
     "@prisma/client": "6.19.3",
     "argon2": "0.45.2",
     "class-transformer": "0.5.1",
     "class-validator": "0.15.1",
     "cookie-parser": "^1.4.7",
     "csv-parse": "^7.0.3",
+    "express": "5.2.1",
+    "prisma": "6.19.3",
+    "helmet": "^8.3.0",
     "qrcode": "1.5.4",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
@@ -57,39 +63,11 @@
     "globals": "16.5.0",
     "jest": "30.5.2",
     "prettier": "3.9.10",
-    "prisma": "6.19.3",
     "supertest": "7.3.1",
     "ts-jest": "29.4.15",
     "tsx": "^4.23.15",
     "typescript": "5.9.3",
     "typescript-eslint": "8.72.1"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.ts$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/domain/**/*.ts",
-      "**/application/**/*.ts",
-      "!**/*.spec.ts"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node",
-    "coverageThreshold": {
-      "global": {
-        "lines": 70,
-        "statements": 70,
-        "branches": 70,
-        "functions": 70
-      }
-    }
   },
   "packageManager": "pnpm@12.18.0"
 }

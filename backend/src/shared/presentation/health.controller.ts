@@ -1,9 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GetHealth } from '../application/get-health.use-case';
 import { HealthResponseDto } from './dto/health-response.dto';
 
 @ApiTags('health')
+// El healthcheck de Docker y del hosting no debe consumir el límite.
+@SkipThrottle()
 @Controller('health')
 export class HealthController {
   constructor(private readonly getHealth: GetHealth) {}
