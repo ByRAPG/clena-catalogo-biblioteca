@@ -3,13 +3,17 @@ import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { json } from 'express';
+import { securityHeaders } from './shared/http/security-headers';
 import { GetHealth } from './shared/application/get-health.use-case';
 import { AllExceptionsFilter } from './shared/errors/all-exceptions.filter';
 
 export const API_PREFIX = 'api/v1';
+export const JSON_BODY_LIMIT = '2mb';
 
 export function configureApp(app: INestApplication): void {
-  app.use(json({ limit: '2mb' }));
+  app.use(securityHeaders());
+  // La importación de CSV viaja como JSON; 2 MB cubren el catálogo del CLENA.
+  app.use(json({ limit: JSON_BODY_LIMIT }));
   // Lee la cookie del refresh token (req.cookies).
   app.use(cookieParser());
   app.setGlobalPrefix(API_PREFIX);
@@ -32,6 +36,9 @@ export function configureApp(app: INestApplication): void {
         res.status(503).json({ status: 'degraded', database: 'down' }),
       );
   });
+
+  // Swagger solo en desarrollo y pruebas: en producción no se expone la API.
+  if (process.env.NODE_ENV === 'production') return;
 
   const document = SwaggerModule.createDocument(
     app,

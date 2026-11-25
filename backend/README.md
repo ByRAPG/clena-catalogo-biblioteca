@@ -16,7 +16,7 @@ pnpm run prisma:migrate:deploy
 pnpm run start:dev
 ```
 
-Variables validadas al arrancar (zod, `src/shared/config/env.validation.ts`): `PORT`, `DATABASE_URL`, `CORS_ORIGIN`, `LOG_LEVEL`, `JWT_*`. Si falta una obligatoria, la API no inicia.
+Variables validadas al arrancar (zod, `src/shared/config/env.validation.ts`): `PORT`, `DATABASE_URL`, `CORS_ORIGIN`, `TRUST_PROXY`, `THROTTLE_TTL_SECONDS`, `THROTTLE_LIMIT`, `THROTTLE_AUTH_LIMIT`, `LOG_LEVEL`, `JWT_*`. Si falta una obligatoria, la API no inicia.
 
 ## Probar
 
@@ -50,4 +50,4 @@ Solo migraciones versionadas en `prisma/migrations/` (nunca `db push` fuera de l
 
 El `ValidationPipe` global usa `whitelist` y `forbidNonWhitelisted`: si el cliente envía un campo que el DTO no declara, la API responde 400. Declare todos los campos en el DTO.
 
-En producción, `JWT_ACCESS_SECRET` y `JWT_REFRESH_SECRET` deben tener al menos 32 caracteres. `CORS_ORIGIN` admite varios orígenes separados por coma.
+En producción, `JWT_ACCESS_SECRET` y `JWT_REFRESH_SECRET` deben tener al menos 32 caracteres. `CORS_ORIGIN` admite varios orígenes separados por coma y rechaza `*`. Detrás de un proxy inverso (Render, Railway) define `TRUST_PROXY=1` para que el límite de peticiones use la IP real; con el valor por defecto (`false`) se ignora `X-Forwarded-For`. Swagger (`/docs`) no se monta con `NODE_ENV=production`.
