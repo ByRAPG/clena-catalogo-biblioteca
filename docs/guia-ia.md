@@ -121,4 +121,4 @@ Notas:
 
 ## Cómo declarar el uso de IA
 
-El README tiene una sección «Uso de IA». Si una parte importante de su aporte se hizo con IA, dígalo en el PR (una línea) y esté listo para explicarla. El producto final **no usa IA**.
+El README tiene una sección «Uso de IA». Si una parte importante de su aporte se hizo con IA, dígalo en el PR (una línea) y esté listo para explicarla. El producto final **no usa IA generativa ni servicios externos de IA**; solo un modelo de embeddings de código abierto que corre en el propio servidor, sin enviar datos a terceros, para ordenar resultados de búsqueda (ADR-08).

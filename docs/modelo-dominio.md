@@ -21,7 +21,7 @@ Se relaciona con otros documentos así:
 - **Persistido en el esquema**: existe el modelo en `schema.prisma` y su migración, pero todavía no hay clase de dominio propia; su lógica vive en casos de uso y repositorios (`Work`, `Copy`, `Reader`, etc.).
 - **Previsto Sprint 2**: tablas ya creadas (`Loan`, `Reservation`, `Notification`, `AvailabilityAlert`) cuyo comportamiento se implementa en el Sprint 2 (14 a 19 de noviembre).
 
-El producto no usa inteligencia artificial y no contiene datos reales del CLENA.
+El producto no usa IA generativa ni servicios externos de IA (solo embeddings locales para la búsqueda, ADR-08) y no contiene datos reales del CLENA.
 
 ## 2. Glosario
 
