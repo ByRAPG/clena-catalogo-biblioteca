@@ -1,5 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PrismaClient } from '@prisma/client';
@@ -248,5 +250,87 @@ describe('Importación CSV con PostgreSQL (e2e)', () => {
         where: { inventoryCode: 'AFTER-CONFLICT' },
       }),
     ).not.toBeNull();
+  });
+
+  it('importa archivos de ejemplo UTF-8, UTF-8 con BOM, Windows-1252 con punto y coma y TSV con alias', async () => {
+    const fixturesDir = join(process.cwd(), 'test/fixtures/import');
+    const casos = [
+      {
+        fileName: 'utf8-sin-bom-comas.csv',
+        expectedCode: 'FIX-UTF8-001',
+        expectedTitle: 'Crónicas del puerto',
+      },
+      {
+        fileName: 'utf8-con-bom.csv',
+        expectedCode: 'FIX-BOM-001',
+        expectedTitle: 'Memorias de la bahía',
+      },
+      {
+        fileName: 'windows-1252-punto-y-coma.csv',
+        expectedCode: 'FIX-WIN-001',
+        expectedTitle: 'Crónica del año español',
+      },
+      {
+        fileName: 'tabulador-alias-reordenado.tsv',
+        expectedCode: 'FIX-TSV-001',
+        expectedTitle: 'Atlas de mareas',
+      },
+    ];
+
+    for (const caso of casos) {
+      const contentBase64 = readFileSync(
+        join(fixturesDir, caso.fileName),
+      ).toString('base64');
+
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/catalog/imports')
+        .set('Authorization', `Bearer ${accessTokens.get('ADMIN')}`)
+        .send({ fileName: caso.fileName, contentBase64 })
+        .expect(200);
+
+      expect(response.body).toMatchObject({
+        created: 1,
+        updated: 0,
+        failed: 0,
+      });
+      const copy = await database.copy.findUniqueOrThrow({
+        where: { inventoryCode: caso.expectedCode },
+        include: { work: true },
+      });
+      expect(copy.work.title).toBe(caso.expectedTitle);
+    }
+  });
+
+  it('rechaza archivos que superan el límite de filas o de tamaño y reporta campos demasiado largos', async () => {
+    const tooManyRows = [
+      'titulo,sala,seccion,estante,codigo_ejemplar',
+      ...Array.from({ length: 5001 }, (_, i) => `L${i},S,Se,E,LIM-${i}`),
+    ].join('\n');
+
+    const rowsResponse = await importCsv(tooManyRows).expect(400);
+    expect(String(rowsResponse.body.message)).toContain('5000');
+
+    const tooLarge = 'a'.repeat(1_000_001);
+    const sizeResponse = await importCsv(tooLarge).expect(400);
+    expect(String(sizeResponse.body.message)).toContain('1 MB');
+
+    const fieldTooLong = await importCsv(
+      [
+        HEADER,
+        csvRow('LONG-BAD', 't'.repeat(301)),
+        csvRow('LONG-OK', 'Título válido'),
+      ].join('\n'),
+    ).expect(200);
+
+    expect(fieldTooLong.body).toMatchObject({
+      created: 1,
+      updated: 0,
+      failed: 1,
+    });
+    expect(fieldTooLong.body.rows[0]).toMatchObject({
+      row: 2,
+      status: 'failed',
+      field: 'titulo',
+    });
   });
 });
