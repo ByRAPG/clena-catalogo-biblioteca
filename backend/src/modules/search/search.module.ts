@@ -20,9 +20,9 @@ import { SearchController } from './presentation/search.controller';
     GetWorkDetail,
     ListSearchFilters,
     ReindexWorkEmbeddings,
-    { 
-      provide: SEARCH_REPOSITORY, 
-      useClass: PrismaSearchRepository
+    {
+      provide: SEARCH_REPOSITORY,
+      useClass: PrismaSearchRepository,
     },
     {
       provide: WORK_EMBEDDING_REPOSITORY,
