@@ -1,0 +1,70 @@
+/* Texto que se escribe solo dentro del buscador (decorativo, aria-hidden). */
+.campo-busqueda-caja {
+  position: relative;
+}
+
+.campo-busqueda-escritura {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding-inline: 12px;
+  overflow: hidden;
+  pointer-events: none;
+  color: #4a5163;
+  white-space: nowrap;
+}
+
+.campo-busqueda-texto {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Cursor parpadeante; sin animación con movimiento reducido (en ese caso el
+   texto animado ni se muestra) y en alto contraste. */
+.campo-busqueda-cursor {
+  flex: none;
+  width: 2px;
+  height: 1.15em;
+  background: #23234e;
+  animation: campo-busqueda-parpadeo 1s steps(1) infinite;
+}
+
+@keyframes campo-busqueda-parpadeo {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Mientras se anima, el marcador estático se oculta para no encimarse. */
+.campo-busqueda-input[data-animando='true']::placeholder,
+[data-animando='true'].campo-busqueda-input::placeholder {
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .campo-busqueda-cursor {
+    animation: none;
+  }
+}
+
+/*
+ * Alto contraste: el CSS global de ese modo pone el marcador nativo en #e6e6e6
+ * con !important, así que el marcador estático seguía visible bajo el texto
+ * animado (dos textos encimados) y el texto animado era negro sobre el fondo
+ * negro del campo. Aquí se oculta el marcador con la misma fuerza y el texto
+ * animado va en blanco, con cursor amarillo.
+ */
+html[data-alto-contraste='true'] .campo-busqueda-input[data-animando='true']::placeholder {
+  color: transparent !important;
+  opacity: 0 !important;
+}
+
+html[data-alto-contraste='true'] .campo-busqueda-escritura {
+  color: #fff;
+}
+
+html[data-alto-contraste='true'] .campo-busqueda-cursor {
+  background: #ffff00;
+}

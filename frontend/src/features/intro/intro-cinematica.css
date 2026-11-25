@@ -1,0 +1,140 @@
+/*
+ * Intro de marca. Solo transform y opacity. Todas las fases salen de --dur
+ * (DURACION_INTRO_MS): entra 0-24 %, escena 12-74 %, logos 24-45 %, telón 71-100 %.
+ */
+.intro {
+  --ancho-logo: clamp(180px, 19vw, 400px);
+  --p-oro: polygon(0 0, 56% 0, 44% 100%, 0 100%);
+  --p-amarillo: polygon(0 0, 54.6% 0, 42.6% 100%, 0 100%);
+  --p-uni: polygon(0 0, 53.2% 0, 41.2% 100%, 0 100%);
+  --p-ambar: polygon(56% 0, 100% 0, 100% 100%, 44% 100%);
+  --p-granate: polygon(57.4% 0, 100% 0, 100% 100%, 45.4% 100%);
+  --p-cle: polygon(59.4% 0, 100% 0, 100% 100%, 47.4% 100%);
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  overflow: hidden;
+}
+.intro-lado,
+.intro-lado > span,
+.intro-bloque,
+.intro-filtro {
+  position: absolute;
+  inset: 0;
+}
+/* La escena ocupa solo su mitad (con holgura bajo la diagonal), no toda la pantalla. */
+.intro-escena {
+  position: absolute;
+  inset: 0 44% 0 0;
+}
+.intro-clena .intro-escena { inset: 0 0 0 44%; }
+.intro-lado {
+  animation:
+    intro-entra-i calc(var(--dur) * 0.24) cubic-bezier(0.2, 0.8, 0.2, 1) backwards,
+    intro-sale-i calc(var(--dur) * 0.29) cubic-bezier(0.7, 0, 0.84, 0) calc(var(--dur) * 0.71) forwards;
+}
+.intro-clena {
+  animation-name: intro-entra-d, intro-sale-d;
+}
+.intro-f-oro { background: #b78b1e; clip-path: var(--p-oro); }
+.intro-f-amarillo { background: #ffcc00; clip-path: var(--p-amarillo); }
+.intro-f-ambar { background: #fcb040; clip-path: var(--p-ambar); }
+.intro-f-granate { background: #5b113c; clip-path: var(--p-granate); }
+.intro-bloque-uni { clip-path: var(--p-uni); background: linear-gradient(180deg, #d10a11, #1d1d1b); }
+.intro-bloque-cle { clip-path: var(--p-cle); background: linear-gradient(160deg, #23234e, #5b113c); }
+.intro-escena {
+  animation: intro-revela calc(var(--dur) * 0.16) ease-out calc(var(--dur) * 0.12) backwards;
+}
+.intro-foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  animation: intro-zoom calc(var(--dur) * 0.74) ease-out calc(var(--dur) * 0.12) both;
+}
+.intro-clena .intro-foto { transform-origin: 50% 45%; }.intro-filtro-uni {
+  background: linear-gradient(180deg, rgb(209 10 17 / 0.62) 0%, rgb(209 10 17 / 0.7) 55%, rgb(29 29 27 / 0.92) 100%);
+}
+.intro-filtro-cle {
+  background: linear-gradient(160deg, rgb(35 35 78 / 0.74) 0%, rgb(35 35 78 / 0.7) 50%, rgb(91 17 60 / 0.84) 100%);
+}
+.intro-marca {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 46%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+.intro-clena .intro-marca { left: auto; right: 0; width: 48%; }
+.intro-marca > * {
+  animation: intro-logo calc(var(--dur) * 0.21) ease-out calc(var(--dur) * 0.24) backwards;
+}
+/* Placa ajustada al PNG recortado (ya trae ~6 % de margen blanco): su ancho visible iguala al del logo del CLENA. */
+.intro-placa {
+  width: calc(var(--ancho-logo) * 1.04);
+  border-radius: clamp(8px, 0.8vw, 12px);
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
+}
+.intro-placa img,
+.intro-marca > img { display: block; width: 100%; height: auto; }
+.intro-marca > img { width: var(--ancho-logo); }
+.intro-saltar {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: #fcb040;
+  color: #23234e;
+  font: 600 0.875rem/1 inherit;
+  font-family: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  animation: intro-logo calc(var(--dur) * 0.15) ease-out calc(var(--dur) * 0.24) backwards;
+}
+.intro-saltar:hover { background: #fff; }
+.intro-saltar:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+@keyframes intro-entra-i { from { transform: translateX(-100%); } }
+@keyframes intro-entra-d { from { transform: translateX(100%); } }
+@keyframes intro-sale-i { to { transform: translateX(-100%); } }
+@keyframes intro-sale-d { to { transform: translateX(100%); } }
+@keyframes intro-revela { from { opacity: 0; } }
+@keyframes intro-zoom { to { transform: scale(1.1); } }
+@keyframes intro-logo { from { opacity: 0; scale: 0.9; } }
+/* Pantallas altas (móvil): paneles apilados con la diagonal inclinada. */
+@media (max-aspect-ratio: 1/1) {
+  .intro {
+    --p-oro: polygon(0 0, 100% 0, 100% 44%, 0 56%);
+    --p-amarillo: polygon(0 0, 100% 0, 100% 42.6%, 0 54.6%);
+    --p-uni: polygon(0 0, 100% 0, 100% 41.2%, 0 53.2%);
+    --p-ambar: polygon(0 56%, 100% 44%, 100% 100%, 0 100%);
+    --p-granate: polygon(0 57.4%, 100% 45.4%, 100% 100%, 0 100%);
+    --p-cle: polygon(0 59.4%, 100% 47.4%, 100% 100%, 0 100%);
+  }
+  .intro-escena { inset: 0 0 44% 0; }
+  .intro-clena .intro-escena { inset: 44% 0 0 0; }
+  .intro-marca { width: 100%; height: 44%; }
+  .intro-clena .intro-marca { width: 100%; top: 52%; height: 48%; }
+  .intro { --ancho-logo: min(60vw, 320px); }
+  .intro-lado { animation-name: intro-entra-v-i, intro-sale-v-i; }
+  .intro-clena { animation-name: intro-entra-v-d, intro-sale-v-d; }
+}
+@keyframes intro-entra-v-i { from { transform: translateY(-100%); } }
+@keyframes intro-entra-v-d { from { transform: translateY(100%); } }
+@keyframes intro-sale-v-i { to { transform: translateY(-100%); } }
+@keyframes intro-sale-v-d { to { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .intro { display: none; }
+}
+html[data-alto-contraste='true'] .intro { display: none; }

@@ -14,7 +14,15 @@ export const apiUrl = import.meta.env.VITE_API_URL ?? URL_POR_DEFECTO
 /** Respuesta paginada del backend: ?page=1&pageSize=10. */
 export interface Paginado<T> {
   data: T[]
-  meta: { page: number; pageSize: number; total: number }
+  meta: {
+    page: number
+    pageSize: number
+    total: number
+    /** Modo de la búsqueda, si el backend lo informa. */
+    mode?: 'lexical' | 'semantic' | 'hybrid'
+    /** true si la búsqueda por significado no estuvo disponible. */
+    degraded?: boolean
+  }
 }
 
 interface CuerpoDeError {

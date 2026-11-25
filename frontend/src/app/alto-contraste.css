@@ -1,0 +1,197 @@
+/*
+ * Alto contraste (HU-04): capa final. Se importa DESPUES de los demas estilos y
+ * cierra lo que las reglas de cada pantalla dejaban sin cubrir. Objetivo: toda
+ * pareja texto/fondo >= 7:1 (AAA), en blanco o amarillo sobre negro.
+ *
+ * Causa de los textos ilegibles: Mantine pinta los textos con variables en
+ * linea (`--text-color: var(--mantine-color-dark-8)` por `c="dark.8"`, grises
+ * de descripcion, rojo de error y de «*» obligatorio) y las marcas guardaban
+ * granate/azul marino; sobre negro dan 1,3:1 a 2,7:1. Aqui se vencen esas
+ * variables y se fijan colores claros. Las reglas por pantalla, mas especificas,
+ * conservan su acento amarillo.
+ */
+
+/* ---- Paleta del modo: error y enlaces ---- */
+html[data-alto-contraste='true'][data-mantine-color-scheme] {
+  --mantine-color-error: #ff9b9b;
+  --mantine-color-anchor: #ffff00;
+  --mantine-color-dimmed: #e6e6e6;
+}
+
+/* ---- Texto de Mantine con color propio en linea (c="dark.8", c="dimmed"...) ---- */
+html[data-alto-contraste='true']
+  :where(.mantine-Text-root, .mantine-Title-root, [style*='--text-color'], [style*='--title-color']) {
+  --text-color: #fff !important;
+  --title-color: #fff !important;
+}
+
+html[data-alto-contraste='true'] :where(.mantine-Text-root, .mantine-Title-root) {
+  color: #fff;
+}
+
+/* `c="dark.8"` y similares llegan como `color` en linea, no como variable. */
+html[data-alto-contraste='true']
+  :where(
+    [style*='color: var(--mantine-color-dark'],
+    [style*='color: var(--mantine-color-gray'],
+    [style*='color: var(--mantine-color-dimmed']
+  ) {
+  color: #fff !important;
+}
+
+/* ---- Rotulos de campo: descripcion, error, asterisco ---- */
+html[data-alto-contraste='true'] .mantine-InputWrapper-label,
+html[data-alto-contraste='true'] .mantine-InputWrapper-description,
+html[data-alto-contraste='true'] .mantine-Checkbox-label,
+html[data-alto-contraste='true'] .mantine-Radio-label {
+  color: #fff !important;
+}
+
+html[data-alto-contraste='true'] .mantine-InputWrapper-required {
+  color: #ffff00 !important;
+}
+
+html[data-alto-contraste='true'] .mantine-InputWrapper-error {
+  color: #ff9b9b !important;
+  font-weight: 700;
+}
+
+html[data-alto-contraste='true'] .mantine-Input-input[data-error] {
+  border-color: #ff9b9b !important;
+  box-shadow: inset 0 0 0 2px #ff9b9b !important;
+}
+
+/* ---- Enlaces: amarillo y subrayados ---- */
+html[data-alto-contraste='true'] .mantine-Anchor-root:not(.salto-al-contenido) {
+  color: #ffff00 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+}
+
+/* ---- Menus desplegables (Select, TagsInput) ---- */
+html[data-alto-contraste='true']
+  :is(.mantine-Popover-dropdown, .mantine-Combobox-dropdown, .mantine-Select-dropdown) {
+  background-color: #000 !important;
+  border: 2px solid #ffff00 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+html[data-alto-contraste='true']
+  :is(.mantine-Combobox-option, .mantine-Select-option, .mantine-Popover-dropdown [role='option']) {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+html[data-alto-contraste='true']
+  :is(.mantine-Combobox-option, .mantine-Select-option)
+  :is(span, div, p) {
+  color: inherit !important;
+}
+
+html[data-alto-contraste='true']
+  :is(.mantine-Combobox-option, .mantine-Select-option):is(
+    :hover,
+    [data-combobox-selected],
+    [data-combobox-active],
+    [data-checked],
+    [aria-selected='true']
+  ) {
+  background-color: #ffff00 !important;
+  color: #000 !important;
+}
+
+html[data-alto-contraste='true']
+  :is(.mantine-Combobox-option, .mantine-Select-option):is(
+    :hover,
+    [data-combobox-selected],
+    [data-combobox-active],
+    [data-checked],
+    [aria-selected='true']
+  )
+  :is(span, div, p) {
+  color: #000 !important;
+}
+
+html[data-alto-contraste='true'] :is(.mantine-Combobox-empty, .mantine-Select-empty) {
+  color: #fff !important;
+}
+
+/* ---- Pills de TagsInput (autores y temas) ---- */
+html[data-alto-contraste='true'] .mantine-Pill-root {
+  background-color: #000 !important;
+  border: 2px solid #ffff00 !important;
+  color: #fff !important;
+}
+
+/* ---- Tablas (detalle de obra, reportes) ---- */
+html[data-alto-contraste='true'] table {
+  background-color: #000 !important;
+  border: 2px solid #ffff00 !important;
+  border-collapse: collapse;
+  color: #fff !important;
+}
+
+html[data-alto-contraste='true'] :is(th, td) {
+  background-color: #000 !important;
+  border: 1px solid #ffff00 !important;
+  color: #fff !important;
+}
+
+html[data-alto-contraste='true'] thead :is(th, td),
+html[data-alto-contraste='true'] th[scope] {
+  color: #ffff00 !important;
+}
+
+/* ---- Controles desactivados: siguen legibles, con borde discontinuo ---- */
+html[data-alto-contraste='true']
+  :is(.mantine-Button-root, .mantine-Pagination-control)
+  :is(:disabled, [data-disabled]),
+html[data-alto-contraste='true']
+  :is(.mantine-Button-root:disabled, .mantine-Button-root[data-disabled]) {
+  background-color: #000 !important;
+  border: 2px dashed #e6e6e6 !important;
+  color: #e6e6e6 !important;
+  opacity: 1 !important;
+}
+
+/* ---- Foco visible de 3 px, siempre ---- */
+html[data-alto-contraste='true'] :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid #ffff00 !important;
+  outline-offset: 3px !important;
+}
+
+/* ---- Sin imagenes de fondo, degradados, sombras de texto ni filtros ---- */
+html[data-alto-contraste='true'] :where(*:not(img, svg, video, canvas, picture)) {
+  text-shadow: none !important;
+}
+
+html[data-alto-contraste='true'] :where(section, header, footer, main, div, article, aside, nav):not(.mantine-Checkbox-input) {
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-alto-contraste='true'] :where(section, header, footer, main, div, article, aside, nav)::before {
+  background-image: none !important;
+  filter: none !important;
+}
+
+/* ---- Brillo sincronizado: sin destello ni deslizamiento ---- */
+html[data-alto-contraste='true']
+  :is(.hero, .cuadro, .resultado, .cabecera-pildora, .pie, .mantine-Button-root[data-variant='filled'])::after {
+  animation: none !important;
+  background: none !important;
+  transition: none !important;
+  display: none !important;
+}
+
+/* ---- Movimiento: nada se desliza ni se desvanece en este modo ---- */
+html[data-alto-contraste='true'] :is(.resultado, .cuadro, .hero, .zona-hero, .cabecera, .pie) {
+  animation: none !important;
+}
+
+/* ---- Separadores ---- */
+html[data-alto-contraste='true'] hr {
+  border-color: #ffff00 !important;
+}
