@@ -137,6 +137,41 @@ describe('ImportCatalogUseCase', () => {
     expect(importJobs.save).not.toHaveBeenCalled();
   });
 
+  it('reporta campos que superan el límite de longitud sin detener las filas válidas', async () => {
+    reader.read.mockReturnValue([
+      {
+        row: 2,
+        success: true,
+        data: { ...validInput('PRUEBA-LARGO'), title: 'x'.repeat(301) },
+      },
+      { row: 3, success: true, data: validInput('PRUEBA-OK') },
+    ]);
+
+    repository.saveRow.mockResolvedValue('created');
+
+    const report = await useCase.execute(
+      new Uint8Array([1, 2, 3]),
+      'catalogo.csv',
+      'admin-id',
+    );
+
+    expect(report).toEqual({
+      created: 1,
+      updated: 0,
+      failed: 1,
+      rows: [
+        {
+          row: 2,
+          status: 'failed',
+          field: 'titulo',
+          error: 'El campo titulo supera el máximo de 300 caracteres',
+        },
+        { row: 3, status: 'created' },
+      ],
+    });
+    expect(reader.read).toHaveBeenCalledWith(expect.any(Uint8Array));
+  });
+
   it('rechaza filas con ISBN inválido y neutraliza fórmulas en las válidas', async () => {
     reader.read.mockReturnValue([
       {

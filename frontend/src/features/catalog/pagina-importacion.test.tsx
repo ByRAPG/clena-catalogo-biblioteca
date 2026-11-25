@@ -191,4 +191,48 @@ describe('Importación CSV', () => {
       screen.getByText(/Leer esta página no registra consentimiento/),
     ).toBeDefined()
   })
+
+  it('decodifica archivos Windows-1252 de Excel antes de enviarlos y muestra el límite de 1 MB', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({ created: 1, updated: 0, failed: 0, rows: [] }),
+        { status: 200 },
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    const { container } = pintar('ADMIN')
+
+    // "Título;Año" en Windows-1252 (í=0xED, ñ=0xF1)
+    const win1252Bytes = new Uint8Array([
+      0x54, 0xed, 0x74, 0x75, 0x6c, 0x6f, 0x3b, 0x41, 0xf1, 0x6f,
+    ])
+    const archivoWin = new File([win1252Bytes], 'excel.csv', {
+      type: 'text/csv',
+    })
+    Object.defineProperty(archivoWin, 'arrayBuffer', {
+      value: async () => win1252Bytes.buffer,
+    })
+
+    await screen.findByRole('button', { name: 'Importar' })
+    const input = container.querySelector('input[type="file"]')
+    if (!input) throw new Error('Falta el selector de archivo')
+
+    fireEvent.change(input, { target: { files: [archivoWin] } })
+    fireEvent.click(screen.getByRole('button', { name: 'Importar' }))
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+    const [, options] = fetchMock.mock.calls[0]
+    expect(JSON.parse(options.body)).toEqual({
+      content: 'Título;Año',
+      fileName: 'excel.csv',
+    })
+
+    const archivoGrande = new File(['x'], 'grande.csv', { type: 'text/csv' })
+    Object.defineProperty(archivoGrande, 'size', { value: 1_000_001 })
+    fireEvent.change(input, { target: { files: [archivoGrande] } })
+    fireEvent.click(screen.getByRole('button', { name: 'Importar' }))
+
+    expect(await screen.findByRole('alert')).toBeDefined()
+    expect(screen.getByRole('alert').textContent).toContain('1 MB')
+  })
 })

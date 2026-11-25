@@ -71,9 +71,10 @@ export class ImportCatalogController {
     @Req() request: AuthenticatedRequest,
   ): Promise<ImportCatalogReport> {
     if (!request.auth) throw new UnauthorizedException('Debe iniciar sesión');
+    const payload = this.extractPayload(dto);
     try {
       return await this.importCatalog.execute(
-        dto.content,
+        payload,
         dto.fileName,
         request.auth.userId,
       );
@@ -82,5 +83,15 @@ export class ImportCatalogController {
         throw new BadRequestException(error.message);
       throw error;
     }
+  }
+
+  private extractPayload(dto: ImportCatalogDto): string | Uint8Array {
+    if (dto.contentBase64 !== undefined) {
+      return Buffer.from(dto.contentBase64, 'base64');
+    }
+    if (dto.content !== undefined) {
+      return dto.content;
+    }
+    throw new BadRequestException('Debe enviar el contenido del archivo CSV');
   }
 }

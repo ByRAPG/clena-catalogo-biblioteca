@@ -1,5 +1,6 @@
 import { ImportRow, type ImportRowInput } from './import-row';
 import { ImportRowError } from '../errors/import-row-error';
+import { CSV_IMPORT_LIMITS } from '../value-objects/csv-limits';
 
 function validInput(): ImportRowInput {
   return {
@@ -71,6 +72,64 @@ describe('ImportRow', () => {
 
     expect(row.data.authors).toEqual(['Autora ficticia']);
     expect(Object.isFrozen(row.data.authors)).toBe(true);
+  });
+
+  it.each([
+    ['title', 'titulo', CSV_IMPORT_LIMITS.maxLengths.title],
+    ['isbn', 'isbn', CSV_IMPORT_LIMITS.maxLengths.isbn],
+    [
+      'classification',
+      'clasificacion',
+      CSV_IMPORT_LIMITS.maxLengths.classification,
+    ],
+    ['publisher', 'editorial', CSV_IMPORT_LIMITS.maxLengths.publisher],
+    ['category', 'categoria', CSV_IMPORT_LIMITS.maxLengths.category],
+    ['room', 'sala', CSV_IMPORT_LIMITS.maxLengths.room],
+    ['section', 'seccion', CSV_IMPORT_LIMITS.maxLengths.section],
+    ['shelf', 'estante', CSV_IMPORT_LIMITS.maxLengths.shelf],
+    [
+      'inventoryCode',
+      'codigo_ejemplar',
+      CSV_IMPORT_LIMITS.maxLengths.inventoryCode,
+    ],
+  ] as const)(
+    'rechaza el campo %s cuando supera %i caracteres',
+    (property, field, maxLength) => {
+      expect.assertions(2);
+
+      try {
+        new ImportRow({
+          ...validInput(),
+          [property]: 'a'.repeat(maxLength + 1),
+        });
+      } catch (error) {
+        expect(error).toBeInstanceOf(ImportRowError);
+        expect((error as ImportRowError).field).toBe(field);
+      }
+    },
+  );
+
+  it('rechaza una URL digital que supera el máximo de caracteres', () => {
+    const longUrl = `https://example.org/${'a'.repeat(CSV_IMPORT_LIMITS.maxLengths.digitalUrl)}`;
+
+    expect(
+      () => new ImportRow({ ...validInput(), digitalUrl: longUrl }),
+    ).toThrow(ImportRowError);
+  });
+
+  it('rechaza listas de autores o temas que superan el máximo de elementos o longitud', () => {
+    const tooManyAuthors = Array.from(
+      { length: CSV_IMPORT_LIMITS.maxListItems + 1 },
+      (_, i) => `Autor ${i + 1}`,
+    );
+    const longSubject = 't'.repeat(CSV_IMPORT_LIMITS.maxLengths.subject + 1);
+
+    expect(
+      () => new ImportRow({ ...validInput(), authors: tooManyAuthors }),
+    ).toThrow(ImportRowError);
+    expect(
+      () => new ImportRow({ ...validInput(), subjects: [longSubject] }),
+    ).toThrow(ImportRowError);
   });
 
   it('normaliza ISBN-13 e ISBN-10 válidos con guiones', () => {

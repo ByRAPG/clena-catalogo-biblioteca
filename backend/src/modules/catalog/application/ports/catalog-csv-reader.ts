@@ -14,5 +14,5 @@ export type CsvRowResult =
     };
 
 export interface ICatalogCsvReader {
-  read(content: string): CsvRowResult[];
+  read(content: string | Uint8Array): CsvRowResult[];
 }

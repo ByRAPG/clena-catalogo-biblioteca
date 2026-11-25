@@ -17,6 +17,10 @@ import {
   importarCatalogo,
   type ReporteImportacion,
 } from './importar-catalogo.api'
+import { leerArchivoCsv } from './decodificar-csv'
+
+const EXTENSIONES_PERMITIDAS = /\.(csv|tsv|txt)$/i
+const MAX_TAMANO_BYTES = 1_000_000
 
 export function PaginaImportacion() {
   const { sesion } = useSesion()
@@ -30,19 +34,19 @@ export function PaginaImportacion() {
     if (!archivo || !sesion || ocupado) return
     setError('')
     setReporte(null)
-    if (!archivo.name.toLowerCase().endsWith('.csv')) {
+    if (!EXTENSIONES_PERMITIDAS.test(archivo.name)) {
       setError(
-        'Seleccione un archivo CSV. Puede guardar su archivo Excel como CSV UTF-8.',
+        'Seleccione un archivo .csv, .tsv o .txt guardado desde Excel o su sistema de biblioteca.',
       )
       return
     }
-    if (archivo.size > 1000000) {
-      setError('El archivo debe ocupar como máximo 1 MB.')
+    if (archivo.size > MAX_TAMANO_BYTES) {
+      setError('El archivo supera el tamaño máximo permitido de 1 MB.')
       return
     }
     setOcupado(true)
     try {
-      const contenido = await archivo.text()
+      const contenido = await leerArchivoCsv(archivo)
       const resultado = await importarCatalogo(
         contenido,
         archivo.name,
@@ -73,7 +77,7 @@ export function PaginaImportacion() {
         tono="marino"
         rotulo="Administración"
         titulo="Importar catálogo desde CSV"
-        descripcion="Las filas válidas se importan aunque otras tengan errores. Puede guardar un archivo Excel como CSV UTF-8."
+        descripcion="Acepta archivos de Excel en español (UTF-8 con o sin BOM y Windows-1252), separados por coma, punto y coma o tabulador, con cabeceras en cualquier orden. Las filas válidas se importan aunque otras tengan errores."
       />
 
       <section aria-labelledby="titulo-pasos" className="pasos-seccion">
@@ -91,8 +95,9 @@ export function PaginaImportacion() {
           </li>
           <li className="paso-tarjeta paso-granate">
             <Text component="span">
-              Use datos bibliográficos ficticios o autorizados. No incluya
-              datos personales de lectores.
+              Admite alias de cabeceras (como Título/Title o Año/Year), hasta
+              5 000 filas y máximo 1 MB. No incluya datos personales de
+              lectores.
             </Text>
           </li>
           <li className="paso-tarjeta paso-ambar">
@@ -106,9 +111,9 @@ export function PaginaImportacion() {
       <form onSubmit={importar} className="formulario-tarjeta formulario-archivo">
         <div className="zona-archivo">
           <FileInput
-            label="Archivo CSV"
-            description="CSV UTF-8 separado por comas. Máximo 1 MB."
-            accept=".csv,text/csv"
+            label="Archivo CSV o TSV"
+            description="UTF-8 (con o sin BOM) o Windows-1252; separador coma, punto y coma o tabulador. Máximo 1 MB y 5 000 filas."
+            accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain"
             value={archivo}
             disabled={ocupado}
             leftSection={<IconoArchivo size={20} />}

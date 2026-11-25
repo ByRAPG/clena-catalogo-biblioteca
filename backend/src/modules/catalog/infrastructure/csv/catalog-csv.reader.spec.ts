@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { InvalidCsvError } from '../../domain/errors/invalid-csv.error';
+import { CSV_IMPORT_LIMITS } from '../../domain/value-objects/csv-limits';
 import { CatalogCsvReader } from './catalog-csv.reader';
 
 const HEADER =
@@ -153,5 +154,95 @@ describe('CatalogCsvReader', () => {
       row: 3,
       success: true,
     });
+  });
+
+  it('lee los archivos de ejemplo UTF-8 sin BOM, UTF-8 con BOM, Windows-1252 con punto y coma y TSV con alias', () => {
+    const fixturesDir = join(process.cwd(), 'test/fixtures/import');
+
+    const utf8 = reader.read(
+      readFileSync(join(fixturesDir, 'utf8-sin-bom-comas.csv')),
+    );
+    expect(utf8).toHaveLength(1);
+    expect(utf8[0]).toMatchObject({
+      success: true,
+      data: {
+        title: 'Crónicas del puerto',
+        inventoryCode: 'FIX-UTF8-001',
+      },
+    });
+
+    const utf8Bom = reader.read(
+      readFileSync(join(fixturesDir, 'utf8-con-bom.csv')),
+    );
+    expect(utf8Bom).toHaveLength(1);
+    expect(utf8Bom[0]).toMatchObject({
+      success: true,
+      data: {
+        title: 'Memorias de la bahía',
+        inventoryCode: 'FIX-BOM-001',
+      },
+    });
+
+    const win1252 = reader.read(
+      readFileSync(join(fixturesDir, 'windows-1252-punto-y-coma.csv')),
+    );
+    expect(win1252).toHaveLength(1);
+    expect(win1252[0]).toMatchObject({
+      success: true,
+      data: {
+        title: 'Crónica del año español',
+        authors: ['Sofía Peña', 'Inés Núñez'],
+        subjects: ['Narración', 'Historia'],
+        year: 2018,
+        section: 'Sección Ñ',
+        inventoryCode: 'FIX-WIN-001',
+      },
+    });
+
+    const tsv = reader.read(
+      readFileSync(join(fixturesDir, 'tabulador-alias-reordenado.tsv')),
+    );
+    expect(tsv).toHaveLength(1);
+    expect(tsv[0]).toMatchObject({
+      success: true,
+      data: {
+        title: 'Atlas de mareas',
+        authors: ['Marina Ceiba', 'Rodrigo Palmera'],
+        subjects: ['Cartografía', 'Geografía'],
+        year: 2022,
+        room: 'Sala General',
+        section: 'Referencia',
+        shelf: 'R-01',
+        inventoryCode: 'FIX-TSV-001',
+        status: 'DISPONIBLE',
+      },
+    });
+  });
+
+  it('rechaza cabeceras duplicadas por alias o columnas desconocidas', () => {
+    expect(() =>
+      reader.read(
+        'titulo,Title,sala,seccion,estante,codigo_ejemplar\nA,B,S,Se,E,C-1',
+      ),
+    ).toThrow(InvalidCsvError);
+    expect(() =>
+      reader.read(
+        'titulo,desconocida,sala,seccion,estante,codigo_ejemplar\nA,B,S,Se,E,C-1',
+      ),
+    ).toThrow(InvalidCsvError);
+  });
+
+  it('rechaza archivos que superan el máximo de 5 000 filas', () => {
+    const compactHeader = 'titulo,sala,seccion,estante,codigo_ejemplar';
+    const rows = Array.from(
+      { length: CSV_IMPORT_LIMITS.maxRows + 1 },
+      (_, i) => `L${i},S,Se,E,C${i}`,
+    );
+
+    expect(() => reader.read([compactHeader, ...rows].join('\n'))).toThrow(
+      new InvalidCsvError(
+        `El archivo supera el máximo permitido de ${CSV_IMPORT_LIMITS.maxRows} filas por importación`,
+      ),
+    );
   });
 });
