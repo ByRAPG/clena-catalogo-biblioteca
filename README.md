@@ -1,6 +1,6 @@
-# Consulta Fácil · Catálogo bibliográfico accesible del CLENA (P2)
+# Busca Fácil · Catálogo bibliográfico accesible del CLENA (P2)
 
-> Proyecto **P2** del curso Desarrollo de Aplicaciones Web Backend: «Consulta Fácil, rediseño de la interfaz de consulta bibliotecaria».
+> Proyecto **P2** del curso Desarrollo de Aplicaciones Web Backend: «Consulta Fácil, rediseño de la interfaz de consulta bibliotecaria». El producto se presenta al público con el nombre **Busca Fácil**.
 
 Aplicación web para que cualquier visitante de la **Biblioteca del CLENA** (Corporación Luis Eduardo Nieto Arteta, complejo de la Aduana de Barranquilla) encuentre un libro por sí mismo, sepa **dónde está** (sala, sección y estante) y si está **disponible**, desde un computador de la biblioteca o desde su celular escaneando un código QR.
 
@@ -16,7 +16,9 @@ Problema identificado por el **Grupo 9** de Introducción a la Ingeniería de Si
 - Búsqueda simple por título, autor o tema, con filtros y tolerancia a errores de escritura.
 - Resultado con ubicación física (sala, sección, estante) y disponibilidad (física o digital).
 - Acceso desde celular por QR y tutorial guiado para la primera búsqueda.
-- Préstamos y alertas de devolución y disponibilidad.
+- Préstamos y devoluciones registrados por el personal (HU-20). Las alertas de devolución y disponibilidad y las reservas no se terminaron (ver el estado por historia en [`docs/backlog.md`](docs/backlog.md)).
+
+**Búsqueda semántica.** La búsqueda es híbrida: combina la léxica (`pg_trgm` y `unaccent`) con la vectorial (modelo local `multilingual-e5-small` y pgvector) mediante Reciprocal Rank Fusion; si el modelo no está listo o se apaga con `SEMANTIC_SEARCH=off`, responde solo con la léxica (degradación). No envía datos a terceros (ADR-08 en [`docs/arquitectura.md`](docs/arquitectura.md)).
 
 Las 21 historias de usuario (14 escritas por el Grupo 9 y 7 propuestas por Backend) están en [`docs/backlog.md`](docs/backlog.md) y, como fuente oficial, en los Issues y el tablero de GitHub Projects.
 
@@ -44,7 +46,7 @@ Docente: Daniel Romero.
 |---|---|
 | Backend | NestJS + TypeScript, Clean Architecture, Prisma |
 | Frontend | React + TypeScript + Vite + Mantine |
-| Base de datos | PostgreSQL 16 (`pg_trgm`, `unaccent`; imagen `pgvector` para la futura búsqueda semántica) |
+| Base de datos | PostgreSQL 16 (`pg_trgm`, `unaccent`; imagen `pgvector` para la búsqueda semántica) |
 | Contenedores | Docker y docker-compose |
 | Calidad | Jest, Supertest, Vitest, GitHub Actions |
 | Gestión | Scrum, GitHub Flow, GitHub Projects y Plane |
@@ -80,7 +82,7 @@ Para validar el código, ejecuta `pnpm run lint`, `pnpm test` y `pnpm run build`
 
 ## Importación CSV (HU-12)
 
-La pantalla está en `/gestion/importar` y requiere una sesión con rol ADMIN. Permite descargar la plantilla existente, seleccionar un CSV UTF-8 separado por comas de hasta 1 MB e importar las filas válidas aunque otras tengan errores. El reporte muestra el resultado de cada fila y totales de ejemplares creados, actualizados y fallidos.
+La pantalla está en `/gestion/importar` y requiere una sesión con rol ADMIN (el comando para crear el primer administrador está en la sección de despliegue). Permite descargar la plantilla existente, seleccionar un CSV UTF-8 separado por comas de hasta 1 MB e importar las filas válidas aunque otras tengan errores. El reporte muestra el resultado de cada fila y totales de ejemplares creados, actualizados y fallidos.
 
 La API ofrece `GET /api/v1/catalog/imports/template` y `POST /api/v1/catalog/imports`. El POST recibe JSON con `fileName` y `content`; el usuario se obtiene de la autenticación y nunca del archivo o del cuerpo de la solicitud. Las cabeceras deben coincidir con `backend/prisma/data/plantilla-catalogo.csv`; los autores y temas se separan con `;`. Los números del reporte corresponden a líneas del archivo; si una celda contiene saltos de línea, se indica la línea final del registro.
 
@@ -88,7 +90,7 @@ Cada fila se guarda en una transacción independiente. Se reutilizan obras por I
 
 El historial `ImportJob` conserva el administrador, nombre del archivo, totales y errores. Un fallo de infraestructura interrumpe el proceso y conserva las filas ya confirmadas; no debe interpretarse como una reversión de toda la carga.
 
-La autenticación está pendiente de HU-09 por decisión de integración: el token `IMPORT_AUTHENTICATOR` exige una implementación de `IImportAuthenticator` que valide el access token y devuelva un usuario activo. El adaptador provisional rechaza el acceso; no hay tokens de demostración aceptados por la aplicación. Las pruebas e2e sustituyen únicamente ese puerto para verificar el flujo real con PostgreSQL.
+La importación y la plantilla exigen un access token válido de un usuario ADMIN (`JwtAuthGuard` y `RolesGuard`). Las pruebas e2e usan la autenticación real con la base temporal.
 
 Para probarlo en Docker:
 
@@ -156,7 +158,7 @@ Notas de seguridad del servidor web (`frontend/Caddyfile`): la política `Conten
 
 ## Aplicación desplegada
 
-Despliegue con URL pública (T-07): ver [docs/despliegue.md](docs/despliegue.md) (túnel rápido de Cloudflare con `docker-compose.tunnel.yml`).
+El despliegue con URL pública (T-07) está descrito en [`docs/despliegue.md`](docs/despliegue.md): la opción A es un túnel rápido de Cloudflare desde un equipo propio con `docker-compose.tunnel.yml` (la URL `trycloudflare.com` cambia en cada reinicio del túnel y el sitio solo está disponible mientras el equipo esté encendido) y la opción B, Hugging Face Spaces con Neon, está descrita pero no implementada. Los controles de seguridad y las cabeceras medidas están en [`docs/informe-seguridad.md`](docs/informe-seguridad.md).
 
 ## Documentación
 
@@ -173,21 +175,30 @@ Despliegue con URL pública (T-07): ver [docs/despliegue.md](docs/despliegue.md)
 | [`docs/definition-of-done.md`](docs/definition-of-done.md) | Cuándo una tarea está terminada |
 | [`docs/sprint-planning.md`](docs/sprint-planning.md), [`daily-scrum.md`](docs/daily-scrum.md), [`sprint-review.md`](docs/sprint-review.md), [`sprint-retrospective.md`](docs/sprint-retrospective.md) | Actas de Scrum por sprint |
 | [`docs/evidencias.md`](docs/evidencias.md) | Enlaces a grabaciones de Teams por fecha |
+| [`docs/despliegue.md`](docs/despliegue.md) | Despliegue con URL pública: túnel de Cloudflare (opción A) y Hugging Face Spaces con Neon (opción B) |
+| [`docs/aviso-privacidad.md`](docs/aviso-privacidad.md) | Aviso de privacidad (Ley 1581 de 2012) |
+| [`docs/recursos-de-terceros.md`](docs/recursos-de-terceros.md) | Logos y fotos de terceros incluidos y cómo se retiran |
+| [`docs/guia-visual.md`](docs/guia-visual.md) | Guía visual de la interfaz |
 | [`docs/actas/`](docs/actas) | Una acta por reunión |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | GitHub Flow, ramas, commits y revisión |
 
-### Informes de la Entrega 1 (PDF)
+### Informes y documentos en PDF
 
 Los `.md` son la fuente. Los informes que pide el docente se generan en PDF con `docs/pdf` (portada, índice y números de página; diagramas de draw.io) y se publican en `docs/`.
 
-| Informe | Markdown (fuente) | PDF | Estado |
-|---|---|---|---|
-| Inception | `docs/inception.md` | `docs/inception.pdf` | Listo |
-| Evidencias | `docs/evidencias.md` | `docs/evidencias.pdf` | Listo |
-| Modelo de dominio | por definir (T-13) | `docs/modelo-dominio.pdf` | Pendiente (T-13) |
-| Modelo de datos | `docs/modelo-datos.md` | `docs/modelo-datos.pdf` | Pendiente (T-06) |
-| Arquitectura (C4 niveles 1 a 3) | `docs/arquitectura.md` | `docs/arquitectura.pdf` | Listo (T-08) |
-| Daily Scrum | `docs/daily-scrum.md` | `docs/daily-scrum.pdf` | Listo |
+| Informe | Markdown (fuente) | PDF |
+|---|---|---|
+| Inception | `docs/inception.md` | `docs/inception.pdf` |
+| Daily Scrum | `docs/daily-scrum.md` | `docs/daily-scrum.pdf` |
+| Evidencias | `docs/evidencias.md` | `docs/evidencias.pdf` |
+| Modelo de dominio | `docs/modelo-dominio.md` | `docs/modelo-dominio.pdf` |
+| Modelo de datos | `docs/modelo-datos.md` | `docs/modelo-datos.pdf` |
+| Arquitectura (C4 niveles 1 a 3) | `docs/arquitectura.md` | `docs/arquitectura.pdf` |
+| Informe de seguridad | `docs/informe-seguridad.md` | `docs/informe-seguridad.pdf` |
+| Evaluación de la búsqueda semántica | `docs/informe-evaluacion-busqueda.md` | `docs/informe-evaluacion-busqueda.pdf` |
+| Manual de usuario | `docs/manual-usuario.md` | `docs/manual-usuario.pdf` |
+
+Para regenerar uno: en `docs/pdf`, `pnpm install --frozen-lockfile` y `node build.mjs <id> --fecha "<fecha>"`, con los ids de `docs/pdf/documentos.json`.
 
 ## Uso de inteligencia artificial
 
@@ -197,14 +208,14 @@ El docente permite usar IA como asistente. El equipo la usa de forma transparent
 - **Qué no se delega:** las decisiones de producto (las toman el Product Owner y el Grupo 9), la aprobación de los Pull Requests y la aceptación de riesgos. Las actas reflejan reuniones reales con su grabación.
 - **Responsabilidad:** quien sube un cambio lo entiende, lo prueba y puede explicarlo y modificarlo en la sustentación. Todo código, con o sin ayuda de IA, pasa por Pull Request, CI, revisión de un compañero y aprobación de Rafael Potes o Humberto Llinás.
 - **Datos:** no se comparten con herramientas de IA datos personales, credenciales ni información del CLENA que no sea pública.
-- **Producto:** la aplicación **no usa IA generativa ni servicios externos de IA**. Solo está aprobado un modelo de embeddings de código abierto que corre en el propio servidor, sin enviar datos a terceros, para ordenar resultados de búsqueda (ADR-08, pendiente de implementar).
+- **Producto:** la aplicación **no usa IA generativa ni servicios externos de IA**. Solo está aprobado un modelo de embeddings de código abierto que corre en el propio servidor, sin enviar datos a terceros, para ordenar resultados de búsqueda (ADR-08, implementado).
 
 ## Datos y privacidad
 
 - Las semillas de demostración son ficticias. No se publican datos reales del CLENA sin autorización escrita.
-- El aviso provisional está en `/privacidad` y en [`docs/aviso-privacidad.md`](docs/aviso-privacidad.md). La integración de aceptación expresa y registro de versión/fecha depende de IAM (HU-16); la eliminación de cuentas depende de HU-17. El responsable institucional y el canal de contacto requieren confirmación antes de tratar datos reales.
+- El aviso de privacidad está en `/privacidad` y en [`docs/aviso-privacidad.md`](docs/aviso-privacidad.md). El registro de aceptación expresa con versión y fecha depende de la cuenta de lector (HU-16) y la eliminación de cuentas de HU-17; ninguna de las dos está terminada, por lo que la aplicación no trata datos personales de lectores. El responsable institucional y el canal de contacto se confirman con el CLENA antes de tratar datos reales.
 - La búsqueda semántica (ADR-08) corre en el propio servidor y no envía consultas ni datos personales a terceros.
 
 ## Licencia
 
-El código fuente del prototipo académico se distribuye bajo la licencia MIT ([`LICENSE`](LICENSE)) por decisión del equipo, sin confirmación formal del CLENA ni del docente. Esta licencia no cubre datos bibliográficos reales, logotipos, archivos digitales ni otros contenidos de terceros.
+El código fuente del prototipo académico se distribuye bajo la licencia MIT ([`LICENSE`](LICENSE)) por decisión del equipo, sin confirmación formal del CLENA ni del docente. Esta licencia excluye los logotipos y fotos de terceros (ver [`docs/recursos-de-terceros.md`](docs/recursos-de-terceros.md)), los datos bibliográficos reales, los archivos digitales y otros contenidos de terceros.

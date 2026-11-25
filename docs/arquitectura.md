@@ -39,7 +39,7 @@ Los controladores solo invocan casos de uso de los módulos (`iam`, `catalog`, `
 | Frontend | React + TypeScript + Vite + Mantine | Exigido React + TS; Mantine ofrece componentes accesibles (ADR-04) |
 | Contenedores | Docker + docker-compose | Exigido; mismo entorno para todos |
 | CI | GitHub Actions | Exigido |
-| Despliegue | Render o Railway | Capa gratuita con PostgreSQL administrado (ADR-05) |
+| Despliegue | Túnel rápido de Cloudflare desde un equipo propio (opción A); Hugging Face Spaces + Neon (opción B) | Gratuito y sin tarjeta; el modelo de embeddings necesita unos 2 GB de RAM (ADR-05, `docs/despliegue.md`) |
 
 ## 3. Módulos
 
@@ -47,10 +47,10 @@ Cada módulo es un contexto del negocio con sus propias capas.
 
 | Módulo | Responsabilidad | Historias |
 |---|---|---|
-| `iam` | Usuarios, roles, autenticación JWT, consentimiento, eliminación de cuenta | HU-09, HU-16, HU-17, HU-18 |
-| `catalog` | Obras, autores, temas, ejemplares, ubicaciones, importación CSV | HU-10, HU-11, HU-12, HU-19 |
-| `search` | Búsqueda tolerante, filtros, detalle público, disponibilidad | HU-01, HU-02, HU-03, HU-06, HU-07, HU-08, HU-13 |
-| `loans` | Préstamos, devoluciones, reservas, alertas | HU-14, HU-20, HU-21 |
+| `iam` | Usuarios, roles, autenticación JWT y comando para crear el primer administrador (HU-09, integrado). Cuenta de lector con consentimiento, eliminación de cuenta y gestión de cuentas del personal (HU-16, HU-17, HU-18) no se terminaron | HU-09, HU-16, HU-17, HU-18 |
+| `catalog` | Obras, autores, temas, ejemplares, ubicaciones e importación CSV idempotente con ISBN validado (HU-10 y HU-12, integrados). La edición de ubicación y estado y el alta de ejemplares aparte (HU-11, HU-19) no se terminaron | HU-10, HU-11, HU-12, HU-19 |
+| `search` | Búsqueda híbrida (léxica y semántica), filtros, detalle público, disponibilidad (HU-01, 02, 03, 06 y 08, integrados). La búsqueda por voz (HU-13) no se terminó | HU-01, HU-02, HU-03, HU-06, HU-07, HU-08, HU-13 |
+| `loans` | Préstamos y devoluciones registrados por el personal (HU-20, integrado en `main`). Reservas y alertas (HU-14, HU-21) no se terminaron | HU-14, HU-20, HU-21 |
 | Frontend transversal | Accesibilidad, QR, tutorial | HU-04, HU-05, HU-15 |
 | `shared` | Configuración, errores, logs, Prisma, salud, correo | Transversal |
 
@@ -154,7 +154,7 @@ Búsqueda híbrida (ADR-08): `GET /search/works` acepta `mode=hybrid|lexical|sem
 |---|---|---|---|
 | Local | `docker compose up` | Contenedor PostgreSQL 16 | Mailpit (`:8025`) |
 | CI | GitHub Actions | Servicio PostgreSQL 16 | Simulado |
-| Producción | Render o Railway, despliegue al fusionar en `main` | PostgreSQL administrado | SMTP de la plataforma o simulado |
+| Producción | `docker-compose.prod.yml` con Caddy y, para la URL pública, `docker-compose.tunnel.yml` (túnel rápido de Cloudflare); la opción B (Hugging Face Spaces + Neon) no está implementada | PostgreSQL 16 con pgvector en un contenedor (opción A) o Neon (opción B) | Sin correo en producción por ahora |
 
 Las migraciones se aplican con `prisma migrate deploy` al desplegar. Nunca `db push` fuera de local.
 
@@ -184,11 +184,12 @@ Las migraciones se aplican con `prisma migrate deploy` al desplegar. Nunca `db p
 - **Alternativas:** MUI (más pesado), Tailwind (los componentes accesibles se construyen a mano).
 - **Consecuencias:** se sigue el sistema de diseño de Mantine.
 
-### ADR-05 · Despliegue en Render o Railway
-- **Contexto:** se necesita una URL pública sin costo.
-- **Decisión:** plataforma PaaS con PostgreSQL administrado y despliegue desde GitHub.
-- **Alternativas:** VPS propio (más operación). Vercel es viable solo para el frontend React/Vite, pero no para la API NestJS (servidor de larga duración y conexiones a PostgreSQL); se mantiene Render o Railway para todo para tener una sola URL y un solo despliegue.
-- **Consecuencias:** en la capa gratuita el servicio puede «dormir»; se avisa antes de cada review.
+### ADR-05 · Despliegue con túnel de Cloudflare o Hugging Face Spaces + Neon
+- **Estado y fecha:** decidido el 20 nov 2026 (reemplaza la decisión inicial de Render o Railway).
+- **Contexto:** se necesita una URL pública sin costo y sin tarjeta. La búsqueda semántica (ADR-08) carga un modelo que necesita unos 2 GB de RAM, más de lo que ofrecen las capas gratuitas de Render y Railway.
+- **Decisión:** opción A, vigente: la pila de `docker-compose.prod.yml` corre en un equipo propio con 2 GB de RAM libres y se publica con un túnel rápido de Cloudflare (`docker-compose.tunnel.yml`), sin abrir puertos ni tener dominio. Opción B, descrita pero no implementada: Hugging Face Spaces (tipo Docker) con la base de datos en Neon. Los pasos y límites están en [`despliegue.md`](despliegue.md).
+- **Alternativas:** Render o Railway (descartadas por la memoria disponible); VPS propio (más operación). Vercel es viable solo para el frontend React/Vite, pero no para la API NestJS (servidor de larga duración y conexiones a PostgreSQL).
+- **Consecuencias:** con la opción A el sitio solo está disponible mientras el equipo esté encendido y la URL `trycloudflare.com` cambia al reiniciar el túnel; no hay respaldo automático. La opción B duerme el Space tras 48 horas sin visitas.
 
 ### ADR-06 · Préstamos registrados por el personal
 - **Contexto:** el CLENA presta en mostrador.
