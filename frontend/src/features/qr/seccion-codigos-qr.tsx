@@ -1,6 +1,8 @@
-import { Alert, Button, Loader, Stack, Text, Title } from '@mantine/core'
+import { Alert, Button, Loader, Stack, Text } from '@mantine/core'
+import { IconoDescargar, IconoQr } from '../../shared/ui/iconos'
 import { useCallback, useEffect, useState } from 'react'
 import { peticion, urlAbsoluta } from '../../shared/api/client'
+import { FranjaFoto } from '../../shared/ui/franja-foto'
 import { useSesion } from '../auth/sesion-context'
 import {
   guardarArchivo,
@@ -81,14 +83,29 @@ export function SeccionCodigosQr() {
   }, [intento])
 
   return (
-    <Stack gap="md" component="section" aria-labelledby="titulo-codigos-qr">
-      <Title order={3} id="titulo-codigos-qr">
-        Códigos QR
-      </Title>
-      <Text>
-        Imprima el código y péguelo en la entrada de la sala. Al escanearlo se
-        abre el buscador con esa sala seleccionada.
-      </Text>
+    <FranjaFoto
+      as="section"
+      id="codigos-qr"
+      foto="pov"
+      tono="ambar"
+      className="zona-qr"
+      aria-labelledby="titulo-codigos-qr"
+    >
+      <div className="zona-fila zona-qr-fila">
+      <div className="seccion-cabecera">
+        <span className="insignia-icono" aria-hidden="true">
+          <IconoQr />
+        </span>
+        <div>
+          <h2 id="titulo-codigos-qr" className="seccion-titulo">
+            Códigos QR
+          </h2>
+          <p className="encabezado-descripcion">
+            Imprima el código y péguelo en la entrada de la sala. Al escanearlo
+            se abre el buscador con esa sala seleccionada.
+          </p>
+        </div>
+      </div>
 
       <Button
         component="a"
@@ -96,8 +113,19 @@ export function SeccionCodigosQr() {
         download
         mih={ALTO_MINIMO}
         w="fit-content"
+        leftSection={<IconoDescargar size={20} />}
       >
         Descargar QR de entrada
+      </Button>
+
+      <Button
+        component="a"
+        href="#tareas-gestion"
+        variant="default"
+        mih={ALTO_MINIMO}
+        w="fit-content"
+      >
+        ↑ Volver a las tareas de gestión
       </Button>
 
       {estado.tipo === 'cargando' && (
@@ -119,34 +147,34 @@ export function SeccionCodigosQr() {
       )}
 
       {estado.tipo === 'listo' && estado.salas.length === 0 && (
-        <Text>Todavía no hay salas registradas.</Text>
+        <p className="estado-vacio">Todavía no hay salas registradas.</p>
       )}
 
       {estado.tipo === 'listo' && estado.salas.length > 0 && (
-        <Stack gap="sm" component="ul" p={0} m={0} style={{ listStyle: 'none' }}>
+        <ul className="lista-salas">
           {estado.salas.map((sala) => (
-            <li key={sala.id}>
-              <Stack gap="xs" align="flex-start">
-                <Button
-                  type="button"
-                  variant="light"
-                  mih={ALTO_MINIMO}
-                  loading={descargando === sala.id}
-                  disabled={descargando !== null && descargando !== sala.id}
-                  onClick={() => void descargar(sala)}
-                >
-                  Descargar QR de {sala.name}
-                </Button>
-                {falloDeDescarga?.salaId === sala.id && (
-                  <Text role="alert" c="red.9">
-                    {falloDeDescarga.mensaje}
-                  </Text>
-                )}
-              </Stack>
+            <li key={sala.id} className="sala-item">
+              <Button
+                type="button"
+                variant="default"
+                mih={ALTO_MINIMO}
+                loading={descargando === sala.id}
+                disabled={descargando !== null && descargando !== sala.id}
+                onClick={() => void descargar(sala)}
+                leftSection={<IconoQr size={20} />}
+              >
+                Descargar QR de {sala.name}
+              </Button>
+              {falloDeDescarga?.salaId === sala.id && (
+                <Text role="alert" c="red.9">
+                  {falloDeDescarga.mensaje}
+                </Text>
+              )}
             </li>
           ))}
-        </Stack>
+        </ul>
       )}
-    </Stack>
+      </div>
+    </FranjaFoto>
   )
 }

@@ -11,7 +11,9 @@ import {
   Title,
 } from '@mantine/core'
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Resaltado } from '../../shared/ui/resaltado'
+import { esUrlWeb } from '../../shared/texto/url-web'
 import { ApiError } from '../../shared/api/client'
 import { obtenerObra, type ObraDetalle } from '../search/busqueda.api'
 import { EtiquetaDisponibilidad } from '../search/etiqueta-disponibilidad'
@@ -47,6 +49,8 @@ interface RespuestaRecibida {
 
 export function PaginaDetalleObra() {
   const { id = '' } = useParams<{ id: string }>()
+  const [parametros] = useSearchParams()
+  const consulta = parametros.get('q')?.trim().slice(0, 100) ?? ''
   const [recibida, setRecibida] = useState<RespuestaRecibida | null>(null)
 
   // «Cargando» se deduce de comparar el id de la URL con el de la última
@@ -103,32 +107,34 @@ export function PaginaDetalleObra() {
 
   return (
     <Stack gap="lg">
-      <Anchor component={Link} to="/">
+      <Anchor component={Link} to="/" className="enlace-volver">
         Volver al catálogo
       </Anchor>
 
-      <Stack gap="xs">
-        <Title order={2}>{obra.title}</Title>
+      <section className="detalle-cabecera">
+        <h1 className="detalle-titulo">
+          <Resaltado texto={obra.title} consulta={consulta} />
+        </h1>
         {obra.subtitle !== null && <Text fz="lg">{obra.subtitle}</Text>}
         <Text fz="lg">
           <Text component="span" fw={600}>
             Autor:{' '}
           </Text>
-          {autores}
+          <Resaltado texto={autores} consulta={consulta} />
         </Text>
         {obra.subjects.length > 0 && (
           <Text fz="lg">
             <Text component="span" fw={600}>
               Temas:{' '}
             </Text>
-            {obra.subjects.join(', ')}
+            <Resaltado texto={obra.subjects.join(', ')} consulta={consulta} />
           </Text>
         )}
-      </Stack>
+      </section>
 
       <EtiquetaDisponibilidad disponibilidad={obra.availability} />
 
-      {obra.digitalUrl !== null && (
+      {esUrlWeb(obra.digitalUrl) && (
         <Button
           component="a"
           href={obra.digitalUrl}
@@ -140,9 +146,9 @@ export function PaginaDetalleObra() {
         </Button>
       )}
 
-      <Card withBorder padding="lg" radius="md">
+      <Card padding="lg">
         <Stack gap="sm">
-          <Title order={3} size="h3">
+          <Title order={2} className="rotulo">
             Datos de la obra
           </Title>
           <Table withRowBorders={false} verticalSpacing="xs">
@@ -183,7 +189,7 @@ export function PaginaDetalleObra() {
       </Card>
 
       <Stack gap="sm">
-        <Title order={3} size="h3">
+        <Title order={2} className="rotulo">
           Dónde encontrarlo
         </Title>
         {obra.copies.length === 0 ? (
@@ -198,9 +204,7 @@ export function PaginaDetalleObra() {
               <Card
                 component="li"
                 key={ejemplar.inventoryCode}
-                withBorder
                 padding="md"
-                radius="md"
               >
                 <Stack gap={4}>
                   <Text fz="lg" fw={700}>

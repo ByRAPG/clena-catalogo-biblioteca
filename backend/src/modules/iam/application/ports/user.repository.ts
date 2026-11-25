@@ -8,4 +8,8 @@ export interface UserRepository {
   findById(id: string): Promise<User | null>;
   /** Guarda los cambios de estado de login (intentos fallidos y bloqueo). */
   save(user: User): Promise<void>;
+  /** Inserta una cuenta nueva. No actualiza si el correo ya existe. */
+  create(user: User): Promise<void>;
+  /** Hay al menos un administrador activo y no anonimizado. */
+  existsActiveAdmin(): Promise<boolean>;
 }

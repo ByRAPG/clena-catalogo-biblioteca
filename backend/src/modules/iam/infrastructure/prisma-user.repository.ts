@@ -44,4 +44,24 @@ export class PrismaUserRepository implements UserRepository {
       data: { failedLogins: user.failedLogins, lockedUntil: user.lockedUntil },
     });
   }
+
+  async create(user: User): Promise<void> {
+    await this.prisma.user.create({
+      data: {
+        id: user.id,
+        email: user.email.value,
+        passwordHash: user.passwordHash,
+        fullName: user.fullName,
+        role: user.role,
+        active: user.canLogin(),
+      },
+    });
+  }
+
+  async existsActiveAdmin(): Promise<boolean> {
+    const count = await this.prisma.user.count({
+      where: { role: 'ADMIN', active: true, anonymizedAt: null },
+    });
+    return count > 0;
+  }
 }

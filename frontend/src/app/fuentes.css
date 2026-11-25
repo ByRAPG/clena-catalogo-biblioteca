@@ -1,0 +1,27 @@
+/*
+ * Respaldo métrico de Poppins. Mientras llega el archivo de la fuente (red lenta),
+ * el texto se pinta con Arial escalada y con la misma altura de línea que Poppins:
+ * al llegar la fuente cambia solo el dibujo de las letras, no el espacio que
+ * ocupan (CLS 0). Valores medidos con canvas (ancho medio de un texto en español
+ * Poppins/Arial: 1,13 en 400-500 y 1,07 en 600-700; Poppins: ascenso 105 %,
+ * descenso 35 %, interlineado 10 %). Si el sistema no tiene Arial se usa system-ui.
+ */
+@font-face {
+  font-family: 'Poppins Respaldo';
+  src: local('Arial'), local('ArialMT'), local('Helvetica');
+  font-weight: 400 500;
+  size-adjust: 113%;
+  ascent-override: 92.9%;
+  descent-override: 31%;
+  line-gap-override: 8.8%;
+}
+
+@font-face {
+  font-family: 'Poppins Respaldo';
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Helvetica Bold');
+  font-weight: 600 700;
+  size-adjust: 107%;
+  ascent-override: 98.1%;
+  descent-override: 32.7%;
+  line-gap-override: 9.3%;
+}

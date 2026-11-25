@@ -14,6 +14,7 @@ export function ControlesAccesibilidad() {
     <Group
       role="group"
       aria-label="Opciones de accesibilidad"
+      data-tutorial="accesibilidad"
       gap="xs"
       wrap="wrap"
     >
