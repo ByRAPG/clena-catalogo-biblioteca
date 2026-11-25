@@ -63,7 +63,6 @@ Solo migraciones versionadas en `prisma/migrations/` (nunca `db push` fuera de l
 
 El `ValidationPipe` global usa `whitelist` y `forbidNonWhitelisted`: si el cliente envía un campo que el DTO no declara, la API responde 400. Declare todos los campos en el DTO.
 
-Los secretos JWT deben tener al menos 32 caracteres. Se pasan por variables de entorno, nunca dentro de la imagen. La imagen trae `HEALTHCHECK` contra `/api/v1/health`. El desarrollo sigue usando `--target development` (lo hace `docker-compose.yml`).
 En producción, `JWT_ACCESS_SECRET` y `JWT_REFRESH_SECRET` deben tener al menos 32 caracteres. `CORS_ORIGIN` admite varios orígenes separados por coma y rechaza `*`. Detrás de un proxy inverso (Render, Railway) define `TRUST_PROXY=1` para que el límite de peticiones use la IP real; con el valor por defecto (`false`) se ignora `X-Forwarded-For`. Swagger (`/docs`) no se monta con `NODE_ENV=production`.
 
 ## Imagen de producción
@@ -78,3 +77,4 @@ docker run -d --name clena-backend -p 3000:3000 \
   clena-backend:prod
 ```
 
+Los secretos JWT deben tener al menos 32 caracteres. Se pasan por variables de entorno, nunca dentro de la imagen. La imagen trae `HEALTHCHECK` contra `/api/v1/health`. El desarrollo sigue usando `--target development` (lo hace `docker-compose.yml`).

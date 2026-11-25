@@ -29,3 +29,18 @@ export class InvalidRefreshTokenError extends Error {
     this.name = 'InvalidRefreshTokenError';
   }
 }
+
+/** La contraseña no cumple la política; el mensaje nunca incluye la contraseña. */
+export class WeakPasswordError extends Error {
+  constructor(reason: string) {
+    super(`La contraseña no es válida: ${reason}`);
+    this.name = 'WeakPasswordError';
+  }
+}
+
+export class InvalidFullNameError extends Error {
+  constructor(reason: string) {
+    super(`El nombre no es válido: ${reason}`);
+    this.name = 'InvalidFullNameError';
+  }
+}

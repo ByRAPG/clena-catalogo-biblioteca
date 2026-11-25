@@ -122,6 +122,19 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml ps   # los 3 serv
 curl -i https://TU-DOMINIO/api/v1/health
 ```
 
+**Crear el primer administrador.** La semilla de demostración no corre en producción, así que una instalación nueva no tiene ninguna cuenta. Crea la primera con el comando del backend; los datos van por variables de entorno (nunca por argumentos) y la contraseña no se imprime. Evita que la contraseña quede en el historial del shell: léela con `read -s`.
+
+```bash
+read -rsp 'Contraseña del administrador (mínimo 12 caracteres): ' ADMIN_PASSWORD; echo
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec \
+  -e ADMIN_EMAIL=admin@tu-dominio.org -e ADMIN_PASSWORD \
+  -e ADMIN_FULL_NAME='Nombre del administrador' \
+  backend node dist/modules/iam/presentation/create-admin.cli.js
+unset ADMIN_PASSWORD
+```
+
+`-e ADMIN_PASSWORD` sin valor toma la variable del shell actual, así que la contraseña no aparece en la línea de comandos. `ADMIN_FULL_NAME` es opcional (por defecto «Administrador»). Es idempotente: si el correo ya existe, no cambia su contraseña ni su rol y lo avisa (código de salida 0). Si ya hay un administrador activo, se niega (código 3); para crear otro a propósito añade `-e ADMIN_ALLOW_ADDITIONAL=true`. Alternativa que evita la contraseña en el entorno (visible en `docker inspect`): monta un archivo de solo lectura con la contraseña y pasa `-e ADMIN_PASSWORD_FILE=/ruta/al/archivo` en lugar de `ADMIN_PASSWORD`; se descarta el salto de línea final. La política rechaza contraseñas de una lista corta de las más comunes. No guardes `ADMIN_PASSWORD` en `.env.prod`. En desarrollo: `pnpm iam:create-admin` en `backend/` con las mismas variables.
+
 `.env.prod` está ignorado por git; no lo subas. Con `SITE_ADDRESS=:80` el sitio se sirve por HTTP sin TLS (solo pruebas): la cookie de sesión es `Secure` y el navegador no la guarda fuera de `localhost`.
 
 **Actualizar**: `git pull` y repetir el comando `up -d --build`. El backend aplica las migraciones al arrancar.
