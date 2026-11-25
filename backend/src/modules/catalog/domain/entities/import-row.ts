@@ -1,4 +1,9 @@
 import { ImportRowError } from '../errors/import-row-error';
+import { Isbn } from '../value-objects/isbn.vo';
+import {
+  neutralizeFormula,
+  neutralizeOptionalFormula,
+} from '../value-objects/neutralize-formula';
 
 export type ImportedCopyStatus =
   'DISPONIBLE' | 'PRESTADO' | 'MANTENIMIENTO' | 'BAJA';
@@ -33,15 +38,28 @@ export class ImportRow {
   constructor(input: ImportRowInput) {
     this.validate(input);
 
+    const normalizedIsbn =
+      input.isbn && input.isbn.trim()
+        ? Isbn.create(input.isbn).value
+        : undefined;
+
     this.data = Object.freeze({
       ...input,
-      title: input.title.trim(),
-      authors: Object.freeze(input.authors.map((author) => author.trim())),
-      subjects: Object.freeze(input.subjects.map((subject) => subject.trim())),
-      room: input.room.trim(),
-      section: input.section.trim(),
-      shelf: input.shelf.trim(),
-      inventoryCode: input.inventoryCode.trim(),
+      title: neutralizeFormula(input.title),
+      authors: Object.freeze(
+        input.authors.map((author) => neutralizeFormula(author)),
+      ),
+      subjects: Object.freeze(
+        input.subjects.map((subject) => neutralizeFormula(subject)),
+      ),
+      isbn: normalizedIsbn,
+      classification: neutralizeOptionalFormula(input.classification),
+      publisher: neutralizeOptionalFormula(input.publisher),
+      category: neutralizeOptionalFormula(input.category),
+      room: neutralizeFormula(input.room),
+      section: neutralizeFormula(input.section),
+      shelf: neutralizeFormula(input.shelf),
+      inventoryCode: neutralizeFormula(input.inventoryCode),
     });
   }
 
