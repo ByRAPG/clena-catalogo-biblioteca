@@ -1,6 +1,7 @@
 import type { CopyCirculation } from '../../domain/entities/copy-update';
 import {
   CopyNotFoundError,
+  CopyChangedError,
   CopyOnLoanError,
   CopyReservedError,
   InvalidCopyUpdateError,
@@ -60,9 +61,11 @@ describe('UpdateCopyUseCase', () => {
       status: 'MANTENIMIENTO',
     });
     expect(repo.shelfExists).not.toHaveBeenCalled();
-    expect(repo.update).toHaveBeenCalledWith('c1', {
-      status: 'MANTENIMIENTO',
-    });
+    expect(repo.update).toHaveBeenCalledWith(
+      'c1',
+      { status: 'MANTENIMIENTO' },
+      'DISPONIBLE',
+    );
   });
 
   it('cambia estante y estado a la vez', async () => {
@@ -71,10 +74,11 @@ describe('UpdateCopyUseCase', () => {
       shelfId: 's2',
       status: 'BAJA',
     });
-    expect(repo.update).toHaveBeenCalledWith('c1', {
-      shelfId: 's2',
-      status: 'BAJA',
-    });
+    expect(repo.update).toHaveBeenCalledWith(
+      'c1',
+      { shelfId: 's2', status: 'BAJA' },
+      'DISPONIBLE',
+    );
   });
 
   it('responde estante inexistente sin guardar', async () => {
@@ -128,7 +132,11 @@ describe('UpdateCopyUseCase', () => {
         .mockResolvedValue(circulacion({ status: 'PRESTADO' })),
     });
     await new UpdateCopyUseCase(repo).execute('c1', { status: 'DISPONIBLE' });
-    expect(repo.update).toHaveBeenCalledWith('c1', { status: 'DISPONIBLE' });
+    expect(repo.update).toHaveBeenCalledWith(
+      'c1',
+      { status: 'DISPONIBLE' },
+      'PRESTADO',
+    );
   });
 
   it('no cambia el estado de un ejemplar con reserva activa', async () => {
@@ -163,5 +171,12 @@ describe('ListShelvesUseCase', () => {
     await expect(new ListShelvesUseCase(repo).execute()).resolves.toBe(
       estantes,
     );
+  });
+
+  it('responde 409 si el estado cambió entre comprobar y guardar', async () => {
+    const repo = fakeRepo({ update: jest.fn().mockResolvedValue(null) });
+    await expect(
+      new UpdateCopyUseCase(repo).execute('c1', { status: 'MANTENIMIENTO' }),
+    ).rejects.toBeInstanceOf(CopyChangedError);
   });
 });

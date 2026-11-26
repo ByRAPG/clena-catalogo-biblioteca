@@ -30,6 +30,18 @@ export class CopyOnLoanError extends CopyDomainError {
   }
 }
 
+/**
+ * 409: el estado del ejemplar cambió entre la comprobación y el guardado (por
+ * ejemplo, se registró un préstamo en ese instante).
+ */
+export class CopyChangedError extends CopyDomainError {
+  constructor() {
+    super(
+      'El ejemplar cambió mientras se editaba (por ejemplo, se prestó). Vuelva a cargarlo e intente de nuevo',
+    );
+  }
+}
+
 /** 409: hay una reserva activa sobre el ejemplar. */
 export class CopyReservedError extends CopyDomainError {
   constructor() {
