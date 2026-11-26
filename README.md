@@ -158,7 +158,10 @@ Notas de seguridad del servidor web (`frontend/Caddyfile`): la política `Conten
 
 ## Aplicación desplegada
 
-El despliegue con URL pública (T-07) está descrito en [`docs/despliegue.md`](docs/despliegue.md): la opción A es un túnel rápido de Cloudflare desde un equipo propio con `docker-compose.tunnel.yml` (la URL `trycloudflare.com` cambia en cada reinicio del túnel y el sitio solo está disponible mientras el equipo esté encendido) y la opción B, la de la entrega, es Google Cloud Run con Neon y una URL fija (imagen única en `deploy/cloud-run/`). Los controles de seguridad y las cabeceras medidas están en [`docs/informe-seguridad.md`](docs/informe-seguridad.md).
+- **URL pública:** https://buscafacil.lzayrox.dev/ (Google Cloud Run + Neon, imagen única en `deploy/cloud-run/`).
+- **Salud de la API:** https://buscafacil.lzayrox.dev/api/v1/health
+
+El despliegue con URL pública (T-07 / T-43) está descrito en [`docs/despliegue.md`](docs/despliegue.md): la opción B, la de la entrega, es Google Cloud Run con Neon y URL fija; la opción A es un túnel rápido de Cloudflare de respaldo desde un equipo propio con `docker-compose.tunnel.yml` (la URL `trycloudflare.com` cambia en cada reinicio del túnel y el sitio solo está disponible mientras el equipo esté encendido). Los controles de seguridad y las cabeceras medidas están en [`docs/informe-seguridad.md`](docs/informe-seguridad.md).
 
 ## Documentación
 

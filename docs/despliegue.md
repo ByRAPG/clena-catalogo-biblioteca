@@ -110,7 +110,10 @@ Al recrear el servicio `tunnel` la URL cambia. `down -v` borra también los vol�
 
 ## Opción B: Google Cloud Run + Neon (URL fija)
 
-Una sola imagen con la API y la web (`deploy/cloud-run/`), en Cloud Run, con la base de datos en Neon (Postgres administrado con pgvector). No depende de ningún PC y da una URL fija `https://<servicio>-<hash>.<región>.run.app`. La opción A queda como respaldo.
+- **URL publicada:** https://buscafacil.lzayrox.dev/
+- **Salud de la API:** https://buscafacil.lzayrox.dev/api/v1/health
+
+Una sola imagen con la API y la web (`deploy/cloud-run/`), en Cloud Run, con la base de datos en Neon (Postgres administrado con pgvector). No depende de ningún PC y da una URL fija (dominio personalizado sobre el servicio `busca-facil` en `us-east5`, o la dirección por defecto `https://<servicio>-<hash>.<región>.run.app`). La opción A queda como respaldo.
 
 Se descartó Hugging Face Spaces: desde noviembre de 2026 los Spaces de Docker en CPU gratuita exigen suscripción PRO.
 
