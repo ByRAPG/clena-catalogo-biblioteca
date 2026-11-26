@@ -140,7 +140,21 @@ Los escáneres se ejecutaron el 20 de noviembre de 2026 sobre el código de inte
 | Trivy 0.76.2, `config` | `backend/Dockerfile` y `frontend/Dockerfile`, severidad HIGH y CRITICAL | 0 hallazgos |
 | CodeQL | JavaScript y TypeScript | Lo ejecuta GitHub Actions en cada PR y cada lunes (`codeql.yml`); no se corrió de forma local. Consultar la pestaña Seguridad del repositorio |
 | Trivy sobre imágenes | Imágenes de producción de backend y frontend | No se ejecutó de forma local; corre en CI (`seguridad.yml`, trabajo `trivy-imagenes`) |
-| Calificación de cabeceras | Cabeceras HTTP del despliegue | No se midió: depende de una URL pública que aún no existe. Pendiente (sección 6) |
+| Cabeceras HTTP | `curl -sI` a `http://localhost:8088/` y a `/api/v1/health` (vista previa local con la misma configuración de Caddy de producción, `frontend/Caddyfile`) | Medidas el 25 de noviembre de 2026; ver la tabla siguiente. No se midieron en una URL pública ni con una herramienta de calificación |
+
+Cabeceras medidas el 25 de noviembre de 2026 con `curl -sI` sobre la vista previa local (Caddy con el `Caddyfile` de producción, `SITE_ADDRESS=:80`, sin TLS). Se midió en local, no en una URL pública.
+
+| Cabecera | Página (`/`) | API (`/api/v1/health`) |
+|---|---|---|
+| Content-Security-Policy | `default-src 'self'; script-src 'self'; style-src 'self'; style-src-elem 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'` | `default-src 'none'; base-uri 'self'; font-src 'self' https: data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; object-src 'none'; script-src 'self'; script-src-attr 'none'; style-src 'self' https: 'unsafe-inline'; upgrade-insecure-requests` |
+| Strict-Transport-Security | `max-age=31536000; includeSubDomains` | igual |
+| X-Content-Type-Options | `nosniff` | `nosniff` |
+| Referrer-Policy | `strict-origin-when-cross-origin` | igual |
+| Permissions-Policy | `accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()` | igual |
+| Cross-Origin-Opener-Policy | `same-origin` | `same-origin` |
+| Cross-Origin-Resource-Policy | no se envía | `same-origin` |
+| X-Frame-Options | no se envía (la protección la da `frame-ancestors 'none'` de la CSP) | `SAMEORIGIN` |
+| Server y X-Powered-By | no se envían | no se envían |
 
 ## 6. Conclusiones y próximos pasos
 
@@ -154,6 +168,6 @@ Los escáneres se ejecutaron el 20 de noviembre de 2026 sobre el código de inte
 
 1. Fusionar los PR que contienen las correcciones del 20 de noviembre (#108, #109, #115, #118 y #120) y confirmar que CodeQL, gitleaks y Trivy quedan en verde en `main`.
 2. Cerrar T-27 (H-03 a H-05) y T-35 y T-36 (H-06) antes de la entrega.
-3. Cuando exista la URL de producción, medir las cabeceras con una herramienta de calificación y repetir el análisis de imágenes.
+3. Cuando exista la URL de producción, repetir la medición de cabeceras sobre ella (con una herramienta de calificación) y el análisis de imágenes.
 4. Actualizar Prisma para eliminar las dos altas transitivas (R-03) y revisar los PR de Dependabot cada semana.
 5. Evaluar, si hay tiempo, comprobar el estado del usuario en cada petición (R-01) y desactivar `/docs` en producción (R-05).

@@ -1,6 +1,6 @@
 # Memoria crítica del proyecto
 
-> Lo que no se puede olvidar. Si algo contradice este archivo, gana este archivo (salvo que el docente indique lo contrario por escrito). Actualizada: 10 nov 2026.
+> Lo que no se puede olvidar. Si algo contradice este archivo, gana este archivo (salvo que el docente indique lo contrario por escrito). Actualizada: 26 nov 2026.
 
 ## 1. Proyecto
 
@@ -32,7 +32,8 @@ Solo Rafael o Humberto aprueban y fusionan (CODEOWNERS). Antes, un compañero de
 | mié 11 nov | Entrega 1 del Grupo 9 |
 | **vie 13 nov, 9:00 am** | **Entrega 1 de Backend** (tag `entrega-1`) |
 | 14–19 nov | Sprint 2 |
-| 20–25 nov | Sprint 3. Entrega final el 25 (por confirmar con el docente) |
+| 20–25 nov | Sprint 3 |
+| **vie 27 nov 2026** | **Entrega final** (fecha vigente; el Planning 3 del 19 nov había previsto el 25) |
 
 ## 4. Reglas del docente (Entrega 1 de Backend)
 
@@ -63,17 +64,35 @@ Solo Rafael o Humberto aprueban y fusionan (CODEOWNERS). Antes, un compañero de
 - **Backlog:** 21 historias (HU-01…14 del G9, HU-15…21 de Backend) y 19 habilitadores técnicos (T-01…19). En Plane, `HU-n` = `CLENA-n` y `T-01…19` = `CLENA-22…40`.
 - **Fuente oficial:** GitHub Issues, Milestones y Projects. Plane es planificación interna.
 - **GitHub:** repo público, squash merge, ramas borradas al fusionar, `main` protegida.
-- **Licencia:** MIT (propuesta del equipo; confirmar con el CLENA).
+- **Licencia:** MIT por decisión del equipo (#147), con exclusión de los logotipos y fotos de terceros (ver `docs/recursos-de-terceros.md`). El CLENA no respondió: no hay confirmación formal.
 - **Chat de atención:** fuera del alcance. Pertenece a la Sala de Internet (P1). Mapa, cita y analítica son solo sugerencias.
 - **IA:** permitida como asistente en el desarrollo. El producto **no usa IA generativa ni servicios externos de IA**; solo un modelo de embeddings de código abierto que corre en el propio servidor, sin enviar datos a terceros, para ordenar resultados de búsqueda (ADR-08, decisión del 16 nov 2026 tras el pedido del docente).
 - **Datos:** solo semillas ficticias hasta tener autorización escrita del CLENA. El CLENA no entregó información (9 nov), así que la semilla y la plantilla CSV son ficticias o de dominio público (T-17, Issue #55). Nunca se copia el catálogo actual del CLENA.
 - **Alcance del Sprint 1 (10 nov):** se mantienen los 58 puntos con orden de corte: 1) modelo de datos y semilla (T-06, T-17); 2) HU-01, 02, 03, 06, 09, 10, 19 y 12; 3) HU-04, 08, 11, 18, 16, 05 y 15. Lo que no esté completo el jue 12 a las 12:00 m. no se muestra el 13 y pasa al Sprint 2.
 - **T-06 (10 nov):** Rafael Potes asume el esquema, la migración y la semilla; Daniel Méndez conserva el diagrama entidad-relación y `modelo-datos.pdf`.
-- **Despliegue (T-07, T-19):** Sprint 3. **Cobertura ≥ 70 % (T-09):** Sprints 2 y 3, responsable Rafael Potes. El 80 % de la Entrega 1 son funcionalidades de punta a punta, no cobertura.
+- **Despliegue (T-07, T-19):** decidido el 20 nov 2026 y ajustado el 25 nov: Google Cloud Run + Neon con URL fija (opción B, responsable Humberto Llinás, T-43) y túnel rápido de Cloudflare desde un equipo propio como respaldo (opción A); Hugging Face Spaces se descartó porque sus Spaces de Docker gratuitos exigen PRO; ver ADR-05 y `docs/despliegue.md`. **Cobertura ≥ 70 % (T-09):** Sprints 2 y 3, responsable Rafael Potes. El 80 % de la Entrega 1 son funcionalidades de punta a punta, no cobertura.
 
 ## 7. Pendientes críticos
 
-- Aviso de privacidad en el Sprint 1 (T-14). Licencia MIT ya en el repositorio; el CLENA no respondió, queda como decisión del equipo.
-- Confirmar fechas finales con el docente.
-- Check de CI obligatorio en `main` cuando exista T-05.
-- Grabaciones válidas: kickoff 7 nov, review 10 nov, review 13 nov. La reunión inicial del 3 nov sí tiene grabación (localizada el 11 nov, enlazada en `evidencias.md`); su acta se redactó el 7 nov a partir de la transcripción porque es anterior al repositorio (6 nov).
+**Hecho (ya no es pendiente)**
+
+- Aviso de privacidad (T-14) y licencia MIT con exclusión de logos de terceros: PR #147.
+- Check de CI obligatorio en `main` (T-05): lint, pruebas y build, más gitleaks, Trivy y CodeQL.
+- Grabaciones válidas: reunión inicial 3 nov, kickoff 7 nov, planning 9 nov, review 10 nov y la sesión única del 19 nov (Review 2, retrospectiva y Planning 3). La Entrega 1 se expuso en clase el 13 nov y no se grabó ni se levantó acta (tag `entrega-1`).
+- Fecha de la entrega final: viernes 27 nov 2026.
+
+**Pendiente (de otros integrantes o de terceros)**
+
+| Pendiente | Issue | Responsable |
+|---|---|---|
+| Edición de ubicación y estado de un ejemplar (HU-11) | #38 | Daniel Méndez |
+| Alta de ejemplares de un libro existente (HU-19) | #46 | Daniel Méndez |
+| Alertas de devolución y disponibilidad (HU-21) | #48 | Daniel Méndez |
+| Cuenta de lector con aviso de privacidad (HU-16) y eliminar cuenta (HU-17) | #43, #44 | Juan Camilo Fernández |
+| Gestión de cuentas del personal y roles (HU-18) | #45 | Juan Camilo Fernández |
+| Endurecimiento del login (T-27) y pruebas e2e de autenticación (T-28) | #93, #94 | Juan Camilo Fernández |
+| Reservas (HU-14); estaba en el orden de sacrificio del Planning 3 | #41 | Juan Camilo Fernández |
+| Mensaje sin resultados completo (HU-07), búsqueda por voz (HU-13), portada y tarjetas (T-29, T-30), indicador semántico (T-33), animaciones (T-40) | #34, #40, #95, #96, #99, #106 | Orlando Palma |
+| Importación: codificación y límites (T-36) y simulación previa e informe de errores (T-37) | #102, #103 | Humberto Llinás |
+| Manual de operación y respaldo (T-11) y guía visual al día (T-41) | #15, #107 | Rafael Potes |
+| Autorización escrita del CLENA y de la Universidad del Norte para los logos y fotos; confirmación de la licencia | n/a | Docente y CLENA |

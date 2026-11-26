@@ -18,7 +18,8 @@ Seguimiento de acciones de la retro anterior: ...
 
 ## Sprint 1 · vie 13 nov 2026
 
-_Pendiente._
+- **Constancia:** la Entrega 1 se expuso en clase el 13 de noviembre de 2026 (tag `entrega-1`). No se grabó ni se levantó acta de la retrospectiva del Sprint 1.
+- Feedback del cliente de ese sprint: Issues #50, #51, #52 y #53.
 
 ## Sprint 2 · jue 19 nov 2026
 - Grabación: ver [`evidencias.md`](evidencias.md). Acta: [`actas/2026-11-19-sprint-retrospective-2.md`](actas/2026-11-19-sprint-retrospective-2.md)
@@ -30,3 +31,7 @@ _Pendiente._
 
 Métricas: 60 pts comprometidos, 0 terminados (Hecho = fusionado); 0 pull requests fusionados; 15 abiertos sin revisión; cobertura 99 % backend y 93 % frontend. Tiempo medio de revisión: no aplica (ninguna revisión).
 Seguimiento de acciones de la retro anterior: no hay acta de la retrospectiva del Sprint 1.
+
+## Sprint 3 · vie 27 nov 2026
+
+Se completa tras la Sprint Review 3 del 27 nov.
