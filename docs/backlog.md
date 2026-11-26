@@ -48,7 +48,7 @@ Equivalencia de prioridad: **Debe tener = `prioridad:alta`**, **Debería = `prio
 | HU-09 | Iniciar sesión como bibliotecario | G9 #9 | Debe | alta | 5 | S1 | Juan Camilo Fernández | Emiliano | Hecha (PR #70, #77) |
 | HU-10 | Registrar un libro nuevo | G9 #10 | Debe | alta | 5 | S1 | Daniel Méndez | Emiliano | Hecha (PR #82) |
 | HU-11 | Editar ubicación y estado de un libro | G9 #11 | Debe | alta | 3 | S1 | Daniel Méndez | Emiliano | No terminada (Issue #38 abierto) |
-| HU-12 | Importar el catálogo desde CSV o Excel | G9 #12 | Debe | alta | 8 | S1 | Humberto Llinás | Emiliano | Hecha (PR #68, #83, #142) |
+| HU-12 | Importar el catálogo desde CSV o Excel | G9 #12 | Debe | alta | 8 | S1 | Humberto Llinás | Emiliano | Hecha (PR #68, #83, #142, #143, #144) |
 | HU-13 | Búsqueda por voz | G9 #13 | Podría | baja | 3 | S3 | Orlando Palma | Shadia | No terminada (Issue #40 abierto) |
 | HU-14 | Reservar un libro desde la app | G9 #14 | Debería | media | 5 | S2 | Juan Camilo Fernández | Derek | No terminada (Issue #41 abierto; entre las tareas del orden de sacrificio del Planning 3) |
 | HU-15 | Tutorial guiado de la primera búsqueda | Backend | Debe | alta | 5 | S1 | Rafael Potes | Shadia | Hecha (PR #64) |
@@ -249,7 +249,7 @@ Ideas que el G9 puede convertir en historia «Podría» o «No tendrá ahora» s
 | T-04 | Infraestructura Docker: `docker compose up` levanta PostgreSQL, backend y frontend sin pasos manuales | S0 | Humberto Llinás |
 | T-05 | GitHub Actions: lint, pruebas y build en cada PR | S0 | Rafael Potes |
 | T-06 | Modelo de datos: diagrama ER (draw.io), migraciones, semillas ficticias e índices → `docs/modelo-datos.pdf` | S0–S1 | Rafael Potes (esquema, migración y semilla) · Daniel Méndez (diagrama ER y PDF) |
-| T-07 | Despliegue con URL pública | S3 | Rafael Potes |
+| T-07 | Despliegue con URL pública (la URL fija con Cloud Run es T-43, Humberto Llinás) | S3 | Rafael Potes (túnel, opción A) |
 | T-08 | Arquitectura C4 niveles 1–3 (draw.io) y decisiones → `docs/arquitectura.pdf` | S0–S1 | Rafael Potes (revisa Humberto) |
 | T-09 | Pruebas e2e y cobertura ≥ 70 % | S2–S3 | Rafael Potes (cada responsable prueba su módulo) |
 | T-10 | Manual de usuario | S3 | Humberto Llinás |
@@ -262,3 +262,27 @@ Ideas que el G9 puede convertir en historia «Podría» o «No tendrá ahora» s
 | T-17 | Semilla y plantilla CSV con datos ficticios, compatible con MARC21 (#55) | S1 | Rafael Potes (lista de libros: Daniel Méndez) |
 | T-18 | Seguridad: Helmet, límite de peticiones, Secret scanning, Dependabot y CodeQL (#57) | S2 | Por asignar |
 | T-19 | Imagen de producción y despliegue con URL, apoya a T-07 (#58) | S3 | Por asignar |
+| T-20 | Imagen de PostgreSQL con pgvector en Docker y en el CI (#86) | S3 | Rafael Potes |
+| T-21 | Tema de marca y tipografía local en el frontend (#87) | S3 | Rafael Potes |
+| T-22 | Cabecera, pie, logos, favicon y metadatos (#88) | S3 | Rafael Potes |
+| T-23 | ADR-08: búsqueda semántica local y regla de IA (#89) | S3 | Rafael Potes |
+| T-24 | Tabla `work_embeddings` con pgvector (#90) | S3 | Rafael Potes |
+| T-25 | Puerto `EMBEDDING_GENERATOR` y adaptadores falso y nulo (#91) | S3 | Rafael Potes |
+| T-26 | Reindexado de embeddings (#92) | S3 | Rafael Potes |
+| T-27 | Login en tiempo constante y revalidación del usuario en el guard (#93) | S3 | Juan Camilo Fernández |
+| T-28 | Pruebas e2e de autenticación (#94) | S3 | Juan Camilo Fernández |
+| T-29 | Portada con buscador y accesos por tema y sala (#95) | S3 | Orlando Palma |
+| T-30 | Tarjetas de resultados y detalle con estado, copiar ubicación e imprimir (#96) | S3 | Orlando Palma |
+| T-31 | Adaptador local del modelo multilingual-e5-small (#97) | S3 | Rafael Potes |
+| T-32 | Búsqueda híbrida con RRF y degradación (#98) | S3 | Rafael Potes |
+| T-33 | Indicador de modo y coincidencia semántica en los resultados (#99) | S3 | Orlando Palma |
+| T-34 | Evaluación de la búsqueda léxica, vectorial e híbrida (#100) | S3 | Rafael Potes |
+| T-35 | Importación idempotente, ISBN validado y fórmulas neutralizadas (#101) | S3 | Humberto Llinás |
+| T-36 | Importación: codificación, separador, alias de cabeceras y límites (#102) | S3 | Humberto Llinás |
+| T-37 | Importación: simulación previa e informe de errores descargable (#103) | S3 | Humberto Llinás |
+| T-38 | Gitleaks y Trivy en el CI (#104) | S3 | Rafael Potes |
+| T-39 | Informe de seguridad (#105) | S3 | Rafael Potes |
+| T-40 | Animaciones, esqueletos y responsive en el resto de pantallas (#106) | S3 | Orlando Palma |
+| T-41 | Guía visual al día con la marca aplicada (#107) | S3 | Rafael Potes |
+| T-42 | Comando para crear el primer administrador en producción (#119) | S3 | Rafael Potes |
+| T-43 | Despliegue con URL fija en Google Cloud Run (#153) | S3 | Humberto Llinás |

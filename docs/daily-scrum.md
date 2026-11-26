@@ -92,7 +92,7 @@ El equipo no hará más Daily Scrum sincrónicas en este sprint. Las ceremonias 
 
 | Semana | Fechas previstas | Estado |
 |---|---|---|
-| Sprint 2 (14 al 19 de noviembre) | Lunes 16 y miércoles 18; el tercer día por acordar | Previsto |
-| Sprint 3 (20 al 25 de noviembre) | Lunes 23; los demás días por acordar | Previsto |
+| Sprint 2 (14 al 19 de noviembre) | Lunes 16 y miércoles 18; el tercer día por acordar | No se realizó: desde el 11 nov el seguimiento diario es por escrito (Issues, PR, Project y chat) |
+| Sprint 3 (20 al 25 de noviembre) | Lunes 23; los demás días por acordar | No se realizó: desde el 11 nov el seguimiento diario es por escrito (Issues, PR, Project y chat) |
 
 Las fechas salen de [`plan-proyecto.md`](plan-proyecto.md). El docente puede cambiar la fecha de la entrega final; en ese caso se ajusta este calendario.

@@ -175,6 +175,7 @@ El despliegue con URL pública (T-07) está descrito en [`docs/despliegue.md`](d
 | [`docs/definition-of-done.md`](docs/definition-of-done.md) | Cuándo una tarea está terminada |
 | [`docs/sprint-planning.md`](docs/sprint-planning.md), [`daily-scrum.md`](docs/daily-scrum.md), [`sprint-review.md`](docs/sprint-review.md), [`sprint-retrospective.md`](docs/sprint-retrospective.md) | Actas de Scrum por sprint |
 | [`docs/evidencias.md`](docs/evidencias.md) | Enlaces a grabaciones de Teams por fecha |
+| [`docs/manual-operacion.md`](docs/manual-operacion.md) | Manual de operación y respaldo de la base de datos |
 | [`docs/despliegue.md`](docs/despliegue.md) | Despliegue con URL pública: túnel de Cloudflare (opción A) y Google Cloud Run con Neon (opción B) |
 | [`docs/aviso-privacidad.md`](docs/aviso-privacidad.md) | Aviso de privacidad (Ley 1581 de 2012) |
 | [`docs/recursos-de-terceros.md`](docs/recursos-de-terceros.md) | Logos y fotos de terceros incluidos y cómo se retiran |
@@ -197,6 +198,8 @@ Los `.md` son la fuente. Los informes que pide el docente se generan en PDF con 
 | Informe de seguridad | `docs/informe-seguridad.md` | `docs/informe-seguridad.pdf` |
 | Evaluación de la búsqueda semántica | `docs/informe-evaluacion-busqueda.md` | `docs/informe-evaluacion-busqueda.pdf` |
 | Manual de usuario | `docs/manual-usuario.md` | `docs/manual-usuario.pdf` |
+| Manual de operación | `docs/manual-operacion.md` | `docs/manual-operacion.pdf` |
+| Guía visual | `docs/guia-visual.md` | `docs/guia-visual.pdf` |
 
 Para regenerar uno: en `docs/pdf`, `pnpm install --frozen-lockfile` y `node build.mjs <id> --fecha "<fecha>"`, con los ids de `docs/pdf/documentos.json`.
 

@@ -24,7 +24,7 @@ Correspondencia: historia `HU-n` = work item `CLENA-n` en Plane. Habilitadores `
 | mié 11 nov | Entrega 1 del Grupo 9: historias en **nuestro** repo, Figma, ≥ 2 reuniones grabadas con nosotros, 1 Sprint Review, ≥ 5 Issues `feedback-cliente` | Grupo 9 |
 | **vie 13 nov, 9:00 am** | **Entrega 1 de Backend**: tag `entrega-1`, informes PDF, base técnica y 80 % funcional | Backend |
 | clase siguiente al 13 | Presentación de 10 min (cada integrante explica lo que subió) | Backend |
-| mié 25 nov | Entrega final (alcance completo, despliegue, manuales, acta de aceptación del G9) | Ambos |
+| **vie 27 nov** | Entrega final (alcance completo, despliegue, manuales, acta de aceptación del G9); el Planning 3 había previsto el mié 25 | Ambos |
 
 ## Calendario
 
@@ -33,7 +33,7 @@ Correspondencia: historia `HU-n` = work item `CLENA-n` en Plane. Habilitadores `
 | **Sprint 0 · Inception** | vie 6 – dom 8 nov | Backlog validado por el G9, base técnica (`docker compose up` con `/health` y `/docs`), CI, borradores de dominio, datos y arquitectura | Reunión inicial (mar 3) · **Kickoff con el G9** (sáb 7) · Planning S1 (dom 8) |
 | **Sprint 1** | lun 9 – vie 13 nov | **80 % del alcance mínimo de punta a punta**: catálogo y CSV, búsqueda tolerante con filtros, ubicación y disponibilidad, QR y tutorial, login JWT, 3 roles, aviso de privacidad. Informes PDF. Tag `entrega-1` | Daily (lun 9) · **Review de avance con el G9 (mar 10)** · Daily (mié 11) · Daily (jue 12) _(las dailies del 11 y 12 se cancelaron el 11 nov; seguimiento por escrito)_ · Review + Retro S1 (vie 13, tarde) |
 | **Sprint 2** | sáb 14 – jue 19 nov | Préstamos y alertas, reserva, eliminar cuenta, mensaje sin resultados, pruebas e2e | Planning (sáb 14) · Daily (lun 16, mié 18) · Review + Retro con el G9 (jue 19) |
-| **Sprint 3** | vie 20 – mié 25 nov | Pulir, cobertura ≥ 70 %, búsqueda por voz si hay capacidad, manuales, release `v1.0.0`, acta de aceptación | Planning (vie 20) · Daily (lun 23) · Review final + Retro (mar 24) · Entrega (mié 25) |
+| **Sprint 3** | vie 20 – vie 27 nov | Pulir, cobertura ≥ 70 %, búsqueda por voz si hay capacidad, manuales, release `v1.0.0`, acta de aceptación | Planning (vie 20) · Daily (lun 23) · Review 3 en la exposición del vie 27 · Entrega (vie 27; el Planning 3 había previsto el mié 25) |
 
 Mínimo 3 dailies por semana (lun, mié y un tercer día). Cada acta nombra Issues y PRs concretos y tiene la misma fecha que la grabación.
 
