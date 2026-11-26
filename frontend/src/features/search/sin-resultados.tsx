@@ -73,7 +73,14 @@ export function SinResultados({
             type="button"
             variant="default"
             onClick={alQuitarFiltros}
-            style={{ minHeight: 44 }}
+            // El rótulo es largo y a 360 px se salía del ancho: se deja
+            // partir en dos líneas y el alto crece con él, sin bajar de los
+            // 44 px de objetivo táctil.
+            style={{ minHeight: 44, height: 'auto', maxWidth: '100%' }}
+            styles={{
+              root: { paddingTop: 8, paddingBottom: 8 },
+              label: { whiteSpace: 'normal', textAlign: 'left' },
+            }}
           >
             Quitar los filtros y buscar de nuevo
           </Button>
