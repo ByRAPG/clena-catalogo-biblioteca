@@ -106,5 +106,7 @@ jobs:
     steps:
       - name: Resultado global
         run: |
-          echo "backend=${{ needs.backend.result }} frontend=${{ needs.frontend.result }}"
+          echo "detectar=${{ needs.detectar.result }} backend=${{ needs.backend.result }} frontend=${{ needs.frontend.result }}"
+          # Si falla la detección de cambios, backend y frontend quedan «skipped»: no es un verde.
+          if [ "${{ needs.detectar.result }}" != "success" ]; then exit 1; fi
           if [ "${{ needs.backend.result }}" = "failure" ] || [ "${{ needs.frontend.result }}" = "failure" ] || [ "${{ needs.backend.result }}" = "cancelled" ] || [ "${{ needs.frontend.result }}" = "cancelled" ]; then exit 1; fi
