@@ -6,6 +6,7 @@ import {
   type RespuestaDeSesion,
 } from './sesion.api'
 import { SesionContext, type Sesion } from './sesion-context'
+import { esperaHastaRenovar } from './vencimiento-token'
 
 /**
  * Sesión del personal según el ADR-03.
@@ -20,6 +21,11 @@ import { SesionContext, type Sesion } from './sesion-context'
  * sesión se recupera sin que la persona vuelva a escribir la contraseña; si no
  * la hay, el 401 es la respuesta normal para un visitante del catálogo y no se
  * muestra como error.
+ *
+ * Con la sesión abierta, el access token se renueva solo un minuto antes de
+ * vencer (y al volver a la pestaña, si el navegador durmió el temporizador).
+ * Si la renovación falla, la sesión se cierra en este navegador y las rutas
+ * protegidas llevan a «Ingresar».
  */
 function aSesion(respuesta: RespuestaDeSesion): Sesion {
   return {
@@ -60,6 +66,48 @@ export function SesionProvider({ children }: { children: ReactNode }) {
       activo = false
     }
   }, [])
+
+  const token = sesion?.token ?? null
+
+  useEffect(() => {
+    if (token === null) return
+    let activo = true
+
+    const renovar = () => {
+      renovarSesionCompartida()
+        .then((respuesta) => {
+          if (activo) setSesion(aSesion(respuesta))
+        })
+        .catch(() => {
+          // Cookie vencida o revocada: no hay forma de seguir dentro.
+          if (activo) setSesion(null)
+        })
+    }
+
+    const temporizador = window.setTimeout(
+      renovar,
+      esperaHastaRenovar(token, Date.now()),
+    )
+
+    // Con la pestaña en segundo plano o el equipo suspendido, el navegador
+    // puede retrasar el temporizador: al volver se comprueba si ya toca.
+    const alVolver = () => {
+      if (
+        document.visibilityState === 'visible' &&
+        esperaHastaRenovar(token, Date.now()) <= 5_000
+      ) {
+        window.clearTimeout(temporizador)
+        renovar()
+      }
+    }
+    document.addEventListener('visibilitychange', alVolver)
+
+    return () => {
+      activo = false
+      window.clearTimeout(temporizador)
+      document.removeEventListener('visibilitychange', alVolver)
+    }
+  }, [token])
 
   const iniciarSesion = useCallback(
     async (correo: string, contrasena: string) => {
