@@ -36,6 +36,13 @@ updates:
     commit-message:
       prefix: "chore(deps)"
 
+  - package-ecosystem: docker
+    directory: /deploy/cloud-run
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(deps)"
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
