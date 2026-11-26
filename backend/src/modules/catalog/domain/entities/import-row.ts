@@ -1,4 +1,5 @@
 import { ImportRowError } from '../errors/import-row-error';
+import { CSV_IMPORT_LIMITS } from '../value-objects/csv-limits';
 import { Isbn } from '../value-objects/isbn.vo';
 import {
   neutralizeFormula,
@@ -70,6 +71,7 @@ export class ImportRow {
     this.requireText(input.shelf, 'estante');
     this.requireText(input.inventoryCode, 'codigo_ejemplar');
 
+    this.validateLimits(input);
     this.validateYear(input.year);
     this.validateStatus(input.status);
     this.validateDigitalUrl(input.digitalUrl);
@@ -78,6 +80,76 @@ export class ImportRow {
   private requireText(value: string, field: string): void {
     if (!value.trim()) {
       throw new ImportRowError(field, `El campo ${field} es obligatorio`);
+    }
+  }
+
+  private validateLimits(input: ImportRowInput): void {
+    const { maxLengths, maxListItems } = CSV_IMPORT_LIMITS;
+
+    this.validateMaxLength(input.title, 'titulo', maxLengths.title);
+    this.validateListLimits(
+      input.authors,
+      'autor',
+      maxListItems,
+      maxLengths.author,
+    );
+    this.validateListLimits(
+      input.subjects,
+      'tema',
+      maxListItems,
+      maxLengths.subject,
+    );
+    this.validateMaxLength(input.isbn, 'isbn', maxLengths.isbn);
+    this.validateMaxLength(
+      input.classification,
+      'clasificacion',
+      maxLengths.classification,
+    );
+    this.validateMaxLength(input.publisher, 'editorial', maxLengths.publisher);
+    this.validateMaxLength(input.category, 'categoria', maxLengths.category);
+    this.validateMaxLength(input.room, 'sala', maxLengths.room);
+    this.validateMaxLength(input.section, 'seccion', maxLengths.section);
+    this.validateMaxLength(input.shelf, 'estante', maxLengths.shelf);
+    this.validateMaxLength(
+      input.inventoryCode,
+      'codigo_ejemplar',
+      maxLengths.inventoryCode,
+    );
+    this.validateMaxLength(
+      input.digitalUrl,
+      'url_digital',
+      maxLengths.digitalUrl,
+    );
+  }
+
+  private validateMaxLength(
+    value: string | undefined,
+    field: string,
+    maxLength: number,
+  ): void {
+    if (value !== undefined && value.trim().length > maxLength) {
+      throw new ImportRowError(
+        field,
+        `El campo ${field} supera el máximo de ${maxLength} caracteres`,
+      );
+    }
+  }
+
+  private validateListLimits(
+    items: readonly string[],
+    field: string,
+    maxItems: number,
+    maxItemLength: number,
+  ): void {
+    if (items.length > maxItems) {
+      throw new ImportRowError(
+        field,
+        `El campo ${field} supera el máximo de ${maxItems} elementos`,
+      );
+    }
+
+    for (const item of items) {
+      this.validateMaxLength(item, field, maxItemLength);
     }
   }
 

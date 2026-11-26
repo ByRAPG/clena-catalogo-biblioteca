@@ -10,6 +10,8 @@ import { QrCodeLibGenerator } from './infrastructure/qr-code.generator';
 import { RoomsController } from './presentation/rooms.controller';
 import { ImportCatalogUseCase } from './application/use-cases/import-catalog.use-case';
 import { GetImportTemplateUseCase } from './application/use-cases/get-import-template.use-case';
+import { SimulateCatalogImportUseCase } from './application/use-cases/simulate-catalog-import.use-case';
+import { GetImportErrorsCsvUseCase } from './application/use-cases/get-import-errors-csv.use-case';
 import {
   CATALOG_CSV_READER,
   CATALOG_IMPORT_REPOSITORY,
@@ -39,6 +41,8 @@ import { CatalogWorksController } from './presentation/catalog-works.controller'
   ],
   providers: [
     ImportCatalogUseCase,
+    SimulateCatalogImportUseCase,
+    GetImportErrorsCsvUseCase,
     GetImportTemplateUseCase,
     { provide: CATALOG_CSV_READER, useClass: CatalogCsvReader },
     {

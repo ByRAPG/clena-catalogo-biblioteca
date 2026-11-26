@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { parse } from 'csv-parse/sync';
+import { normalizeText } from '../../../../shared/domain/normalize-text';
 import type {
   CsvRowResult,
   ICatalogCsvReader,
@@ -10,6 +11,8 @@ import type {
 } from '../../domain/entities/import-row';
 import { ImportRowError } from '../../domain/errors/import-row-error';
 import { InvalidCsvError } from '../../domain/errors/invalid-csv.error';
+import { CSV_IMPORT_LIMITS } from '../../domain/value-objects/csv-limits';
+import { decodeCsvContent } from './csv-encoding';
 
 interface ParsedRecord {
   record: string[];
@@ -18,44 +21,188 @@ interface ParsedRecord {
   };
 }
 
-const CSV_HEADERS = [
+type CanonicalHeader =
+  | 'titulo'
+  | 'autor'
+  | 'tema'
+  | 'isbn'
+  | 'clasificacion'
+  | 'anio'
+  | 'editorial'
+  | 'categoria'
+  | 'sala'
+  | 'seccion'
+  | 'estante'
+  | 'codigo_ejemplar'
+  | 'estado'
+  | 'url_digital';
+
+const REQUIRED_HEADERS: readonly CanonicalHeader[] = [
   'titulo',
-  'autor',
-  'tema',
-  'isbn',
-  'clasificacion',
-  'anio',
-  'editorial',
-  'categoria',
   'sala',
   'seccion',
   'estante',
   'codigo_ejemplar',
-  'estado',
-  'url_digital',
 ];
+
+const HEADER_ALIASES: Record<string, CanonicalHeader> = {
+  titulo: 'titulo',
+  title: 'titulo',
+  nombre: 'titulo',
+  obra: 'titulo',
+  titulo_obra: 'titulo',
+  nombre_obra: 'titulo',
+  autor: 'autor',
+  autores: 'autor',
+  author: 'autor',
+  authors: 'autor',
+  tema: 'tema',
+  temas: 'tema',
+  subject: 'tema',
+  subjects: 'tema',
+  materia: 'tema',
+  materias: 'tema',
+  isbn: 'isbn',
+  isbn10: 'isbn',
+  isbn13: 'isbn',
+  isbn_10: 'isbn',
+  isbn_13: 'isbn',
+  clasificacion: 'clasificacion',
+  classification: 'clasificacion',
+  dewey: 'clasificacion',
+  cdu: 'clasificacion',
+  signatura: 'clasificacion',
+  anio: 'anio',
+  ano: 'anio',
+  year: 'anio',
+  fecha: 'anio',
+  anio_publicacion: 'anio',
+  ano_publicacion: 'anio',
+  editorial: 'editorial',
+  publisher: 'editorial',
+  categoria: 'categoria',
+  category: 'categoria',
+  coleccion: 'categoria',
+  sala: 'sala',
+  room: 'sala',
+  seccion: 'seccion',
+  section: 'seccion',
+  estante: 'estante',
+  shelf: 'estante',
+  ubicacion: 'estante',
+  codigo_ejemplar: 'codigo_ejemplar',
+  codigo_de_ejemplar: 'codigo_ejemplar',
+  codigo: 'codigo_ejemplar',
+  codigo_inventario: 'codigo_ejemplar',
+  codigo_de_inventario: 'codigo_ejemplar',
+  inventario: 'codigo_ejemplar',
+  inventory_code: 'codigo_ejemplar',
+  barcode: 'codigo_ejemplar',
+  ejemplar: 'codigo_ejemplar',
+  estado: 'estado',
+  status: 'estado',
+  disponibilidad: 'estado',
+  url_digital: 'url_digital',
+  url: 'url_digital',
+  digital_url: 'url_digital',
+  enlace: 'url_digital',
+  enlace_digital: 'url_digital',
+  link: 'url_digital',
+};
+
+const CANDIDATE_DELIMITERS = [',', ';', '\t'] as const;
 
 @Injectable()
 export class CatalogCsvReader implements ICatalogCsvReader {
-  read(content: string): CsvRowResult[] {
-    const records = this.parseRecords(content);
+  read(content: string | Uint8Array): CsvRowResult[] {
+    const decoded = decodeCsvContent(content);
+    const delimiter = this.detectDelimiter(decoded);
+    const records = this.parseRecords(decoded, delimiter);
     const header = records.shift();
 
     if (!header) {
       throw new InvalidCsvError('El archivo CSV está vacío');
     }
 
-    this.validateHeaders(header.record);
+    const canonicalHeaders = this.resolveHeaders(header.record);
 
-    return records.map((entry) => this.convertRow(header.record, entry));
+    if (records.length > CSV_IMPORT_LIMITS.maxRows) {
+      throw new InvalidCsvError(
+        `El archivo supera el máximo permitido de ${CSV_IMPORT_LIMITS.maxRows} filas por importación`,
+      );
+    }
+
+    return records.map((entry) => this.convertRow(canonicalHeaders, entry));
   }
 
-  private parseRecords(content: string): ParsedRecord[] {
+  private detectDelimiter(content: string): string {
+    const firstLine = content
+      .split(/\r?\n/)
+      .find((line) => line.trim().length > 0);
+
+    if (!firstLine) {
+      throw new InvalidCsvError('El archivo CSV está vacío');
+    }
+
+    let bestDelimiter: string = ',';
+    let bestMatches = -1;
+    let bestCount = -1;
+
+    for (const candidate of CANDIDATE_DELIMITERS) {
+      const cells = this.splitHeaderLine(firstLine, candidate);
+      const count = cells.length - 1;
+      if (count <= 0) continue;
+
+      const matches = cells.filter(
+        (cell) => HEADER_ALIASES[this.normalizeHeaderKey(cell)] !== undefined,
+      ).length;
+
+      if (
+        matches > bestMatches ||
+        (matches === bestMatches && count > bestCount)
+      ) {
+        bestDelimiter = candidate;
+        bestMatches = matches;
+        bestCount = count;
+      }
+    }
+
+    return bestDelimiter;
+  }
+
+  private splitHeaderLine(line: string, delimiter: string): string[] {
+    const cells: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i += 1) {
+      const char = line[i];
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"';
+          i += 1;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === delimiter && !inQuotes) {
+        cells.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+
+    cells.push(current.trim());
+    return cells;
+  }
+
+  private parseRecords(content: string, delimiter: string): ParsedRecord[] {
     let records: unknown;
 
     try {
       records = parse(content, {
         bom: true,
+        delimiter,
         trim: true,
         skip_empty_lines: true,
         relax_column_count: true,
@@ -102,21 +249,46 @@ export class CatalogCsvReader implements ICatalogCsvReader {
     );
   }
 
-  private validateHeaders(headers: string[]): void {
-    const uniqueHeaders = new Set(headers);
-
-    if (
-      headers.length !== CSV_HEADERS.length ||
-      uniqueHeaders.size !== headers.length ||
-      CSV_HEADERS.some((header) => !uniqueHeaders.has(header))
-    ) {
-      throw new InvalidCsvError(
-        'Las cabeceras deben coincidir con la plantilla del catálogo',
-      );
-    }
+  private normalizeHeaderKey(raw: string): string {
+    return normalizeText(raw).replace(/[\s-]+/g, '_');
   }
 
-  private convertRow(headers: string[], entry: ParsedRecord): CsvRowResult {
+  private resolveHeaders(rawHeaders: string[]): CanonicalHeader[] {
+    const resolved: CanonicalHeader[] = [];
+    const seen = new Set<CanonicalHeader>();
+
+    for (const raw of rawHeaders) {
+      const canonical = HEADER_ALIASES[this.normalizeHeaderKey(raw)];
+      if (!canonical) {
+        throw new InvalidCsvError(
+          `La cabecera «${raw}» no coincide con ninguna columna reconocida de la plantilla`,
+        );
+      }
+
+      if (seen.has(canonical)) {
+        throw new InvalidCsvError(
+          `La columna «${canonical}» está repetida en la cabecera`,
+        );
+      }
+
+      seen.add(canonical);
+      resolved.push(canonical);
+    }
+
+    const missing = REQUIRED_HEADERS.filter((header) => !seen.has(header));
+    if (missing.length > 0) {
+      throw new InvalidCsvError(
+        `Faltan columnas obligatorias en la cabecera: ${missing.join(', ')}`,
+      );
+    }
+
+    return resolved;
+  }
+
+  private convertRow(
+    headers: CanonicalHeader[],
+    entry: ParsedRecord,
+  ): CsvRowResult {
     const row = entry.info.lines;
 
     if (entry.record.length !== headers.length) {
@@ -127,7 +299,7 @@ export class CatalogCsvReader implements ICatalogCsvReader {
       };
     }
 
-    const values: Record<string, string> = Object.fromEntries(
+    const values: Partial<Record<CanonicalHeader, string>> = Object.fromEntries(
       headers.map((header, index) => [header, entry.record[index]]),
     );
 
@@ -151,21 +323,23 @@ export class CatalogCsvReader implements ICatalogCsvReader {
     }
   }
 
-  private toInput(values: Record<string, string>): ImportRowInput {
+  private toInput(
+    values: Partial<Record<CanonicalHeader, string>>,
+  ): ImportRowInput {
     return {
-      title: values.titulo,
-      authors: this.splitList(values.autor),
-      subjects: this.splitList(values.tema),
+      title: values.titulo ?? '',
+      authors: this.splitList(values.autor ?? ''),
+      subjects: this.splitList(values.tema ?? ''),
       isbn: values.isbn || undefined,
       classification: values.clasificacion || undefined,
-      year: this.parseYear(values.anio),
+      year: this.parseYear(values.anio ?? ''),
       publisher: values.editorial || undefined,
       category: values.categoria || undefined,
-      room: values.sala,
-      section: values.seccion,
-      shelf: values.estante,
-      inventoryCode: values.codigo_ejemplar,
-      status: this.parseStatus(values.estado),
+      room: values.sala ?? '',
+      section: values.seccion ?? '',
+      shelf: values.estante ?? '',
+      inventoryCode: values.codigo_ejemplar ?? '',
+      status: this.parseStatus(values.estado ?? ''),
       digitalUrl: values.url_digital || undefined,
     };
   }
@@ -199,12 +373,17 @@ export class CatalogCsvReader implements ICatalogCsvReader {
   }
 
   private parseStatus(value: string): ImportedCopyStatus {
-    switch (value) {
+    if (!value) {
+      return 'DISPONIBLE';
+    }
+
+    const normalized = normalizeText(value).toUpperCase();
+    switch (normalized) {
       case 'DISPONIBLE':
       case 'PRESTADO':
       case 'MANTENIMIENTO':
       case 'BAJA':
-        return value;
+        return normalized;
       default:
         throw new ImportRowError(
           'estado',

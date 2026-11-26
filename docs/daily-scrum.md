@@ -7,7 +7,7 @@ Este informe reúne las actas del Daily Scrum del equipo de Backend de Consulta 
 Reglas del equipo:
 
 - Se acordó en el Sprint Planning 1 un mínimo de tres Daily por semana, de unos 15 minutos; el 11 de noviembre se cambió por seguimiento escrito. El enunciado de la Entrega 1 admite como alternativa una Sprint Review semanal grabada.
-- La fecha de cada acta coincide con la grabación, los Issues y los commits. Lo que no ha ocurrido se marca como **Previsto** y no lleva contenido.
+- La fecha de cada acta coincide con la grabación, los Issues y los commits. Lo que no ocurrió se declara como tal y no lleva contenido.
 - Los Issues #28 a #48 son las historias HU-01 a HU-21 (HU-n corresponde al Issue #(n + 27)). Los Issues #5 a #18 y #24 son los habilitadores T-01 a T-15 en orden; T-17 es el Issue #55. La lista completa está en [`backlog.md`](backlog.md).
 
 ## Resumen de la Entrega 1 (9 a 13 de noviembre de 2026)
@@ -18,7 +18,7 @@ Reglas del equipo:
 | Martes 10 de noviembre | Review de avance con el Grupo 9 (no es Daily) | Realizada | 8:38 p.m. |
 | Miércoles 11 de noviembre | Daily Scrum 2 | **Cancelada (decisión del 11 nov)** | 6:00 p.m. (acordada en el Planning) |
 | Jueves 12 de noviembre | Daily Scrum 3 | **Cancelada (decisión del 11 nov)** | 6:00 p.m. (acordada en el Planning) |
-| Viernes 13 de noviembre | Sprint Review 1 y Retrospectiva | **Previsto** | por confirmar |
+| Viernes 13 de noviembre | Sprint Review 1 y Retrospectiva | Expuesta en clase; no se grabó ni se levantó acta (tag `entrega-1`) | no aplica |
 
 Solo se realizó el Daily Scrum 1. La Review de avance del martes 10 cuenta como evidencia adicional de la semana, pero no se presenta como Daily; su acta está en [`actas/2026-11-10-review-avance-g9.md`](actas/2026-11-10-review-avance-g9.md).
 
@@ -50,7 +50,7 @@ Acuerdos: ...
 |---|---|---|---|
 | Humberto Llinás | No lo indicó en la reunión | T-14 aviso de privacidad (#18), HU-12 importar CSV (#39), T-10 manual de usuario (#14), HU-20 préstamos y devoluciones (#47) | Ninguno |
 | Juan Camilo Fernández | No lo indicó en la reunión | T-13 modelo de dominio (#17), HU-09 inicio de sesión (#36), HU-14 (#41), HU-16 (#43), HU-17 (#44), HU-18 (#45) | Ninguno por ahora |
-| Daniel Méndez | No lo indicó en la reunión | T-06 modelo de datos (#10), T-17 semilla ficticia y plantilla CSV (#55), HU-06 (#33), HU-10 (#37), HU-11 (#38), HU-19 (#46), HU-21 (#48) | La invitación al repositorio sigue pendiente; la acepta ese mismo día desde el usuario `danimendeztv-source` |
+| Daniel Méndez | No lo indicó en la reunión | T-06 modelo de datos (#10), T-17 semilla ficticia y plantilla CSV (#55), HU-06 (#33), HU-10 (#37), HU-11 (#38), HU-19 (#46), HU-21 (#48) | La invitación al repositorio estaba sin aceptar; la acepta ese mismo día desde el usuario `danimendeztv-source` |
 | Rafael Potes | Actas, arquitectura C4 (T-08, #12), revisión con comentarios del Figma de Derek Pérez, asignaciones en Plane | HU-04 (#31), HU-05 (#32), HU-15 (#42) y el PR de documentación con la guía visual (#54) | Riesgo: Orlando Palma no confirmó asistencia ni tiene commits |
 | Orlando Palma (ausente) | Sin participación en la reunión | Asignado: T-03 frontend base (#7) y HU-01, 02, 03, 07, 08, 13 (#28, #29, #30, #34, #35, #40) | No informado |
 
@@ -92,7 +92,7 @@ El equipo no hará más Daily Scrum sincrónicas en este sprint. Las ceremonias 
 
 | Semana | Fechas previstas | Estado |
 |---|---|---|
-| Sprint 2 (14 al 19 de noviembre) | Lunes 16 y miércoles 18; el tercer día por acordar | Previsto |
-| Sprint 3 (20 al 25 de noviembre) | Lunes 23; los demás días por acordar | Previsto |
+| Sprint 2 (14 al 19 de noviembre) | Lunes 16 y miércoles 18; el tercer día por acordar | No se realizó: desde el 11 nov el seguimiento diario es por escrito (Issues, PR, Project y chat) |
+| Sprint 3 (20 al 25 de noviembre) | Lunes 23; los demás días por acordar | No se realizó: desde el 11 nov el seguimiento diario es por escrito (Issues, PR, Project y chat) |
 
 Las fechas salen de [`plan-proyecto.md`](plan-proyecto.md). El docente puede cambiar la fecha de la entrega final; en ese caso se ajusta este calendario.
