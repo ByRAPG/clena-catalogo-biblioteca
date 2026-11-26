@@ -45,6 +45,24 @@ export class PrismaUserRepository implements UserRepository {
     });
   }
 
+  async incrementFailedLogins(userId: string): Promise<number> {
+    // `increment` se traduce a `SET failed_logins = failed_logins + 1`: la suma
+    // la hace PostgreSQL, no la aplicación, y el valor devuelto es el resultante.
+    const row = await this.prisma.user.update({
+      where: { id: userId },
+      data: { failedLogins: { increment: 1 } },
+      select: { failedLogins: true },
+    });
+    return row.failedLogins;
+  }
+
+  async lockAccount(userId: string, until: Date): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { lockedUntil: until, failedLogins: 0 },
+    });
+  }
+
   async create(user: User): Promise<void> {
     await this.prisma.user.create({
       data: {

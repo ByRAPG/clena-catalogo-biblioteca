@@ -126,7 +126,7 @@ Las herramientas de gestión están reservadas al personal autorizado del CLENA 
 **Reglas de seguridad de la sesión:**
 
 - Si el correo o la contraseña son incorrectos, la pantalla muestra *«Correo o contraseña incorrectos. Revisa tus datos y vuelve a intentarlo»* sin revelar cuál de los dos datos falló.
-- Tras varios intentos fallidos consecutivos, el sistema aplica un **bloqueo temporal** e indica en pantalla el tiempo de espera restante antes de poder reintentar.
+- Tras cinco intentos fallidos consecutivos, el sistema aplica un **bloqueo temporal de 15 minutos** a esa cuenta. Durante el bloqueo la pantalla sigue mostrando el mismo mensaje de «Correo o contraseña incorrectos», incluso con la contraseña correcta, para no revelar si la cuenta existe. Espere 15 minutos antes de reintentar o pida ayuda a la administración de la biblioteca.
 - Mientras siga trabajando en el sistema, la sesión se renueva de forma automática sin pedir nuevamente la contraseña.
 - Al terminar su turno —especialmente en computadores compartidos—, presione **Cerrar sesión** en la cabecera. Una vez cerrada la sesión, deberá ingresar nuevamente para volver al panel.
 

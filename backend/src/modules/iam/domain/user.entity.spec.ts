@@ -4,6 +4,7 @@ import {
   MAX_FAILED_LOGINS,
   User,
   UserProps,
+  lockExpiryFrom,
 } from './user.entity';
 
 const NOW = new Date('2026-11-12T15:00:00.000Z');
@@ -29,29 +30,10 @@ describe('User: bloqueo por intentos fallidos', () => {
     expect(LOCK_DURATION_MINUTES).toBe(15);
   });
 
-  it('no bloquea antes del quinto intento', () => {
-    const user = makeUser();
-    for (let i = 1; i < MAX_FAILED_LOGINS; i++) user.registerFailedLogin(NOW);
-    expect(user.failedLogins).toBe(MAX_FAILED_LOGINS - 1);
-    expect(user.isLockedAt(NOW)).toBe(false);
-  });
-
-  it('bloquea 15 minutos al quinto intento y reinicia el contador', () => {
-    const user = makeUser({ failedLogins: MAX_FAILED_LOGINS - 1 });
-    user.registerFailedLogin(NOW);
-    expect(user.isLockedAt(NOW)).toBe(true);
-    expect(user.lockedUntil).toEqual(
+  it('el bloqueo dura 15 minutos desde el momento en que se aplica', () => {
+    expect(lockExpiryFrom(NOW)).toEqual(
       new Date(NOW.getTime() + LOCK_DURATION_MINUTES * MINUTE),
     );
-    expect(user.failedLogins).toBe(0);
-  });
-
-  it('calcula los segundos restantes, redondeando hacia arriba', () => {
-    const user = makeUser({
-      lockedUntil: new Date(NOW.getTime() + 1500),
-    });
-    expect(user.secondsUntilUnlock(NOW)).toBe(2);
-    expect(makeUser().secondsUntilUnlock(NOW)).toBe(0);
   });
 
   it('se desbloquea cuando pasa el tiempo', () => {

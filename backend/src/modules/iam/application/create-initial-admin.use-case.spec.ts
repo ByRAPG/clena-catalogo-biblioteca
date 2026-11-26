@@ -30,6 +30,8 @@ function setup(existing: User[] = []) {
     findByEmail: (email) => Promise.resolve(stored.get(email.value) ?? null),
     findById: () => Promise.resolve(null),
     save: jest.fn(() => Promise.resolve()),
+    incrementFailedLogins: jest.fn(() => Promise.resolve(0)),
+    lockAccount: jest.fn(() => Promise.resolve()),
     create: jest.fn((user: User) => {
       stored.set(user.email.value, user);
       return Promise.resolve();

@@ -20,7 +20,10 @@ import { useSesion } from './sesion-context'
 
 type ErrorDeIngreso =
   | { tipo: 'general'; mensaje: string }
-  | { tipo: 'bloqueo'; segundos: number | null }
+  | { tipo: 'bloqueo'; segundos: number }
+
+/** Espera que se muestra si el 429 llega sin `Retry-After` (o con uno inútil). */
+const ESPERA_POR_DEFECTO_SEGUNDOS = 60
 
 function formatearEspera(segundos: number): string {
   const minutos = Math.floor(segundos / 60)
@@ -68,13 +71,11 @@ export function PaginaIngreso() {
   const viaFormulario = useRef(false)
 
   useEffect(() => {
-    if (error?.tipo !== 'bloqueo' || error.segundos === null) return
+    if (error?.tipo !== 'bloqueo') return
 
     const temporizador = window.setTimeout(() => {
       setError((actual) => {
-        if (actual?.tipo !== 'bloqueo' || actual.segundos === null) {
-          return actual
-        }
+        if (actual?.tipo !== 'bloqueo') return actual
         return actual.segundos <= 1
           ? null
           : { ...actual, segundos: actual.segundos - 1 }
@@ -116,9 +117,12 @@ export function PaginaIngreso() {
             'Correo o contraseña incorrectos. Revisa tus datos y vuelve a intentarlo.',
         })
       } else if (causa instanceof ApiError && causa.statusCode === 429) {
+        // Este 429 es el límite de peticiones por IP, no el bloqueo de la cuenta.
+        const espera = causa.retryAfterSeconds
         setError({
           tipo: 'bloqueo',
-          segundos: causa.retryAfterSeconds,
+          segundos:
+            espera !== null && espera > 0 ? espera : ESPERA_POR_DEFECTO_SEGUNDOS,
         })
       } else {
         setError({
@@ -176,16 +180,21 @@ export function PaginaIngreso() {
               icon={<IconoAlerta />}
               title={
                 error.tipo === 'bloqueo'
-                  ? 'Acceso bloqueado tras 5 intentos'
+                  ? 'Demasiados intentos desde este equipo'
                   : 'No se pudo iniciar sesión'
               }
             >
               {error.tipo === 'bloqueo'
-                ? error.segundos === null
-                  ? 'Vuelve a intentarlo más tarde o contacta a la administración de la biblioteca.'
-                  : `Espera ${formatearEspera(error.segundos)} antes de volver a intentarlo.`
+                ? 'Espere un momento e intente de nuevo.'
                 : error.mensaje}
             </Alert>
+          )}
+          {/* La cuenta regresiva va fuera del aviso: dentro, el lector de
+              pantalla volvería a leer el aviso completo cada segundo. */}
+          {error?.tipo === 'bloqueo' && (
+            <Text size="sm" aria-live="off">
+              Puede volver a intentarlo en {formatearEspera(error.segundos)}.
+            </Text>
           )}
 
           <form onSubmit={ingresar}>
@@ -227,7 +236,7 @@ export function PaginaIngreso() {
                 disabled={bloqueado}
                 fullWidth
               >
-                {bloqueado ? 'Acceso bloqueado' : 'Iniciar sesión'}
+                {bloqueado ? 'Espere un momento' : 'Iniciar sesión'}
               </Button>
             </Stack>
           </form>

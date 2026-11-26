@@ -5,6 +5,11 @@ export const MAX_FAILED_LOGINS = 5;
 export const LOCK_DURATION_MINUTES = 15;
 const MS_PER_MINUTE = 60_000;
 
+/** Hasta cuándo queda bloqueada una cuenta que se bloquea en `now`. */
+export function lockExpiryFrom(now: Date): Date {
+  return new Date(now.getTime() + LOCK_DURATION_MINUTES * MS_PER_MINUTE);
+}
+
 export interface UserProps {
   id: string;
   email: Email;
@@ -55,27 +60,6 @@ export class User {
 
   isLockedAt(now: Date): boolean {
     return this.lockedUntilDate !== null && this.lockedUntilDate > now;
-  }
-
-  /** Segundos que faltan para el desbloqueo, redondeados hacia arriba. */
-  secondsUntilUnlock(now: Date): number {
-    if (!this.isLockedAt(now) || this.lockedUntilDate === null) return 0;
-    return Math.ceil((this.lockedUntilDate.getTime() - now.getTime()) / 1000);
-  }
-
-  /**
-   * Regla de bloqueo: al llegar al quinto intento fallido la cuenta se bloquea
-   * 15 minutos y el contador vuelve a cero, así al terminar el bloqueo
-   * hay cinco intentos nuevos.
-   */
-  registerFailedLogin(now: Date): void {
-    this.failedLoginCount += 1;
-    if (this.failedLoginCount >= MAX_FAILED_LOGINS) {
-      this.lockedUntilDate = new Date(
-        now.getTime() + LOCK_DURATION_MINUTES * MS_PER_MINUTE,
-      );
-      this.failedLoginCount = 0;
-    }
   }
 
   /** Un ingreso correcto reinicia los intentos. */

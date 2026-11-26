@@ -85,7 +85,7 @@ Los diagramas distinguen por color lo implementado en el dominio (verde), lo per
 
 | Elemento | Estado | Atributos principales | Reglas que lo gobiernan |
 |---|---|---|---|
-| `User` (usuario) | Implementado | id, correo (`Email`), hash de contraseña, nombre, rol, activo, intentos fallidos, bloqueado hasta, versión del aviso y fecha de consentimiento, fecha de anonimización; métodos `canLogin`, `isLockedAt`, `registerFailedLogin`, `registerSuccessfulLogin` | R-12, R-13, R-15, R-16 |
+| `User` (usuario) | Implementado | id, correo (`Email`), hash de contraseña, nombre, rol, activo, intentos fallidos, bloqueado hasta, versión del aviso y fecha de consentimiento, fecha de anonimización; métodos `canLogin`, `isLockedAt`, `registerSuccessfulLogin` | R-12, R-13, R-15, R-16 |
 | `Email` | Implementado (objeto de valor) | valor en minúsculas, hasta 254 caracteres, forma `texto@dominio.ext`; compara por valor | R-12 |
 | `Role` | Implementado (enumeración) | `ADMIN`, `STAFF`, `READER`; `isRole` valida un valor externo | R-14 |
 | `RefreshToken` | Implementado | hash del token (único), familia, vencimiento, fecha de revocación; métodos `isRevoked` e `isExpired` | R-17 |

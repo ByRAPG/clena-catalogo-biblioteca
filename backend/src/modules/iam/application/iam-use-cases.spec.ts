@@ -1,6 +1,5 @@
 import { Email } from '../domain/email.vo';
 import {
-  AccountLockedError,
   INVALID_CREDENTIALS_MESSAGE,
   InvalidCredentialsError,
   InvalidRefreshTokenError,
@@ -62,6 +61,52 @@ class InMemoryUserRepository implements UserRepository {
   save(user: User): Promise<void> {
     this.users.set(user.id, user);
     return Promise.resolve();
+  }
+
+  /** Para comprobar que el contador sube por este camino y no por `save`. */
+  readonly incrementCalls: string[] = [];
+  readonly lockCalls: { userId: string; until: Date }[] = [];
+
+  incrementFailedLogins(userId: string): Promise<number> {
+    this.incrementCalls.push(userId);
+    const user = this.requireUser(userId);
+    const failedLogins = user.failedLogins + 1;
+    this.users.set(userId, this.rebuild(user, { failedLogins }));
+    return Promise.resolve(failedLogins);
+  }
+
+  lockAccount(userId: string, until: Date): Promise<void> {
+    this.lockCalls.push({ userId, until });
+    const user = this.requireUser(userId);
+    this.users.set(
+      userId,
+      this.rebuild(user, { failedLogins: 0, lockedUntil: until }),
+    );
+    return Promise.resolve();
+  }
+
+  private requireUser(userId: string): User {
+    const user = this.users.get(userId);
+    if (!user) throw new Error(`Usuario inexistente: ${userId}`);
+    return user;
+  }
+
+  private rebuild(
+    user: User,
+    changes: Partial<Pick<UserProps, 'failedLogins' | 'lockedUntil'>>,
+  ): User {
+    return new User({
+      id: user.id,
+      email: user.email,
+      passwordHash: user.passwordHash,
+      fullName: user.fullName,
+      role: user.role,
+      active: user.canLogin(),
+      failedLogins: user.failedLogins,
+      lockedUntil: user.lockedUntil,
+      anonymizedAt: null,
+      ...changes,
+    });
   }
 
   create(user: User): Promise<void> {
@@ -280,28 +325,36 @@ describe('LoginUser: contraseña incorrecta y bloqueo', () => {
     expect(user?.isLockedAt(NOW)).toBe(false);
   });
 
-  it('bloquea 15 minutos al quinto intento fallido', async () => {
-    const { login } = setup();
+  it('bloquea 15 minutos al quinto intento, pero el quinto también responde el 401 genérico', async () => {
+    const { login, users } = setup();
     for (let i = 1; i < MAX_FAILED_LOGINS; i++) {
       await login.execute(wrongCredentials).catch(() => undefined);
     }
-    await expect(login.execute(wrongCredentials)).rejects.toMatchObject({
-      name: 'AccountLockedError',
-      retryAfterSeconds: 15 * 60,
-    });
+
+    const fifth = await login.execute(wrongCredentials).catch((e) => e);
+
+    expect(fifth).toBeInstanceOf(InvalidCredentialsError);
+    expect(fifth.message).toBe(INVALID_CREDENTIALS_MESSAGE);
+    expect(fifth).not.toHaveProperty('retryAfterSeconds');
+    const user = await users.findById('user-1');
+    expect(user?.lockedUntil).toEqual(new Date(NOW.getTime() + 15 * MINUTE));
+    expect(user?.failedLogins).toBe(0);
   });
 
-  it('con la cuenta bloqueada no revisa la contraseña, ni la correcta', async () => {
-    const { login, clock, hasher } = setup(
+  it('con la cuenta bloqueada responde el 401 genérico, también con la contraseña correcta', async () => {
+    const { login, clock, users } = setup(
       makeUser({ lockedUntil: new Date(NOW.getTime() + 10 * MINUTE) }),
     );
     clock.advance(4 * MINUTE);
 
-    await expect(login.execute(credentials)).rejects.toMatchObject({
-      name: 'AccountLockedError',
-      retryAfterSeconds: 6 * 60,
-    });
-    expect(hasher.verify).not.toHaveBeenCalled();
+    const error = await login.execute(credentials).catch((e) => e);
+
+    expect(error).toBeInstanceOf(InvalidCredentialsError);
+    expect(error.message).toBe(INVALID_CREDENTIALS_MESSAGE);
+    expect(error).not.toHaveProperty('retryAfterSeconds');
+    // Los intentos durante el bloqueo no suman ni lo alargan.
+    expect(users.incrementCalls).toHaveLength(0);
+    expect(users.lockCalls).toHaveLength(0);
   });
 
   it('pasados los 15 minutos vuelve a dejar entrar', async () => {
@@ -310,7 +363,7 @@ describe('LoginUser: contraseña incorrecta y bloqueo', () => {
       await login.execute(wrongCredentials).catch(() => undefined);
     }
     await expect(login.execute(credentials)).rejects.toBeInstanceOf(
-      AccountLockedError,
+      InvalidCredentialsError,
     );
 
     clock.advance(15 * MINUTE);
@@ -331,6 +384,105 @@ describe('LoginUser: contraseña incorrecta y bloqueo', () => {
         InvalidCredentialsError,
       );
     }
+  });
+});
+
+// --- T-27: login de tiempo constante y contador atómico -----------------
+
+describe('LoginUser: tiempo de respuesta constante (T-27)', () => {
+  it.each([
+    ['contraseña incorrecta', wrongCredentials, makeUser()],
+    [
+      'correo inexistente',
+      { email: 'nadie@example.org', password: PASSWORD },
+      makeUser(),
+    ],
+    ['cuenta inactiva', credentials, makeUser({ active: false })],
+    [
+      'cuenta bloqueada',
+      credentials,
+      makeUser({ lockedUntil: new Date(NOW.getTime() + 10 * MINUTE) }),
+    ],
+  ])('verifica un hash exactamente una vez: %s', async (_caso, input, user) => {
+    const { login, hasher } = setup(user);
+
+    await expect(login.execute(input)).rejects.toBeInstanceOf(
+      InvalidCredentialsError,
+    );
+
+    expect(hasher.verify).toHaveBeenCalledTimes(1);
+  });
+
+  it('con un correo inexistente verifica contra el hash ficticio, no contra el de otra cuenta', async () => {
+    const { login, hasher } = setup();
+
+    await login
+      .execute({ email: 'nadie@example.org', password: PASSWORD })
+      .catch(() => undefined);
+
+    expect(hasher.verify.mock.calls).toEqual([
+      [PASSWORD, expect.stringMatching(/^hashed:[0-9a-f-]{36}$/)],
+    ]);
+  });
+
+  it('calcula el hash ficticio una sola vez, no en cada login', async () => {
+    const { login, hasher } = setup();
+    for (let i = 0; i < 3; i++) {
+      await login
+        .execute({ email: 'nadie@example.org', password: PASSWORD })
+        .catch(() => undefined);
+    }
+
+    expect(hasher.hash).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('LoginUser: contador de intentos atómico (T-27)', () => {
+  it('suma el fallo con incrementFailedLogins y no guarda el usuario entero', async () => {
+    const { login, users } = setup();
+    const save = jest.spyOn(users, 'save');
+
+    await login.execute(wrongCredentials).catch(() => undefined);
+
+    expect(users.incrementCalls).toEqual(['user-1']);
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  it('decide el bloqueo con el valor que devuelve la base de datos', async () => {
+    // El usuario leído tiene 0 intentos, pero otras peticiones simultáneas ya
+    // sumaron hasta 5: la base devuelve 5 y debe bloquear aunque en memoria
+    // esta petición viera un 0.
+    const { login, users } = setup(makeUser({ failedLogins: 0 }));
+    jest
+      .spyOn(users, 'incrementFailedLogins')
+      .mockResolvedValue(MAX_FAILED_LOGINS);
+
+    await login.execute(wrongCredentials).catch(() => undefined);
+
+    expect(users.lockCalls).toEqual([
+      { userId: 'user-1', until: new Date(NOW.getTime() + 15 * MINUTE) },
+    ]);
+  });
+
+  it('no bloquea mientras la base devuelva menos de 5', async () => {
+    const { login, users } = setup();
+    jest
+      .spyOn(users, 'incrementFailedLogins')
+      .mockResolvedValue(MAX_FAILED_LOGINS - 1);
+
+    await login.execute(wrongCredentials).catch(() => undefined);
+
+    expect(users.lockCalls).toHaveLength(0);
+  });
+
+  it('un correo inexistente no toca ningún contador', async () => {
+    const { login, users } = setup();
+
+    await login
+      .execute({ email: 'nadie@example.org', password: PASSWORD })
+      .catch(() => undefined);
+
+    expect(users.incrementCalls).toHaveLength(0);
   });
 });
 
