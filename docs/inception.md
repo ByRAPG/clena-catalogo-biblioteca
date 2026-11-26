@@ -50,7 +50,7 @@ Las fotografías de la visita (tres imágenes) y las observaciones están en el 
 
 ### 2.3 Correo de coordinación
 
-El enunciado exige que las notificaciones al Grupo 9 lleven copia a djromero@uninorte.edu.co. La nueva hora de la review del 10 de noviembre se avisó por correo con copia al docente (consta en el acta de ese día). El correo de convocatoria de la fase de Inception no está archivado en el repositorio: **dato por confirmar** por Rafael Potes antes de la entrega.
+El enunciado exige que las notificaciones al Grupo 9 lleven copia a djromero@uninorte.edu.co. La nueva hora de la review del 10 de noviembre se avisó por correo con copia al docente (consta en el acta de ese día). El correo de convocatoria de la fase de Inception no está archivado en el repositorio; solo consta el aviso del 10 de noviembre.
 
 ## 3. Problema y contexto
 
@@ -192,8 +192,8 @@ La validación consta en GitHub, con fechas verificables:
 - Las 21 historias (#28 a #48) tienen un comentario de Emiliano Harvey, Product Owner del Grupo 9, del 8 de noviembre de 2026: «Aprobado por el grupo 9».
 - Shadia Castro agregó además comentarios de autoría y validación en varias de las historias que le corresponden.
 - El 7 de noviembre el Grupo 9 se comprometió a validar el backlog (acuerdo 2 del kickoff) y, el 10 de noviembre, Emiliano Harvey confirmó en la review que el Grupo 9 ya validó las 21 historias ([acta](actas/2026-11-10-review-avance-g9.md)).
-- Cuatro Issues de retroalimentación del Grupo 9 (#50 a #53, del 8 de noviembre) señalan el estado de HU-01, HU-04, HU-09 y HU-12. El quinto sigue pendiente del Grupo 9.
-- **Firma del acta de Inception por el Grupo 9: pendiente.** Este informe se enviará a Shadia Castro y Emiliano Harvey, con copia al docente. Mientras tanto, la validación se sustenta en los comentarios de los Issues.
+- Cuatro Issues de retroalimentación del Grupo 9 (#50 a #53, del 8 de noviembre) señalan el estado de HU-01, HU-04, HU-09 y HU-12. El quinto Issue de retroalimentación no se registró.
+- No se registró firma del Grupo 9 en el acta de Inception. La validación se sustenta en los comentarios de los Issues (#28 a #48) y en la confirmación de Emiliano Harvey en la review del 10 de noviembre.
 
 ## 7. Priorización
 
@@ -280,9 +280,9 @@ El stack del enunciado es fijo. El equipo eligió dentro de la libertad que se l
 | Contenedores | Docker y docker-compose; Mailpit en local para el correo | Exigido; mismo entorno para todos |
 | Integración continua | GitHub Actions | Exigido: lint, pruebas y build en cada PR |
 | Gestor de paquetes | pnpm | Decisión del equipo (T-15, Issue #24) |
-| Despliegue | Render o Railway, en el Sprint 3 (T-07 y T-19) | Capa gratuita con PostgreSQL administrado |
+| Despliegue | Google Cloud Run con Neon y, de respaldo, un túnel rápido de Cloudflare desde un equipo propio (decisión del 20 de noviembre, ajustada el 25; la inicial era Render o Railway) | Sin costo para el equipo; el modelo de búsqueda semántica necesita unos 2 GB de RAM (ADR-05) |
 
-Las decisiones de arquitectura se justifican en [`arquitectura.md`](arquitectura.md). Otras decisiones vigentes: repositorio público con licencia MIT (propuesta del equipo, por confirmar con el CLENA); el uso de IA se permite como asistente en el desarrollo, pero el producto no usa IA; los datos son ficticios o de dominio público hasta contar con autorización escrita del CLENA.
+Las decisiones de arquitectura se justifican en [`arquitectura.md`](arquitectura.md). Otras decisiones vigentes: repositorio público con licencia MIT (decisión del equipo; el CLENA no respondió); el uso de IA se permite como asistente en el desarrollo, pero el producto no usa IA; los datos son ficticios o de dominio público hasta contar con autorización escrita del CLENA.
 
 ## 11. Riesgos
 
@@ -296,7 +296,7 @@ Las decisiones de arquitectura se justifican en [`arquitectura.md`](arquitectura
 | Actas con fechas incoherentes o genéricas | Media | Alto | Acta el mismo día; se nombran Issues y PR; los vacíos se declaran |
 | Una persona sin commit, PR propio o revisión | Media | Alto | Reparto y rotación de revisiones; seguimiento en cada Daily |
 | Datos reales o secretos en el repositorio | Baja | Alto | Datos ficticios; `.env.example` sin secretos; revisión en cada PR |
-| La capa gratuita del despliegue se duerme durante una demo | Media | Medio | Despertar el servicio antes de la review; Docker local como respaldo |
+| El despliegue gratuito no está disponible durante una demo (equipo apagado o URL del túnel cambiada) | Media | Medio | Revisar la URL antes de la review; Docker local como respaldo |
 
 ## 12. Calendario
 
@@ -313,18 +313,18 @@ Hitos fijos:
 |---|---|---|
 | 9 de noviembre | Sprint Planning 1 y Daily Scrum 1 | Realizado ([acta](actas/2026-11-09-sprint-planning-1.md)) |
 | 10 de noviembre | Review de avance con el Grupo 9 | Realizada ([acta](actas/2026-11-10-review-avance-g9.md)) |
-| 11 de noviembre | Daily Scrum 2 (cancelada el 11 nov; seguimiento por escrito); PR del Sprint 1 abiertos con CI en verde (8:00 p.m.); entrega 1 del Grupo 9 | Previsto |
-| 12 de noviembre | Congelación (12:00 m.); Daily Scrum 3 (cancelada el 11 nov; seguimiento por escrito) | Previsto |
-| 13 de noviembre, 9:00 a. m. | Entrega 1 de Backend (tag `entrega-1`) | Previsto |
-| 25 de noviembre | Entrega final, si el docente no la cambia | Por confirmar |
+| 11 de noviembre | Daily Scrum 2 (cancelada el 11 nov; seguimiento por escrito); PR del Sprint 1 abiertos con CI en verde (8:00 p.m.); entrega 1 del Grupo 9 | Daily cancelada; el resto, realizado |
+| 12 de noviembre | Congelación (12:00 m.); Daily Scrum 3 (cancelada el 11 nov; seguimiento por escrito) | Daily cancelada; congelación, realizada |
+| 13 de noviembre, 9:00 a. m. | Entrega 1 de Backend (tag `entrega-1`) | Realizada (expuesta en clase; no se grabó ni se levantó acta) |
+| 27 de noviembre (viernes) | Entrega final (el Planning 3 del 19 de noviembre había previsto el 25) | Fecha vigente |
 
-## 13. Pendientes de esta fase
+## 13. Estado de los temas abiertos de esta fase
 
-| Pendiente | Responsable |
+| Tema | Estado a 26 de noviembre de 2026 |
 |---|---|
-| Firma o confirmación escrita del Grupo 9 sobre esta acta de Inception | Grupo 9 (Shadia Castro, Emiliano Harvey) |
-| Enlace del correo de coordinación con copia al docente | Rafael Potes |
-| Ratificación escrita del orden de prioridad del Sprint 1 | Humberto Llinás |
-| Quinto Issue `feedback-cliente` | Grupo 9 |
-| Perfiles oficiales de usuarios del Grupo 9 (reemplazan los borradores de la sección 4) | Grupo 9 |
-| Confirmación de la fecha de la entrega final y de la licencia MIT | Docente y CLENA |
+| Firma del Grupo 9 sobre el acta de Inception | No se registró firma del Grupo 9; consta la validación en los Issues |
+| Enlace del correo de coordinación con copia al docente | El repositorio solo conserva la constancia del aviso del 10 de noviembre (acta de ese día) |
+| Orden de prioridad del Sprint 1 | Aplicado el 10 de noviembre (orden de corte en `memoria-critica.md`); no se registró ratificación escrita aparte |
+| Quinto Issue `feedback-cliente` | No se registró |
+| Perfiles oficiales de usuarios del Grupo 9 | No se recibieron; la sección 4 conserva los perfiles de trabajo |
+| Fecha de la entrega final y licencia MIT | Entrega final el viernes 27 de noviembre de 2026; licencia MIT por decisión del equipo (#147), sin respuesta del CLENA |

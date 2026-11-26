@@ -1,4 +1,4 @@
-# Aviso de privacidad · Consulta Fácil
+# Aviso de privacidad · Busca Fácil
 
 Versión: 2026-11-25. T-14 · Issue #18 · Plane CLENA-35.
 

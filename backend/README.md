@@ -4,7 +4,7 @@ API NestJS + TypeScript + Prisma (PostgreSQL 16) bajo Clean Architecture. Prefij
 
 ## Requisitos
 
-- Node.js 22 y pnpm 12.18.0 (versión fijada en `packageManager`). Activa pnpm una sola vez con `corepack enable`; si falla por permisos, usa `corepack enable --install-directory <carpeta en tu PATH>`.
+- Node.js 26 y pnpm 12.18.0 (versión fijada en `packageManager`). Activa pnpm una sola vez con `corepack enable`; si falla por permisos, usa `corepack enable --install-directory <carpeta en tu PATH>`.
 - Usa siempre `pnpm`. No ejecutes `npm install`: crearía un `package-lock.json` que no se versiona.
 
 ## Cómo correr
@@ -71,7 +71,7 @@ En producción, `JWT_ACCESS_SECRET` y `JWT_REFRESH_SECRET` deben tener al menos 
 
 ## Imagen de producción
 
-Imagen multi-etapa (`node:22-bookworm-slim`, usuario `node` sin privilegios, solo `dist`, dependencias de producción, `prisma/` y `package.json`). El entrypoint ejecuta `prisma migrate deploy` y luego `node dist/main`; no corre la semilla.
+Imagen multi-etapa (`node:26-bookworm-slim`, usuario `node` sin privilegios, solo `dist`, dependencias de producción, `prisma/` y `package.json`). El entrypoint ejecuta `prisma migrate deploy` y luego `node dist/main`; no corre la semilla.
 
 ```bash
 docker build --target production -t clena-backend:prod backend

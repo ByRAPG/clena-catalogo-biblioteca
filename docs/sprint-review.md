@@ -52,4 +52,10 @@ Cambios al backlog: ninguno en el alcance; las tareas sin pull request pasan al 
 
 ## Sprint 1 · vie 13 nov 2026
 
-_Pendiente._
+- **Constancia:** la Entrega 1 se expuso en clase el 13 de noviembre de 2026 (tag `entrega-1`). No se grabó ni se levantó acta de esa Sprint Review; por eso no hay enlace de grabación en [`evidencias.md`](evidencias.md).
+- **Trabajo fusionado del Sprint 1:** PR #60, #61, #62, #63, #64, #65, #67, #68, #69, #70, #73, #76, #77, #81, #82 y #83 (catálogo, búsqueda, QR, tutorial, accesibilidad, inicio de sesión, importación CSV, modelo de datos e informes).
+- **Feedback del cliente:** Issues #50, #51, #52 y #53 (línea base del 8 de noviembre).
+
+## Sprint 3 · vie 27 nov 2026
+
+Se completa tras la Sprint Review 3 del 27 nov.

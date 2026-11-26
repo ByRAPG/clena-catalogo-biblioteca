@@ -42,8 +42,15 @@ const esc = (s) =>
   String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 function textoPlano(html) {
-  return html
-    .replace(/<[^>]*>/g, '')
+  // Quita etiquetas hasta que no quede ninguna: un solo paso deja etiquetas
+  // reconstruidas con entradas como «<<b>script>».
+  let sinEtiquetas = html;
+  let previo;
+  do {
+    previo = sinEtiquetas;
+    sinEtiquetas = sinEtiquetas.replace(/<[^>]*>/g, '');
+  } while (sinEtiquetas !== previo);
+  return sinEtiquetas
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')

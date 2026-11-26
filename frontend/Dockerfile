@@ -1,6 +1,7 @@
-FROM node:22-alpine AS development
+FROM node:26-alpine AS development
 
-RUN corepack enable pnpm
+# Node 25+ ya no incluye corepack: pnpm se instala con la versión de packageManager.
+RUN npm install -g pnpm@12.18.0
 
 WORKDIR /app
 
