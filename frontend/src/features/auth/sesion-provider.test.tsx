@@ -27,6 +27,12 @@ function respuestaDeSesion() {
   })
 }
 
+/** JWT sin firma válida: el proveedor solo lee `exp` para programar la renovación. */
+function jwtQueVence(expSegundos: number): string {
+  const carga = btoa(JSON.stringify({ sub: 'u1', exp: expSegundos }))
+  return `cabecera.${carga}.firma`
+}
+
 function sinSesion() {
   return new Response(JSON.stringify({ statusCode: 401 }), {
     status: 401,
@@ -175,5 +181,51 @@ describe('SesionProvider', () => {
       password: 'secreta',
     })
     expect(sessionStorage.length).toBe(0)
+  })
+
+  describe('renovación automática', () => {
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    function sesionQueVenceEn(ms: number) {
+      return Response.json({
+        accessToken: jwtQueVence((Date.now() + ms) / 1000),
+        usuario: { nombre: 'Marta Bibliotecaria', rol: 'STAFF' },
+      })
+    }
+
+    it('renueva el token un minuto antes de que venza', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      const simulada = vi
+        .fn()
+        .mockResolvedValueOnce(sesionQueVenceEn(2 * 60_000))
+        .mockResolvedValueOnce(sesionQueVenceEn(15 * 60_000))
+      vi.stubGlobal('fetch', simulada)
+      pintar()
+      expect(await screen.findByText('Marta Bibliotecaria · STAFF')).toBeDefined()
+      expect(simulada).toHaveBeenCalledTimes(1)
+
+      await vi.advanceTimersByTimeAsync(61_000)
+
+      await waitFor(() => expect(simulada).toHaveBeenCalledTimes(2))
+      expect(String(simulada.mock.calls[1][0])).toContain('/auth/refresh')
+      expect(screen.getByText('Marta Bibliotecaria · STAFF')).toBeDefined()
+    })
+
+    it('cierra la sesión si la renovación falla', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      const simulada = vi
+        .fn()
+        .mockResolvedValueOnce(sesionQueVenceEn(2 * 60_000))
+        .mockResolvedValueOnce(sinSesion())
+      vi.stubGlobal('fetch', simulada)
+      pintar()
+      expect(await screen.findByText('Marta Bibliotecaria · STAFF')).toBeDefined()
+
+      await vi.advanceTimersByTimeAsync(61_000)
+
+      expect(await screen.findByText('sin sesión')).toBeDefined()
+    })
   })
 })
