@@ -1,6 +1,6 @@
 # Modelo de dominio
 
-> Responsable: Rafael Potes · Work item: CLENA-34 (T-13). Describe los conceptos, las reglas de negocio y los casos de uso de Consulta Fácil, tal como existen en `backend/src/modules/*/domain/` y en `backend/prisma/schema.prisma` a la fecha de este documento. Las fuentes editables de los diagramas están en `docs/diagramas/` (draw.io).
+> Responsable: Rafael Potes · Work item: CLENA-34 (T-13). Describe los conceptos, las reglas de negocio y los casos de uso de Busca Fácil, tal como existen en `backend/src/modules/*/domain/` y en `backend/prisma/schema.prisma` a la fecha de este documento. Las fuentes editables de los diagramas están en `docs/diagramas/` (draw.io).
 
 ## 1. Propósito y alcance
 
@@ -134,7 +134,7 @@ El sistema también actúa por su cuenta: la revisión diaria que envía los avi
 
 ![Figura 3. Diagrama de casos de uso por actor](img/modelo-dominio-casos-uso.png)
 
-*Descripción de la Figura 3.* Dentro del recuadro «Consulta Fácil» se dibujan los casos de uso como óvalos, coloreados según su estado. A la izquierda, el actor Lector se conecta con 13 casos de uso: buscar por título, autor o tema, ver ubicación y disponibilidad, filtrar, abrir con QR, tutorial, mensaje sin resultados, crear cuenta, reservar, pedir aviso de disponibilidad, eliminar la cuenta y búsqueda por voz. A la derecha, el actor Personal se conecta con 7: iniciar sesión, registrar un libro, importar CSV, registrar ejemplares, editar ubicación y estado, registrar préstamos y devoluciones y recibir alertas de devolución. Abajo a la derecha, el Administrador hereda del Personal y además gestiona cuentas y roles. Verde significa hecho (integrado en `main`), amarillo Sprint 2 (incluye las historias que no alcanzaron en el Sprint 1: HU-11, HU-16, HU-18 y HU-19) y morado Sprint 3. La leyenda del diagrama tiene esos tres estados. HU-04 (interfaz legible) es transversal y aplica a todas las pantallas públicas, por eso no se dibuja como caso de uso aparte.
+*Descripción de la Figura 3.* Dentro del recuadro «Busca Fácil» se dibujan los casos de uso como óvalos, coloreados según su estado. A la izquierda, el actor Lector se conecta con 13 casos de uso: buscar por título, autor o tema, ver ubicación y disponibilidad, filtrar, abrir con QR, tutorial, mensaje sin resultados, crear cuenta, reservar, pedir aviso de disponibilidad, eliminar la cuenta y búsqueda por voz. A la derecha, el actor Personal se conecta con 7: iniciar sesión, registrar un libro, importar CSV, registrar ejemplares, editar ubicación y estado, registrar préstamos y devoluciones y recibir alertas de devolución. Abajo a la derecha, el Administrador hereda del Personal y además gestiona cuentas y roles. Verde significa hecho (integrado en `main`), amarillo Sprint 2 (incluye las historias que no alcanzaron en el Sprint 1: HU-11, HU-16, HU-18 y HU-19) y morado Sprint 3. La leyenda del diagrama tiene esos tres estados. HU-04 (interfaz legible) es transversal y aplica a todas las pantallas públicas, por eso no se dibuja como caso de uso aparte.
 
 | Historia | Caso de uso | Actor | Estado (13 nov) |
 |---|---|---|---|

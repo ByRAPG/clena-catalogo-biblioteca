@@ -35,34 +35,35 @@ Equivalencia de prioridad: **Debe tener = `prioridad:alta`**, **Debería = `prio
 
 ## Resumen
 
-| ID | Historia | Origen | MoSCoW | Prioridad | Pts | Sprint | Desarrolla | Autor G9 |
-|---|---|---|---|---|---|---|---|---|
-| HU-01 | Buscar por parte del título | G9 #1 | Debe | alta | 5 | S1 | Orlando Palma | Shadia |
-| HU-02 | Buscar por autor o tema | G9 #2 | Debe | alta | 3 | S1 | Orlando Palma | Shadia |
-| HU-03 | Ver la ubicación del libro | G9 #3 | Debe | alta | 2 | S1 | Orlando Palma | Shadia |
-| HU-04 | Interfaz legible para adultos mayores | G9 #4 | Debe | alta | 3 | S1 | Rafael Potes | Derek |
-| HU-05 | Abrir el catálogo escaneando un QR | G9 #5 | Debe | alta | 2 | S1 | Rafael Potes | Derek |
-| HU-06 | Ver la disponibilidad (física o digital) | G9 #6 | Debe | alta | 3 | S1 | Daniel Méndez | Derek |
-| HU-07 | Mensaje claro si no hay resultados | G9 #7 | Debería | media | 2 | S2 | Orlando Palma | Shadia |
-| HU-08 | Filtrar por categoría o sala | G9 #8 | Debe | alta | 3 | S1 | Orlando Palma | Shadia |
-| HU-09 | Iniciar sesión como bibliotecario | G9 #9 | Debe | alta | 5 | S1 | Juan Camilo Fernández | Emiliano |
-| HU-10 | Registrar un libro nuevo | G9 #10 | Debe | alta | 5 | S1 | Daniel Méndez | Emiliano |
-| HU-11 | Editar ubicación y estado de un libro | G9 #11 | Debe | alta | 3 | S1 | Daniel Méndez | Emiliano |
-| HU-12 | Importar el catálogo desde CSV o Excel | G9 #12 | Debe | alta | 8 | S1 | Humberto Llinás | Emiliano |
-| HU-13 | Búsqueda por voz | G9 #13 | Podría | baja | 3 | S3 | Orlando Palma | Shadia |
-| HU-14 | Reservar un libro desde la app | G9 #14 | Debería | media | 5 | S2 | Juan Camilo Fernández | Derek |
-| HU-15 | Tutorial guiado de la primera búsqueda | Backend | Debe | alta | 5 | S1 | Rafael Potes | Shadia |
-| HU-16 | Crear cuenta de lector con aviso de privacidad | Backend | Debe | alta | 5 | S1 | Juan Camilo Fernández | Derek |
-| HU-17 | Eliminar mi cuenta y mis datos | Backend | Debe | alta | 3 | S2 | Juan Camilo Fernández | Derek |
-| HU-18 | Gestionar cuentas del personal y roles | Backend | Debe | alta | 3 | S1 | Juan Camilo Fernández | Emiliano |
-| HU-19 | Registrar los ejemplares de un libro | Backend | Debe | alta | 3 | S1 | Daniel Méndez | Emiliano |
-| HU-20 | Registrar préstamos y devoluciones | Backend | Debe | alta | 8 | S2 | Humberto Llinás | Emiliano |
-| HU-21 | Alertas de devolución y disponibilidad | Backend | Debe | alta | 5 | S2 | Daniel Méndez | Derek |
+| ID | Historia | Origen | MoSCoW | Prioridad | Pts | Sprint | Desarrolla | Autor G9 | Estado a 26 nov 2026 |
+|---|---|---|---|---|---|---|---|---|---|
+| HU-01 | Buscar por parte del título | G9 #1 | Debe | alta | 5 | S1 | Orlando Palma | Shadia | Hecha (PR #61, #69) |
+| HU-02 | Buscar por autor o tema | G9 #2 | Debe | alta | 3 | S1 | Orlando Palma | Shadia | Hecha (PR #61, #69) |
+| HU-03 | Ver la ubicación del libro | G9 #3 | Debe | alta | 2 | S1 | Orlando Palma | Shadia | Hecha (PR #61, #69) |
+| HU-04 | Interfaz legible para adultos mayores | G9 #4 | Debe | alta | 3 | S1 | Rafael Potes | Derek | Hecha (PR #63) |
+| HU-05 | Abrir el catálogo escaneando un QR | G9 #5 | Debe | alta | 2 | S1 | Rafael Potes | Derek | Hecha (PR #65) |
+| HU-06 | Ver la disponibilidad (física o digital) | G9 #6 | Debe | alta | 3 | S1 | Daniel Méndez | Derek | Hecha (PR #61, #69) |
+| HU-07 | Mensaje claro si no hay resultados | G9 #7 | Debería | media | 2 | S2 | Orlando Palma | Shadia | Parcial (el mensaje sin resultados llegó con el PR #69; faltan las sugerencias y «¿Quisiste decir…?»; Issue #34 abierto) |
+| HU-08 | Filtrar por categoría o sala | G9 #8 | Debe | alta | 3 | S1 | Orlando Palma | Shadia | Hecha (PR #61, #69) |
+| HU-09 | Iniciar sesión como bibliotecario | G9 #9 | Debe | alta | 5 | S1 | Juan Camilo Fernández | Emiliano | Hecha (PR #70, #77) |
+| HU-10 | Registrar un libro nuevo | G9 #10 | Debe | alta | 5 | S1 | Daniel Méndez | Emiliano | Hecha (PR #82) |
+| HU-11 | Editar ubicación y estado de un libro | G9 #11 | Debe | alta | 3 | S1 | Daniel Méndez | Emiliano | No terminada (Issue #38 abierto) |
+| HU-12 | Importar el catálogo desde CSV o Excel | G9 #12 | Debe | alta | 8 | S1 | Humberto Llinás | Emiliano | Hecha (PR #68, #83, #142, #143, #144) |
+| HU-13 | Búsqueda por voz | G9 #13 | Podría | baja | 3 | S3 | Orlando Palma | Shadia | No terminada (Issue #40 abierto) |
+| HU-14 | Reservar un libro desde la app | G9 #14 | Debería | media | 5 | S2 | Juan Camilo Fernández | Derek | No terminada (Issue #41 abierto; entre las tareas del orden de sacrificio del Planning 3) |
+| HU-15 | Tutorial guiado de la primera búsqueda | Backend | Debe | alta | 5 | S1 | Rafael Potes | Shadia | Hecha (PR #64) |
+| HU-16 | Crear cuenta de lector con aviso de privacidad | Backend | Debe | alta | 5 | S1 | Juan Camilo Fernández | Derek | Parcial (aviso de privacidad publicado con el PR #147; sin cuenta de lector; Issue #43 abierto) |
+| HU-17 | Eliminar mi cuenta y mis datos | Backend | Debe | alta | 3 | S2 | Juan Camilo Fernández | Derek | No terminada (Issue #44 abierto) |
+| HU-18 | Gestionar cuentas del personal y roles | Backend | Debe | alta | 3 | S1 | Juan Camilo Fernández | Emiliano | No terminada (Issue #45 abierto) |
+| HU-19 | Registrar los ejemplares de un libro | Backend | Debe | alta | 3 | S1 | Daniel Méndez | Emiliano | No terminada (Issue #46 abierto) |
+| HU-20 | Registrar préstamos y devoluciones | Backend | Debe | alta | 8 | S2 | Humberto Llinás | Emiliano | Hecha (PR #146) |
+| HU-21 | Alertas de devolución y disponibilidad | Backend | Debe | alta | 5 | S2 | Daniel Méndez | Derek | No terminada (Issue #48 abierto) |
 
 - 21 historias: 18 «Debe», 2 «Debería», 1 «Podría». Autoría: Shadia 7, Derek 7, Emiliano 7.
 - Sprint 1 (9–13 nov) = el **80 % obligatorio de la Entrega 1**: catálogo y CSV, búsqueda tolerante con filtros, ubicación y disponibilidad, QR y tutorial, login JWT, tres roles, aviso de privacidad, accesibilidad. 58 pts.
 - Sprint 2 (14–19 nov) = el 20 % restante (préstamos y alertas) más reserva, eliminación de cuenta y mensaje sin resultados. 23 pts.
 - Sprint 3 (20–25 nov) = búsqueda por voz si hay capacidad, despliegue estable, manuales, pruebas, aceptación. 3 pts.
+- Estado real a 26 nov 2026 (verificado contra Issues cerrados y PR fusionados en `main`): 12 historias hechas (HU-01, 02, 03, 04, 05, 06, 08, 09, 10, 12, 15 y 20), 2 parciales (HU-07 y HU-16) y 7 no terminadas (HU-11, 13, 14, 17, 18, 19 y 21). HU-14 está entre las tareas del orden de sacrificio acordado en el Planning 3 (19 nov).
 
 ## Qué cambió frente a los Issues originales del G9
 
@@ -182,7 +183,7 @@ Ideas que el G9 puede convertir en historia «Podría» o «No tendrá ahora» s
 ### HU-14 · Reservar un libro desde la app
 **Como** lector registrado **quiero** apartar un libro disponible **para** asegurar que esté cuando llegue a la biblioteca.
 
-- Dado un libro con un ejemplar disponible y mi sesión iniciada, cuando presiono «Reservar», entonces veo la confirmación y el plazo para recogerlo (por definir con el CLENA).
+- Dado un libro con un ejemplar disponible y mi sesión iniciada, cuando presiono «Reservar», entonces veo la confirmación y el plazo para recogerlo (el plazo no se definió con el CLENA: la historia no se terminó).
 - Dado que vence el plazo sin recogerlo, cuando pasa la fecha, entonces la reserva se cancela y el ejemplar vuelve a estar disponible.
 - Dado mi perfil, cuando lo abro, entonces veo mis reservas activas y puedo cancelarlas.
 
@@ -248,7 +249,7 @@ Ideas que el G9 puede convertir en historia «Podría» o «No tendrá ahora» s
 | T-04 | Infraestructura Docker: `docker compose up` levanta PostgreSQL, backend y frontend sin pasos manuales | S0 | Humberto Llinás |
 | T-05 | GitHub Actions: lint, pruebas y build en cada PR | S0 | Rafael Potes |
 | T-06 | Modelo de datos: diagrama ER (draw.io), migraciones, semillas ficticias e índices → `docs/modelo-datos.pdf` | S0–S1 | Rafael Potes (esquema, migración y semilla) · Daniel Méndez (diagrama ER y PDF) |
-| T-07 | Despliegue con URL pública | S3 | Rafael Potes |
+| T-07 | Despliegue con URL pública (la URL fija con Cloud Run es T-43, Humberto Llinás) | S3 | Rafael Potes (túnel, opción A) |
 | T-08 | Arquitectura C4 niveles 1–3 (draw.io) y decisiones → `docs/arquitectura.pdf` | S0–S1 | Rafael Potes (revisa Humberto) |
 | T-09 | Pruebas e2e y cobertura ≥ 70 % | S2–S3 | Rafael Potes (cada responsable prueba su módulo) |
 | T-10 | Manual de usuario | S3 | Humberto Llinás |
@@ -261,3 +262,27 @@ Ideas que el G9 puede convertir en historia «Podría» o «No tendrá ahora» s
 | T-17 | Semilla y plantilla CSV con datos ficticios, compatible con MARC21 (#55) | S1 | Rafael Potes (lista de libros: Daniel Méndez) |
 | T-18 | Seguridad: Helmet, límite de peticiones, Secret scanning, Dependabot y CodeQL (#57) | S2 | Por asignar |
 | T-19 | Imagen de producción y despliegue con URL, apoya a T-07 (#58) | S3 | Por asignar |
+| T-20 | Imagen de PostgreSQL con pgvector en Docker y en el CI (#86) | S3 | Rafael Potes |
+| T-21 | Tema de marca y tipografía local en el frontend (#87) | S3 | Rafael Potes |
+| T-22 | Cabecera, pie, logos, favicon y metadatos (#88) | S3 | Rafael Potes |
+| T-23 | ADR-08: búsqueda semántica local y regla de IA (#89) | S3 | Rafael Potes |
+| T-24 | Tabla `work_embeddings` con pgvector (#90) | S3 | Rafael Potes |
+| T-25 | Puerto `EMBEDDING_GENERATOR` y adaptadores falso y nulo (#91) | S3 | Rafael Potes |
+| T-26 | Reindexado de embeddings (#92) | S3 | Rafael Potes |
+| T-27 | Login en tiempo constante y revalidación del usuario en el guard (#93) | S3 | Juan Camilo Fernández |
+| T-28 | Pruebas e2e de autenticación (#94) | S3 | Juan Camilo Fernández |
+| T-29 | Portada con buscador y accesos por tema y sala (#95) | S3 | Orlando Palma |
+| T-30 | Tarjetas de resultados y detalle con estado, copiar ubicación e imprimir (#96) | S3 | Orlando Palma |
+| T-31 | Adaptador local del modelo multilingual-e5-small (#97) | S3 | Rafael Potes |
+| T-32 | Búsqueda híbrida con RRF y degradación (#98) | S3 | Rafael Potes |
+| T-33 | Indicador de modo y coincidencia semántica en los resultados (#99) | S3 | Orlando Palma |
+| T-34 | Evaluación de la búsqueda léxica, vectorial e híbrida (#100) | S3 | Rafael Potes |
+| T-35 | Importación idempotente, ISBN validado y fórmulas neutralizadas (#101) | S3 | Humberto Llinás |
+| T-36 | Importación: codificación, separador, alias de cabeceras y límites (#102) | S3 | Humberto Llinás |
+| T-37 | Importación: simulación previa e informe de errores descargable (#103) | S3 | Humberto Llinás |
+| T-38 | Gitleaks y Trivy en el CI (#104) | S3 | Rafael Potes |
+| T-39 | Informe de seguridad (#105) | S3 | Rafael Potes |
+| T-40 | Animaciones, esqueletos y responsive en el resto de pantallas (#106) | S3 | Orlando Palma |
+| T-41 | Guía visual al día con la marca aplicada (#107) | S3 | Rafael Potes |
+| T-42 | Comando para crear el primer administrador en producción (#119) | S3 | Rafael Potes |
+| T-43 | Despliegue con URL fija en Google Cloud Run (#153) | S3 | Humberto Llinás |

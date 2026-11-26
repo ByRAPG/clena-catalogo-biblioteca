@@ -37,6 +37,7 @@ import { CampoBusqueda } from './campo-busqueda'
 import { FranjaFoto } from '../../shared/ui/franja-foto'
 import { Paginador } from './paginador'
 import { esUuid, leerSalaDeLaUrl } from './sala-url'
+import { SinResultados } from './sin-resultados'
 import { TarjetaResultado } from './tarjeta-resultado'
 
 /**
@@ -439,15 +440,13 @@ export function PaginaBusqueda() {
       )}
 
       {!cargando && error === null && resultado !== null && total === 0 && (
-        <Stack gap="xs">
-          <Text fz="lg">
-            No encontramos libros que coincidan con lo que buscó.
-          </Text>
-          <Text>
-            Revise la escritura, use menos palabras o quite los filtros. También
-            puede pedir ayuda en el mostrador.
-          </Text>
-        </Stack>
+        <SinResultados
+          consulta={q}
+          hayFiltros={hayFiltros}
+          alQuitarFiltros={() =>
+            cambiar({ categoria: null, sala: null, disponibles: null })
+          }
+        />
       )}
 
       {obras.length > 0 && (

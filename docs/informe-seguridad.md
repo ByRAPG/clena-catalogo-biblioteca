@@ -74,7 +74,7 @@ No se incluye diagrama de flujo de datos: la arquitectura ya está en `docs/arqu
 
 | Capítulo ASVS | Estado | Evidencia |
 |---|---|---|
-| V2 Autenticación | Cumple; H-03 y H-05 corregidos y H-04 corregido en parte (riesgo residual R-06) | Argon2id, bloqueo, mensaje único, hash ficticio, contador atómico |
+| V2 Autenticación | Cumple; H-03 y H-05 corregidos y H-04 corregido en parte (riesgo residual R-08) | Argon2id, bloqueo, mensaje único, hash ficticio, contador atómico |
 | V3 Gestión de sesión | Cumple con el riesgo residual R-01 | Cookie `httpOnly`/`strict`, rotación, cierre de familia |
 | V4 Control de acceso | Cumple | Guards por rol en cada ruta de escritura |
 | V5 Validación | Cumple, con la excepción H-06 | `ValidationPipe`, parámetros SQL, tope JSON de 2 MB |
@@ -106,7 +106,7 @@ Severidad: **Alta** (explotable con impacto serio sin condiciones especiales), *
 | H-08 | Caddy no limitaba el cuerpo; solo la API cortaba a 2 MB | Baja | `request_body { max_size 2MB }` para `/api` (`frontend/Caddyfile`, bloque `request_body`, rama `wt-prod`) | #118 |
 | H-09 | `ADMIN_PASSWORD` seguía en el entorno del proceso tras crear el administrador | Baja | Se elimina del entorno y se admite `ADMIN_PASSWORD_FILE` (`create-admin.cli.ts`, `delete process.env.ADMIN_PASSWORD`, rama `wt-admin`) | #120 |
 | H-03 | El contador de intentos fallidos no era atómico: dos peticiones simultáneas podían contar un solo fallo | Media | Incremento atómico en la base de datos (`failedLogins: { increment: 1 }`) y bloqueo decidido con el valor devuelto (`prisma-user.repository.ts`, `incrementFailedLogins`) | #155 |
-| H-04 | La respuesta 429 de «cuenta bloqueada» revelaba que el correo existe | Media | **Corregido en parte.** La cuenta bloqueada responde el mismo 401 genérico que una contraseña incorrecta, sin 429 ni `Retry-After` (`login-user.use-case.ts`). Queda el riesgo residual R-06 | #155 |
+| H-04 | La respuesta 429 de «cuenta bloqueada» revelaba que el correo existe | Media | **Corregido en parte.** La cuenta bloqueada responde el mismo 401 genérico que una contraseña incorrecta, sin 429 ni `Retry-After` (`login-user.use-case.ts`). Queda el riesgo residual R-08 | #155 |
 | H-05 | Enumeración de correos por tiempo: con correo inexistente no se calculaba ningún hash | Baja | Se verifica un hash ficticio calculado una vez al arrancar (`login-user.use-case.ts`, `dummyHash`) y la contraseña se verifica también con la cuenta bloqueada | #155 |
 
 ### 4.2 Abiertos y asignados
@@ -123,10 +123,10 @@ Severidad: **Alta** (explotable con impacto serio sin condiciones especiales), *
 | R-02 | Password spraying distribuido: el límite es por IP y el bloqueo por cuenta, de modo que muchas IP con pocas pruebas cada una pasan | Baja | Aceptado: Argon2id encarece cada intento y las contraseñas del personal son pocas. Recomendar contraseñas largas y, a futuro, doble factor para `ADMIN` |
 | R-03 | `pnpm audit` del backend: 2 altas transitivas de `prisma > @prisma/config` (`deepmerge-ts` 7.1.5, `effect` 3.21.0, ReDoS) | Baja | Aceptado: solo las usa la CLI de Prisma en migraciones, no la ruta de una petición. Se resolverá al actualizar Prisma (Dependabot) |
 | R-04 | El tope JSON de 2 MB es global, no por ruta (`app.setup.ts`: `JSON_BODY_LIMIT`) | Baja | Aceptado: Caddy ya corta a 2 MB. Si se amplía, reducir el tope en las rutas que no importan |
-| R-06 | Un tercero puede bloquear 15 minutos una cuenta ajena con cinco intentos fallidos (parte de H-04) | Baja | Aceptado para la entrega: el límite de 20 peticiones por minuto por IP en `/auth/*` lo mitiga. A futuro, bloquear por pareja correo más IP y avisar al titular por otro canal |
 | R-05 | La CSP estricta está solo en la SPA; la API usa `default-src 'none'` y `/docs` relaja a `unsafe-inline` para Swagger | Baja | Aceptado: `/docs` no contiene datos. Considerar desactivar `/docs` en producción |
 | R-06 | Los secretos viajan en variables de entorno, no en Docker secrets | Baja | Aceptado para una sola máquina. El archivo `.env.prod` no se versiona (`.gitignore`) y se restringe con permisos `600` |
 | R-07 | HSTS sin `preload` (`Caddyfile`, cabecera `Strict-Transport-Security`) | Baja | Aceptado: la precarga es difícil de revertir. Revisar cuando el dominio definitivo esté estable |
+| R-08 | Un tercero puede bloquear 15 minutos una cuenta ajena con cinco intentos fallidos (parte de H-04) | Baja | Aceptado para la entrega: el límite de 20 peticiones por minuto por IP en `/auth/*` lo mitiga. A futuro, bloquear por pareja correo más IP y avisar al titular por otro canal |
 
 ## 5. Resultados de los escáneres
 
@@ -141,7 +141,21 @@ Los escáneres se ejecutaron el 20 de noviembre de 2026 sobre el código de inte
 | Trivy 0.76.2, `config` | `backend/Dockerfile` y `frontend/Dockerfile`, severidad HIGH y CRITICAL | 0 hallazgos |
 | CodeQL | JavaScript y TypeScript | Lo ejecuta GitHub Actions en cada PR y cada lunes (`codeql.yml`); no se corrió de forma local. Consultar la pestaña Seguridad del repositorio |
 | Trivy sobre imágenes | Imágenes de producción de backend y frontend | No se ejecutó de forma local; corre en CI (`seguridad.yml`, trabajo `trivy-imagenes`) |
-| Calificación de cabeceras | Cabeceras HTTP del despliegue | No se midió: depende de una URL pública que aún no existe. Pendiente (sección 6) |
+| Cabeceras HTTP | `curl -sI` a `http://localhost:8088/` y a `/api/v1/health` (vista previa local con la misma configuración de Caddy de producción, `frontend/Caddyfile`) | Medidas el 25 de noviembre de 2026; ver la tabla siguiente. No se midieron en una URL pública ni con una herramienta de calificación |
+
+Cabeceras medidas el 25 de noviembre de 2026 con `curl -sI` sobre la vista previa local (Caddy con el `Caddyfile` de producción, `SITE_ADDRESS=:80`, sin TLS). Se midió en local, no en una URL pública.
+
+| Cabecera | Página (`/`) | API (`/api/v1/health`) |
+|---|---|---|
+| Content-Security-Policy | `default-src 'self'; script-src 'self'; style-src 'self'; style-src-elem 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'` | `default-src 'none'; base-uri 'self'; font-src 'self' https: data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; object-src 'none'; script-src 'self'; script-src-attr 'none'; style-src 'self' https: 'unsafe-inline'; upgrade-insecure-requests` |
+| Strict-Transport-Security | `max-age=31536000; includeSubDomains` | igual |
+| X-Content-Type-Options | `nosniff` | `nosniff` |
+| Referrer-Policy | `strict-origin-when-cross-origin` | igual |
+| Permissions-Policy | `accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()` | igual |
+| Cross-Origin-Opener-Policy | `same-origin` | `same-origin` |
+| Cross-Origin-Resource-Policy | no se envía | `same-origin` |
+| X-Frame-Options | no se envía (la protección la da `frame-ancestors 'none'` de la CSP) | `SAMEORIGIN` |
+| Server y X-Powered-By | no se envían | no se envían |
 
 ## 6. Conclusiones y próximos pasos
 
@@ -149,12 +163,12 @@ Los escáneres se ejecutaron el 20 de noviembre de 2026 sobre el código de inte
 
 - El sistema cubre las categorías OWASP Top 10 relevantes para una aplicación de catálogo sin pagos ni datos personales sensibles. Los controles esenciales (autorización por rol, Argon2id, cookie de sesión endurecida, cabeceras, contenedores sin privilegios, escáneres en CI) están implementados y respaldados por pruebas.
 - No hay secretos en el historial ni vulnerabilidades críticas. Las dos altas del backend son transitivas, solo de la CLI de Prisma, y no están en la ruta de una petición.
-- El endurecimiento del login (H-03, H-04, H-05) quedó corregido en #155; de H-04 se acepta como riesgo residual (R-06) que un tercero bloquee una cuenta ajena. El hallazgo abierto de mayor prioridad es H-06.
+- El endurecimiento del login (H-03, H-04, H-05) quedó corregido en #155; de H-04 se acepta como riesgo residual (R-08) que un tercero bloquee una cuenta ajena. El hallazgo abierto de mayor prioridad es H-06.
 
 **Próximos pasos**
 
 1. Fusionar los PR que contienen las correcciones del 20 de noviembre (#108, #109, #115, #118 y #120) y confirmar que CodeQL, gitleaks y Trivy quedan en verde en `main`.
 2. Cerrar T-35 y T-36 (H-06) antes de la entrega. T-27 (H-03 a H-05) quedó corregida en #155.
-3. Cuando exista la URL de producción, medir las cabeceras con una herramienta de calificación y repetir el análisis de imágenes.
+3. Cuando exista la URL de producción, repetir la medición de cabeceras sobre ella (con una herramienta de calificación) y el análisis de imágenes.
 4. Actualizar Prisma para eliminar las dos altas transitivas (R-03) y revisar los PR de Dependabot cada semana.
 5. Evaluar, si hay tiempo, comprobar el estado del usuario en cada petición (R-01) y desactivar `/docs` en producción (R-05).

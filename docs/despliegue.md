@@ -1,6 +1,6 @@
 # Despliegue con URL pública (T-07)
 
-Esta guía publica la Biblioteca en internet desde una sola máquina, con un túnel rápido de Cloudflare (opción A, la vigente). Al final se describe la opción B (Hugging Face Spaces + Neon), que queda como siguiente paso y no está implementada.
+Esta guía publica la Biblioteca en internet de dos formas: con Google Cloud Run + Neon (opción B, la de la entrega, con URL fija y sin depender de ningún equipo) o, de respaldo, con un túnel rápido de Cloudflare desde un equipo propio (opción A).
 
 ## Opción A: túnel rápido de Cloudflare
 
@@ -108,13 +108,90 @@ Al recrear el servicio `tunnel` la URL cambia. `down -v` borra también los vol�
 - **Contenedores**: `tunnel` corre como usuario no root, con sistema de archivos de solo lectura, sin capacidades y con `no-new-privileges`. `db` también es de solo lectura (tmpfs en `/var/run/postgresql` y `/tmp`) y conserva solo las capacidades que Postgres necesita.
 - La imagen de `cloudflared` está fijada por digest; se actualiza a propósito (ver el comentario en `docker-compose.tunnel.yml`).
 
-## Opción B (siguiente paso): Hugging Face Spaces + Neon
+## Opción B: Google Cloud Run + Neon (URL fija)
 
-Alternativa gratuita que no depende del PC y da una URL estable (`https://<usuario>-<space>.hf.space`). No está implementada; esto es lo que habría que hacer.
+Una sola imagen con la API y la web (`deploy/cloud-run/`), en Cloud Run, con la base de datos en Neon (Postgres administrado con pgvector). No depende de ningún PC y da una URL fija `https://<servicio>-<hash>.<región>.run.app`. La opción A queda como respaldo.
 
-1. **Base de datos en Neon** (plan gratuito): crear un proyecto con Postgres 16, ejecutar `CREATE EXTENSION IF NOT EXISTS vector;` (la migración de embeddings la necesita) y copiar la cadena de conexión. `DATABASE_URL` debe llevar `sslmode=require` (por ejemplo `...?schema=public&sslmode=require`). Neon suspende el cómputo por inactividad, así que la primera consulta puede tardar.
-2. **Space de tipo Docker**: Hugging Face expone un solo puerto (por defecto 7860, `app_port` en el `README.md` del Space) y ejecuta el contenedor como usuario no root (UID 1000).
-3. **Imagen combinada**: un único contenedor con Caddy (SPA y proxy de `/api/*`) en el puerto 7860 y el backend en `localhost:3000`, arrancados por un supervisor sencillo. Cambios: `reverse_proxy localhost:3000`, `SITE_ADDRESS=:7860`, escritura solo en `/tmp`, y el modelo de embeddings dentro de la imagen (`/app/models`).
-4. **Secretos del Space** (Settings, Variables and secrets): `DATABASE_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `PUBLIC_WEB_URL`, `CORS_ORIGIN` y `TRUST_PROXY=1`. El primer administrador se crea ejecutando una vez `create-admin.cli.js` contra la base de Neon desde una máquina local.
-5. **Límites**: el plan gratuito duerme el Space tras 48 horas sin visitas (se despierta con la siguiente, en uno o dos minutos) y no hay almacenamiento persistente local: todo va a Neon.
-6. **Trabajo pendiente**: Dockerfile combinado, despliegue al Space desde GitHub Actions y migraciones que corran al arrancar o desde fuera.
+Se descartó Hugging Face Spaces: desde noviembre de 2026 los Spaces de Docker en CPU gratuita exigen suscripción PRO.
+
+### Imagen
+
+- `deploy/cloud-run/Dockerfile`: mismas etapas e imágenes base (fijadas por digest) que `backend/Dockerfile` y `frontend/Dockerfile`, y el binario de Caddy copiado de la imagen oficial. Corre sin root (uid 1000) y solo escribe en `/tmp`.
+- `deploy/cloud-run/start.sh`: aplica `prisma migrate deploy`, arranca la API en `127.0.0.1:3000` y Caddy en `$PORT` (8080). Si uno de los dos se cae, el contenedor sale y Cloud Run lo reinicia.
+- `deploy/cloud-run/Caddyfile`: igual que `frontend/Caddyfile` (CSP, cabeceras, límite de 2 MB), con HTTP en `$PORT` (el TLS lo pone Google). La IP real se lee de `X-Forwarded-For` de derecha a izquierda (`trusted_proxies_strict`), confiando solo en los rangos privados y en `169.254.0.0/16`.
+
+Prueba local (desde la raíz del repo):
+
+```bash
+docker build -f deploy/cloud-run/Dockerfile -t busca-facil .
+docker run --rm -p 8080:8080 -e PORT=8080 --env-file cloud-run.env.local busca-facil   # *.local nunca se sube (está en .gitignore)
+```
+
+### Base de datos (Neon)
+
+1. Proyecto con Postgres 16 o superior en la región más cercana a la de Cloud Run (Neon `aws-us-east-2`, Ohio, queda junto a `us-east5`, Columbus). Copiar la cadena **directa** (sin `-pooler`), con `sslmode=require`.
+2. Desde un PC con el repo: `DATABASE_URL=<cadena> pnpm run prisma:migrate:deploy`, después `pnpm run prisma:seed` (datos ficticios), `pnpm run iam:create-admin` y `pnpm run search:reindex`, todo en `backend/`. Las migraciones también corren al arrancar el contenedor (`prisma migrate deploy` toma un bloqueo en la base: con la cadena directa, dos arranques a la vez no chocan).
+
+### Variables del servicio
+
+`DATABASE_URL`, `JWT_ACCESS_SECRET` y `JWT_REFRESH_SECRET` (aleatorios, de 32 caracteres o más) van como secretos (Secret Manager). El resto son variables normales: `NODE_ENV=production`, `TRUST_PROXY=1`, `CORS_ORIGIN` y `PUBLIC_WEB_URL` (la URL `https://...run.app` del servicio), `SEMANTIC_SEARCH=on`, `EMBEDDING_PROVIDER=local`, `EMBEDDING_MODEL_PATH=/app/models`, `SEARCH_MIN_SIMILARITY=0.84`, `SEARCH_RELATIVE_CUTOFF=0.04` y `SEARCH_LEXICAL_WEIGHT=2`. `PORT` lo fija Cloud Run.
+
+### Desplegar
+
+En Cloud Shell (ya trae `gcloud`, `docker`, `git` y `openssl`), desde la raíz del repo clonado:
+
+```bash
+PROJECT=$(gcloud config get-value project)
+PN=$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')
+SA="serviceAccount:${PN}-compute@developer.gserviceaccount.com"
+
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com \
+  artifactregistry.googleapis.com secretmanager.googleapis.com
+gcloud artifacts repositories create busca-facil --repository-format=docker --location=us-east5
+
+# Secretos: el valor nunca va al repo ni queda en pantalla o en el historial.
+read -rs DB && printf '%s' "$DB" | gcloud secrets create database-url --data-file=- && unset DB
+openssl rand -hex 48 | tr -d '\n' | gcloud secrets create jwt-access --data-file=-
+openssl rand -hex 48 | tr -d '\n' | gcloud secrets create jwt-refresh --data-file=-
+# Cloud Run (cuenta de servicio por defecto) solo puede leer estos tres secretos.
+for s in database-url jwt-access jwt-refresh; do
+  gcloud secrets add-iam-policy-binding "$s" --member="$SA" --role=roles/secretmanager.secretAccessor
+done
+
+# Imagen (unos 10 minutos: compila y descarga el modelo verificando su SHA-256).
+gcloud builds submit --region=us-east5 --config=deploy/cloud-run/cloudbuild.yaml .
+
+gcloud run deploy busca-facil \
+  --image="us-east5-docker.pkg.dev/${PROJECT}/busca-facil/app:latest" \
+  --region=us-east5 --allow-unauthenticated --port=8080 \
+  --memory=2Gi --cpu=1 --min-instances=0 --max-instances=1 --timeout=60 \
+  --startup-probe=httpGet.path=/api/v1/health,httpGet.port=8080,periodSeconds=5,timeoutSeconds=3,failureThreshold=36 \
+  --set-secrets=DATABASE_URL=database-url:latest,JWT_ACCESS_SECRET=jwt-access:latest,JWT_REFRESH_SECRET=jwt-refresh:latest \
+  --set-env-vars=NODE_ENV=production,TRUST_PROXY=1,SEMANTIC_SEARCH=on,EMBEDDING_PROVIDER=local,EMBEDDING_MODEL_PATH=/app/models,SEARCH_MIN_SIMILARITY=0.84,SEARCH_RELATIVE_CUTOFF=0.04,SEARCH_LEXICAL_WEIGHT=2
+
+# Con la URL que devuelve el despliegue anterior:
+URL=$(gcloud run services describe busca-facil --region=us-east5 --format='value(status.url)')
+gcloud run services update busca-facil --region=us-east5 \
+  --update-env-vars=CORS_ORIGIN=$URL,PUBLIC_WEB_URL=$URL
+```
+
+- `--max-instances=1`: el límite de peticiones por IP vive en la memoria del proceso; con varias instancias cada una tendría el suyo.
+- `--startup-probe`: Cloud Run no envía visitas hasta que la API responde (tras migrar y cargar el modelo), en vez de devolver 502 mientras arranca. Si la versión de `gcloud` no reconoce la opción, se quita esa línea y el servicio funciona igual (solo puede dar 502 unos segundos al arrancar).
+- Cada build deja la imagen con dos etiquetas, `latest` y el id del build: para volver a una versión anterior, `gcloud run deploy busca-facil --region=us-east5 --image=.../app:<id>`.
+- Para actualizar tras un cambio en `main`: `git pull`, `gcloud builds submit ...` y `gcloud run deploy busca-facil --region=us-east5 --image=.../app:latest`.
+
+### Comprobar
+
+- `<url>/api/v1/health` responde `status: ok`, `database: up` y `semanticModel: ready`.
+- La portada abre, una búsqueda por significado devuelve resultados y el administrador inicia sesión (cookie `HttpOnly; Secure; SameSite=Strict`).
+- En los registros de Cloud Run, la IP de las peticiones es la del visitante, no una `169.254.x.x`.
+
+### Costo
+
+Con `--min-instances=0`, 2 GiB y pocas visitas, el gasto es de centavos al día y sale de los créditos de Google Cloud. Conviene crear una alerta de presupuesto (Facturación, Presupuestos y alertas) de 10 USD.
+
+### Límites
+
+- Con `--min-instances=0` el servicio se apaga sin visitas y el primer acceso tarda unos segundos (carga del modelo). Para la presentación, `--min-instances=1` durante ese día y volver a 0 después, para no gastar crédito.
+- Neon gratuito suspende el cómputo por inactividad: la primera consulta tarda un poco más.
+- `2Gi` de memoria: el modelo de embeddings necesita unos 350 MB más que la API sola.
