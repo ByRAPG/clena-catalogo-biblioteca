@@ -1,8 +1,8 @@
 # Construye la imagen única con Cloud Build y la sube a Artifact Registry.
 # Uso (desde la raíz del repo):
-#   gcloud builds submit --region=us-east1 --config=deploy/cloud-run/cloudbuild.yaml .
+#   gcloud builds submit --region=us-east5 --config=deploy/cloud-run/cloudbuild.yaml .
 substitutions:
-  _REGION: us-east1
+  _REGION: us-east5
   _REPO: busca-facil
 steps:
   - name: gcr.io/cloud-builders/docker

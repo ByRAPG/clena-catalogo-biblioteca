@@ -129,7 +129,7 @@ docker run --rm -p 8080:8080 --env-file cloud-run.env busca-facil   # cloud-run.
 
 ### Base de datos (Neon)
 
-1. Proyecto con Postgres 16 o superior en la región más cercana a la de Cloud Run. Copiar la cadena **directa** (sin `-pooler`), con `sslmode=require`.
+1. Proyecto con Postgres 16 o superior en la región más cercana a la de Cloud Run (Neon `aws-us-east-2`, Ohio, queda junto a `us-east5`, Columbus). Copiar la cadena **directa** (sin `-pooler`), con `sslmode=require`.
 2. Desde un PC con el repo: `DATABASE_URL=<cadena> pnpm run prisma:migrate:deploy`, después `pnpm run prisma:seed` (datos ficticios), `pnpm run iam:create-admin` y `pnpm run search:reindex`, todo en `backend/`. Las migraciones también corren al arrancar el contenedor.
 
 ### Variables del servicio
@@ -140,18 +140,31 @@ docker run --rm -p 8080:8080 --env-file cloud-run.env busca-facil   # cloud-run.
 
 ```bash
 gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com secretmanager.googleapis.com
-gcloud artifacts repositories create busca-facil --repository-format=docker --location=us-east1
-gcloud builds submit --region=us-east1 --config=deploy/cloud-run/cloudbuild.yaml .
-gcloud run deploy busca-facil --image=us-east1-docker.pkg.dev/<proyecto>/busca-facil/app:latest   --region=us-east1 --allow-unauthenticated --port=8080 --memory=2Gi --cpu=1   --min-instances=0 --max-instances=2 --timeout=60   --set-secrets=DATABASE_URL=database-url:latest,JWT_ACCESS_SECRET=jwt-access:latest,JWT_REFRESH_SECRET=jwt-refresh:latest   --set-env-vars=NODE_ENV=production,TRUST_PROXY=1,SEMANTIC_SEARCH=on,EMBEDDING_PROVIDER=local,EMBEDDING_MODEL_PATH=/app/models,SEARCH_MIN_SIMILARITY=0.84,SEARCH_RELATIVE_CUTOFF=0.04,SEARCH_LEXICAL_WEIGHT=2
+gcloud artifacts repositories create busca-facil --repository-format=docker --location=us-east5
+# Secretos (el valor nunca va al repo ni al historial de la terminal compartida)
+read -rs DB && printf '%s' "$DB" | gcloud secrets create database-url --data-file=- && unset DB
+openssl rand -base64 48 | tr -d '
+' | gcloud secrets create jwt-access --data-file=-
+openssl rand -base64 48 | tr -d '
+' | gcloud secrets create jwt-refresh --data-file=-
+# Cloud Run (cuenta de servicio por defecto) debe poder leerlos
+PN=$(gcloud projects describe $(gcloud config get-value project) --format='value(projectNumber)')
+gcloud projects add-iam-policy-binding $(gcloud config get-value project)   --member="serviceAccount:${PN}-compute@developer.gserviceaccount.com" --role=roles/secretmanager.secretAccessor
+gcloud builds submit --region=us-east5 --config=deploy/cloud-run/cloudbuild.yaml .
+gcloud run deploy busca-facil --image=us-east5-docker.pkg.dev/<proyecto>/busca-facil/app:latest   --region=us-east5 --allow-unauthenticated --port=8080 --memory=2Gi --cpu=1   --min-instances=0 --max-instances=2 --timeout=60   --set-secrets=DATABASE_URL=database-url:latest,JWT_ACCESS_SECRET=jwt-access:latest,JWT_REFRESH_SECRET=jwt-refresh:latest   --set-env-vars=NODE_ENV=production,TRUST_PROXY=1,SEMANTIC_SEARCH=on,EMBEDDING_PROVIDER=local,EMBEDDING_MODEL_PATH=/app/models,SEARCH_MIN_SIMILARITY=0.84,SEARCH_RELATIVE_CUTOFF=0.04,SEARCH_LEXICAL_WEIGHT=2
 ```
 
-Con la URL que devuelve el primer despliegue: `gcloud run services update busca-facil --region=us-east1 --update-env-vars=CORS_ORIGIN=<url>,PUBLIC_WEB_URL=<url>`.
+Con la URL que devuelve el primer despliegue: `gcloud run services update busca-facil --region=us-east5 --update-env-vars=CORS_ORIGIN=<url>,PUBLIC_WEB_URL=<url>`.
 
 ### Comprobar
 
 - `<url>/api/v1/health` responde `status: ok`, `database: up` y `semanticModel: ready`.
 - La portada abre, una búsqueda por significado devuelve resultados y el administrador inicia sesión (cookie `HttpOnly; Secure; SameSite=Strict`).
 - En los registros de Cloud Run, la IP de las peticiones es la del visitante, no una `169.254.x.x`.
+
+### Costo
+
+Con `--min-instances=0`, 2 GiB y pocas visitas, el gasto es de centavos al día y sale de los créditos de Google Cloud. Conviene crear una alerta de presupuesto (Facturación, Presupuestos y alertas) de 10 USD.
 
 ### Límites
 
