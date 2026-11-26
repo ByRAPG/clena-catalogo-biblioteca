@@ -10,8 +10,11 @@ node dist/main &
 API=$!
 caddy run --config /etc/caddy/Caddyfile --adapter caddyfile &
 WEB=$!
-trap 'kill $API $WEB 2>/dev/null' TERM INT
+# Al recibir SIGTERM (Cloud Run para la instancia) se avisa a los dos procesos
+# y se espera a que terminen las peticiones en curso antes de salir.
+trap 'kill -TERM $API $WEB 2>/dev/null; wait; exit 0' TERM INT
 wait -n
 code=$?
-kill $API $WEB 2>/dev/null
+kill -TERM $API $WEB 2>/dev/null
+wait
 exit $code

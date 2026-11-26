@@ -43,7 +43,7 @@
 		}
 		reverse_proxy 127.0.0.1:3000 {
 			# Una sola IP (la real del visitante) para que TRUST_PROXY=1 en la
-			# API tome esa y no la del contenedor de cloudflared.
+			# API tome esa y no la del proxy de Google.
 			header_up X-Forwarded-For {client_ip}
 			# Si la API tarda más de 30 s se corta, en vez de colgar al visitante.
 			transport http {

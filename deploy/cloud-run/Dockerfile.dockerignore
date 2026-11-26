@@ -5,3 +5,8 @@
 **/.env.*
 .git
 docs
+**/*.local
+**/*.env
+backups
+**/*.dump
+**/*.sql.gz

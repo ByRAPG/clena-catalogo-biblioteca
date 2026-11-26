@@ -57,7 +57,7 @@ RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack 
     /opt/yarn-* /usr/local/bin/yarn /usr/local/bin/yarnpkg
 COPY --from=caddy /usr/bin/caddy /usr/local/bin/caddy
 ENV NODE_ENV=production \
-    PORT=3000 \
+    PORT=8080 \
     HOME=/tmp \
     XDG_DATA_HOME=/tmp/caddy-data \
     XDG_CONFIG_HOME=/tmp/caddy-config

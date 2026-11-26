@@ -7,3 +7,9 @@
 **/.env.*
 !**/.env.example
 docs
+**/*.local
+**/*.env
+backups
+**/*.dump
+**/*.sql
+**/*.sql.gz
