@@ -13,6 +13,7 @@ import {
   CopyNotFoundError,
   CopyOnLoanError,
   CopyReservedError,
+  CopyChangedError,
 } from '../domain/errors/copy.errors';
 import { InvalidWorkError } from '../domain/errors/invalid-work.error';
 import { RoomNotFoundError } from '../domain/qr-destination';
@@ -42,7 +43,8 @@ function toHttp(exception: CatalogDomainError): HttpException {
   }
   if (
     exception instanceof CopyOnLoanError ||
-    exception instanceof CopyReservedError
+    exception instanceof CopyReservedError ||
+    exception instanceof CopyChangedError
   ) {
     return new ConflictException(exception.message);
   }
