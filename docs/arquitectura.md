@@ -39,7 +39,7 @@ Los controladores solo invocan casos de uso de los módulos (`iam`, `catalog`, `
 | Frontend | React + TypeScript + Vite + Mantine | Exigido React + TS; Mantine ofrece componentes accesibles (ADR-04) |
 | Contenedores | Docker + docker-compose | Exigido; mismo entorno para todos |
 | CI | GitHub Actions | Exigido |
-| Despliegue | Túnel rápido de Cloudflare desde un equipo propio (opción A); Hugging Face Spaces + Neon (opción B) | Gratuito y sin tarjeta; el modelo de embeddings necesita unos 2 GB de RAM (ADR-05, `docs/despliegue.md`) |
+| Despliegue | Google Cloud Run + Neon con URL fija (opción B, la de la entrega); túnel rápido de Cloudflare desde un equipo propio como respaldo (opción A) | Sin costo para el equipo (créditos de Google Cloud y plan gratuito de Neon); el modelo de embeddings necesita unos 2 GB de RAM (ADR-05, `docs/despliegue.md`) |
 
 ## 3. Módulos
 
@@ -154,7 +154,7 @@ Búsqueda híbrida (ADR-08): `GET /search/works` acepta `mode=hybrid|lexical|sem
 |---|---|---|---|
 | Local | `docker compose up` | Contenedor PostgreSQL 16 | Mailpit (`:8025`) |
 | CI | GitHub Actions | Servicio PostgreSQL 16 | Simulado |
-| Producción | `docker-compose.prod.yml` con Caddy y, para la URL pública, `docker-compose.tunnel.yml` (túnel rápido de Cloudflare); la opción B (Hugging Face Spaces + Neon) no está implementada | PostgreSQL 16 con pgvector en un contenedor (opción A) o Neon (opción B) | Sin correo en producción por ahora |
+| Producción | `docker-compose.prod.yml` con Caddy y, para la URL pública, `docker-compose.tunnel.yml` (túnel rápido de Cloudflare); la opción B es una imagen única (`deploy/cloud-run/`) en Google Cloud Run | PostgreSQL 16 con pgvector en un contenedor (opción A) o Neon (opción B) | Sin correo en producción por ahora |
 
 Las migraciones se aplican con `prisma migrate deploy` al desplegar. Nunca `db push` fuera de local.
 
@@ -184,12 +184,12 @@ Las migraciones se aplican con `prisma migrate deploy` al desplegar. Nunca `db p
 - **Alternativas:** MUI (más pesado), Tailwind (los componentes accesibles se construyen a mano).
 - **Consecuencias:** se sigue el sistema de diseño de Mantine.
 
-### ADR-05 · Despliegue con túnel de Cloudflare o Hugging Face Spaces + Neon
-- **Estado y fecha:** decidido el 20 nov 2026 (reemplaza la decisión inicial de Render o Railway).
+### ADR-05 · Despliegue en Google Cloud Run + Neon, con túnel de Cloudflare de respaldo
+- **Estado y fecha:** decidido el 20 nov 2026 (reemplaza la decisión inicial de Render o Railway); la opción B se cambió el 25 nov de Hugging Face Spaces a Google Cloud Run.
 - **Contexto:** se necesita una URL pública sin costo y sin tarjeta. La búsqueda semántica (ADR-08) carga un modelo que necesita unos 2 GB de RAM, más de lo que ofrecen las capas gratuitas de Render y Railway.
-- **Decisión:** opción A, vigente: la pila de `docker-compose.prod.yml` corre en un equipo propio con 2 GB de RAM libres y se publica con un túnel rápido de Cloudflare (`docker-compose.tunnel.yml`), sin abrir puertos ni tener dominio. Opción B, descrita pero no implementada: Hugging Face Spaces (tipo Docker) con la base de datos en Neon. Los pasos y límites están en [`despliegue.md`](despliegue.md).
-- **Alternativas:** Render o Railway (descartadas por la memoria disponible); VPS propio (más operación). Vercel es viable solo para el frontend React/Vite, pero no para la API NestJS (servidor de larga duración y conexiones a PostgreSQL).
-- **Consecuencias:** con la opción A el sitio solo está disponible mientras el equipo esté encendido y la URL `trycloudflare.com` cambia al reiniciar el túnel; no hay respaldo automático. La opción B duerme el Space tras 48 horas sin visitas.
+- **Decisión:** opción B, la de la entrega: una imagen única con la API y la web (`deploy/cloud-run/`) en Google Cloud Run, con la base de datos en Neon (Postgres administrado con pgvector) y los secretos en Secret Manager; da una URL fija que no depende de ningún equipo. Opción A, de respaldo: la pila de `docker-compose.prod.yml` corre en un equipo propio con 2 GB de RAM libres y se publica con un túnel rápido de Cloudflare (`docker-compose.tunnel.yml`), sin abrir puertos ni tener dominio. Los pasos y límites están en [`despliegue.md`](despliegue.md).
+- **Alternativas:** Hugging Face Spaces (descartado el 25 nov: los Spaces de Docker gratuitos pasaron a exigir suscripción PRO); Render o Railway (descartadas por la memoria disponible); VPS propio (más operación). Vercel es viable solo para el frontend React/Vite, pero no para la API NestJS (servidor de larga duración y conexiones a PostgreSQL).
+- **Consecuencias:** con la opción A el sitio solo está disponible mientras el equipo esté encendido y la URL `trycloudflare.com` cambia al reiniciar el túnel; no hay respaldo automático. Con la opción B, sin visitas Cloud Run apaga la instancia y el primer acceso tarda unos segundos (carga del modelo); el consumo sale de los créditos de Google Cloud de un integrante y Neon gratuito suspende el cómputo por inactividad.
 
 ### ADR-06 · Préstamos registrados por el personal
 - **Contexto:** el CLENA presta en mostrador.

@@ -280,7 +280,7 @@ El stack del enunciado es fijo. El equipo eligió dentro de la libertad que se l
 | Contenedores | Docker y docker-compose; Mailpit en local para el correo | Exigido; mismo entorno para todos |
 | Integración continua | GitHub Actions | Exigido: lint, pruebas y build en cada PR |
 | Gestor de paquetes | pnpm | Decisión del equipo (T-15, Issue #24) |
-| Despliegue | Túnel rápido de Cloudflare desde un equipo propio, o Hugging Face Spaces con Neon (decisión del 20 de noviembre; la inicial era Render o Railway) | Gratuito y sin tarjeta; el modelo de búsqueda semántica necesita unos 2 GB de RAM (ADR-05) |
+| Despliegue | Google Cloud Run con Neon y, de respaldo, un túnel rápido de Cloudflare desde un equipo propio (decisión del 20 de noviembre, ajustada el 25; la inicial era Render o Railway) | Sin costo para el equipo; el modelo de búsqueda semántica necesita unos 2 GB de RAM (ADR-05) |
 
 Las decisiones de arquitectura se justifican en [`arquitectura.md`](arquitectura.md). Otras decisiones vigentes: repositorio público con licencia MIT (decisión del equipo; el CLENA no respondió); el uso de IA se permite como asistente en el desarrollo, pero el producto no usa IA; los datos son ficticios o de dominio público hasta contar con autorización escrita del CLENA.
 

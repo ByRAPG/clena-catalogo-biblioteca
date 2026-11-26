@@ -70,7 +70,7 @@ Solo Rafael o Humberto aprueban y fusionan (CODEOWNERS). Antes, un compañero de
 - **Datos:** solo semillas ficticias hasta tener autorización escrita del CLENA. El CLENA no entregó información (9 nov), así que la semilla y la plantilla CSV son ficticias o de dominio público (T-17, Issue #55). Nunca se copia el catálogo actual del CLENA.
 - **Alcance del Sprint 1 (10 nov):** se mantienen los 58 puntos con orden de corte: 1) modelo de datos y semilla (T-06, T-17); 2) HU-01, 02, 03, 06, 09, 10, 19 y 12; 3) HU-04, 08, 11, 18, 16, 05 y 15. Lo que no esté completo el jue 12 a las 12:00 m. no se muestra el 13 y pasa al Sprint 2.
 - **T-06 (10 nov):** Rafael Potes asume el esquema, la migración y la semilla; Daniel Méndez conserva el diagrama entidad-relación y `modelo-datos.pdf`.
-- **Despliegue (T-07, T-19):** decidido el 20 nov 2026: túnel rápido de Cloudflare desde un equipo propio (opción A) y Hugging Face Spaces + Neon (opción B, no implementada); ver ADR-05 y `docs/despliegue.md`. **Cobertura ≥ 70 % (T-09):** Sprints 2 y 3, responsable Rafael Potes. El 80 % de la Entrega 1 son funcionalidades de punta a punta, no cobertura.
+- **Despliegue (T-07, T-19):** decidido el 20 nov 2026 y ajustado el 25 nov: Google Cloud Run + Neon con URL fija (opción B, responsable Humberto Llinás, T-43) y túnel rápido de Cloudflare desde un equipo propio como respaldo (opción A); Hugging Face Spaces se descartó porque sus Spaces de Docker gratuitos exigen PRO; ver ADR-05 y `docs/despliegue.md`. **Cobertura ≥ 70 % (T-09):** Sprints 2 y 3, responsable Rafael Potes. El 80 % de la Entrega 1 son funcionalidades de punta a punta, no cobertura.
 
 ## 7. Pendientes críticos
 

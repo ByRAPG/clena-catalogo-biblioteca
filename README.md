@@ -158,7 +158,7 @@ Notas de seguridad del servidor web (`frontend/Caddyfile`): la política `Conten
 
 ## Aplicación desplegada
 
-El despliegue con URL pública (T-07) está descrito en [`docs/despliegue.md`](docs/despliegue.md): la opción A es un túnel rápido de Cloudflare desde un equipo propio con `docker-compose.tunnel.yml` (la URL `trycloudflare.com` cambia en cada reinicio del túnel y el sitio solo está disponible mientras el equipo esté encendido) y la opción B, Hugging Face Spaces con Neon, está descrita pero no implementada. Los controles de seguridad y las cabeceras medidas están en [`docs/informe-seguridad.md`](docs/informe-seguridad.md).
+El despliegue con URL pública (T-07) está descrito en [`docs/despliegue.md`](docs/despliegue.md): la opción A es un túnel rápido de Cloudflare desde un equipo propio con `docker-compose.tunnel.yml` (la URL `trycloudflare.com` cambia en cada reinicio del túnel y el sitio solo está disponible mientras el equipo esté encendido) y la opción B, la de la entrega, es Google Cloud Run con Neon y una URL fija (imagen única en `deploy/cloud-run/`). Los controles de seguridad y las cabeceras medidas están en [`docs/informe-seguridad.md`](docs/informe-seguridad.md).
 
 ## Documentación
 
@@ -175,7 +175,7 @@ El despliegue con URL pública (T-07) está descrito en [`docs/despliegue.md`](d
 | [`docs/definition-of-done.md`](docs/definition-of-done.md) | Cuándo una tarea está terminada |
 | [`docs/sprint-planning.md`](docs/sprint-planning.md), [`daily-scrum.md`](docs/daily-scrum.md), [`sprint-review.md`](docs/sprint-review.md), [`sprint-retrospective.md`](docs/sprint-retrospective.md) | Actas de Scrum por sprint |
 | [`docs/evidencias.md`](docs/evidencias.md) | Enlaces a grabaciones de Teams por fecha |
-| [`docs/despliegue.md`](docs/despliegue.md) | Despliegue con URL pública: túnel de Cloudflare (opción A) y Hugging Face Spaces con Neon (opción B) |
+| [`docs/despliegue.md`](docs/despliegue.md) | Despliegue con URL pública: túnel de Cloudflare (opción A) y Google Cloud Run con Neon (opción B) |
 | [`docs/aviso-privacidad.md`](docs/aviso-privacidad.md) | Aviso de privacidad (Ley 1581 de 2012) |
 | [`docs/recursos-de-terceros.md`](docs/recursos-de-terceros.md) | Logos y fotos de terceros incluidos y cómo se retiran |
 | [`docs/guia-visual.md`](docs/guia-visual.md) | Guía visual de la interfaz |
