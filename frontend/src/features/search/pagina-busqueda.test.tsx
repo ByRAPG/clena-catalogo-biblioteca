@@ -323,6 +323,47 @@ describe('Pantalla de búsqueda', () => {
     })
   })
 
+  it('avisa y enlaza la primera página si ?pagina= no es un entero', async () => {
+    simularApi([CIEN_ANOS], 42)
+    pintar('/?q=cien&pagina=1.5')
+
+    expect(await screen.findByText('Esta página no existe')).toBeDefined()
+    // No se pide 1.5 al backend: con un decimal responde 400.
+    expect(parametrosDeLaBusqueda().get('page')).toBe('1')
+    // Ni conteo ni lista: lo que se pidió no existe.
+    expect(screen.queryByText('42 resultados')).toBeNull()
+    expect(screen.queryByRole('listitem')).toBeNull()
+
+    const enlace = screen.getByRole('link', { name: 'Ver la primera página' })
+    expect(enlace.getAttribute('href')).toBe('/?q=cien')
+  })
+
+  it('avisa si ?pagina= se pasa del total de páginas', async () => {
+    simularApi([], 42)
+    pintar('/?q=cien&pagina=9999')
+
+    expect(await screen.findByText('Esta página no existe')).toBeDefined()
+    expect(screen.getByText('Esta búsqueda llega hasta la página 5.')).toBeDefined()
+    expect(screen.queryByText('42 resultados')).toBeNull()
+  })
+
+  it('acepta una página que sí existe', async () => {
+    simularApi([CIEN_ANOS], 42)
+    pintar('/?q=cien&pagina=3')
+
+    expect(await screen.findByText('42 resultados')).toBeDefined()
+    expect(screen.queryByText('Esta página no existe')).toBeNull()
+    expect(parametrosDeLaBusqueda().get('page')).toBe('3')
+  })
+
+  it('sin resultados, manda el mensaje de HU-07 y no el de página inexistente', async () => {
+    simularApi([], 0)
+    pintar('/?q=zzzz&pagina=4')
+
+    expect(await screen.findByText(/No encontramos libros/)).toBeDefined()
+    expect(screen.queryByText('Esta página no existe')).toBeNull()
+  })
+
   it('conserva el tutorial de la primera búsqueda', async () => {
     simularApi([])
     pintar()
