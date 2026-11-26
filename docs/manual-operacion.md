@@ -8,6 +8,8 @@ Este manual es para quien mantiene el sistema encendido: arrancarlo, crear el pr
 
 ## 1. Arquitectura de ejecución
 
+La URL de la entrega se publica con Google Cloud Run y Neon (opción B; ver [`despliegue.md`](despliegue.md), T-43). Las secciones de Docker Compose de este manual aplican a la opción A (túnel de respaldo) y a la operación local.
+
 El sistema corre con Docker Compose en una sola máquina. `docker-compose.prod.yml` define tres servicios; `docker-compose.tunnel.yml` agrega un cuarto (`tunnel`) cuando se publica con un túnel rápido de Cloudflare.
 
 | Servicio | Imagen | Función | Memoria máx. |
@@ -161,6 +163,16 @@ El `-p clena-prueba` es lo que separa los volúmenes; `down -v` con otro nombre 
 - Guardar en **otro disco o servicio** distinto del que aloja Docker (disco externo, unidad en la nube de la institución). Un respaldo en el mismo disco no protege contra la falla del disco.
 - Conservar al menos los últimos 7 diarios y 4 semanales; borrar el resto.
 - El respaldo contiene datos de usuarios (correos, hashes de contraseña, préstamos): guardarlo cifrado o con acceso restringido y nunca subirlo a GitHub.
+
+### 5.6. Respaldo y restauración en Neon
+
+En la opción B la base de datos está en Neon, no en el volumen `postgres_data`.
+
+- **Historial:** Neon guarda el historial y permite restaurar una rama a un punto en el tiempo desde su consola (Branches → Restore), dentro de la ventana de retención del plan gratuito.
+- **Volcado:** además se puede sacar un volcado con la cadena de conexión directa (no la del pooler): `pg_dump "$DATABASE_URL" -Fc -f respaldo.dump`. Nunca se sube el volcado al repositorio.
+- **Restaurar:** `pg_restore --clean --no-owner -d "$DATABASE_URL" respaldo.dump`. Si cambió el catálogo, después se ejecuta `pnpm run search:reindex`.
+- **Secretos:** `DATABASE_URL` y los secretos JWT viven en Secret Manager de Google Cloud, nunca en el repositorio.
+- **Migraciones:** corren solas al arrancar el contenedor (`prisma migrate deploy`).
 
 ## 6. Reindexar embeddings
 
