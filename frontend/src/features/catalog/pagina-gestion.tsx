@@ -6,6 +6,7 @@ import {
   IconoCatalogo,
   IconoLibroNuevo,
   IconoQr,
+  IconoSala,
   IconoSubir,
 } from '../../shared/ui/iconos'
 import { useSesion } from '../auth/sesion-context'
@@ -51,10 +52,18 @@ export function PaginaGestion() {
           descripcion="Registrar préstamos de ejemplares a lectores y marcar devoluciones."
           to="/gestion/prestamos"
         />
+        <CuadroMarca
+          tono="azul"
+          numero="03"
+          icono={<IconoSala />}
+          titulo="Editar ejemplar"
+          descripcion="Cambiar el estante de un ejemplar o marcarlo en mantenimiento."
+          to="/gestion/ejemplares"
+        />
         {esAdmin && (
           <CuadroMarca
-            tono="azul"
-            numero="03"
+            tono="granate"
+            numero="04"
             icono={<IconoSubir />}
             titulo="Importar catálogo"
             descripcion="Cargar muchos libros a la vez desde un archivo CSV."
@@ -62,16 +71,16 @@ export function PaginaGestion() {
           />
         )}
         <CuadroMarca
-          tono={esAdmin ? 'granate' : 'azul'}
-          numero={esAdmin ? '04' : '03'}
+          tono={esAdmin ? 'azul' : 'granate'}
+          numero={esAdmin ? '05' : '04'}
           icono={<IconoQr />}
           titulo="Códigos QR"
           descripcion="Descargar los códigos para imprimir en la entrada y en cada sala."
           href="#codigos-qr"
         />
         <CuadroMarca
-          tono={esAdmin ? 'azul' : 'granate'}
-          numero={esAdmin ? '05' : '04'}
+          tono={esAdmin ? 'granate' : 'azul'}
+          numero={esAdmin ? '06' : '05'}
           icono={<IconoCatalogo />}
           titulo="Ver el catálogo"
           descripcion="Revisar cómo ve el público las búsquedas y las fichas."

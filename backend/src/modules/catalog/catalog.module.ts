@@ -31,6 +31,11 @@ import { CATALOG_TERM_REPOSITORY } from './application/ports/catalog-term.reposi
 import { PrismaWorkRegistrationRepository } from './infrastructure/persistence/prisma-work-registration.repository';
 import { PrismaCatalogTermRepository } from './infrastructure/persistence/prisma-catalog-term.repository';
 import { CatalogWorksController } from './presentation/catalog-works.controller';
+import { UpdateCopyUseCase } from './application/use-cases/update-copy.use-case';
+import { ListShelvesUseCase } from './application/use-cases/list-shelves.use-case';
+import { COPY_MANAGEMENT_REPOSITORY } from './application/ports/copy-management.repository';
+import { PrismaCopyManagementRepository } from './infrastructure/persistence/prisma-copy-management.repository';
+import { CatalogCopiesController } from './presentation/catalog-copies.controller';
 
 @Module({
   imports: [IamModule],
@@ -38,6 +43,7 @@ import { CatalogWorksController } from './presentation/catalog-works.controller'
     RoomsController,
     ImportCatalogController,
     CatalogWorksController,
+    CatalogCopiesController,
   ],
   providers: [
     ImportCatalogUseCase,
@@ -58,6 +64,12 @@ import { CatalogWorksController } from './presentation/catalog-works.controller'
       useClass: PrismaWorkRegistrationRepository,
     },
     { provide: CATALOG_TERM_REPOSITORY, useClass: PrismaCatalogTermRepository },
+    UpdateCopyUseCase,
+    ListShelvesUseCase,
+    {
+      provide: COPY_MANAGEMENT_REPOSITORY,
+      useClass: PrismaCopyManagementRepository,
+    },
     GenerateRoomQr,
     GenerateEntranceQr,
     { provide: ROOM_REPOSITORY, useClass: PrismaRoomRepository },
