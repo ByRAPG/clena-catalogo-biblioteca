@@ -3,15 +3,16 @@
 # Se construye desde la raíz del repo:
 #   docker build -f deploy/cloud-run/Dockerfile -t busca-facil .
 # Etapas equivalentes a backend/Dockerfile y frontend/Dockerfile (mismas
-# imágenes base fijadas por digest y el mismo modelo con SHA-256 verificado).
-ARG NODE_IMAGE=node:22.23.5-bookworm-slim@sha256:e9f565d32859f0cbfb52125eafe8be39390f24dac302dc3cdf566e8ba3ab21ee
+# imágenes base y el mismo modelo con SHA-256 verificado).
+ARG NODE_IMAGE=node:26.13.1-bookworm-slim@sha256:0042e17d232a87a2cd485be1da7900fca4d10a4ad11b29e9285da1d2e54798c9
 ARG CADDY_IMAGE=caddy:2.11.9-alpine@sha256:003a97808e781aa9f7e75cc2f43d34d461099031faf5e20faefb9f61126836f0
 
 FROM ${NODE_IMAGE} AS base
 RUN apt-get update \
     && apt-get install -y --no-install-recommends openssl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-RUN corepack enable pnpm
+# Node 25+ ya no incluye corepack: pnpm se instala con la versión de packageManager.
+RUN npm install -g pnpm@12.18.0
 WORKDIR /app
 
 # ---------- API: compilación ----------
@@ -36,8 +37,9 @@ COPY backend/scripts/fetch-embedding-model.mjs ./
 RUN node fetch-embedding-model.mjs /models
 
 # ---------- Frontend: bundle estático ----------
-FROM node:22-alpine AS web-build
-RUN corepack enable pnpm
+FROM node:26-alpine AS web-build
+# Node 25+ ya no incluye corepack: pnpm se instala con la versión de packageManager.
+RUN npm install -g pnpm@12.18.0
 WORKDIR /app
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
