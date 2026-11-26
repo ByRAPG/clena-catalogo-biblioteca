@@ -163,10 +163,78 @@ describe('Pantalla de búsqueda', () => {
     simularApi([])
     pintar()
 
-    expect(
-      await screen.findByText(/No encontramos libros que coincidan/),
-    ).toBeDefined()
+    expect(await screen.findByText(/No encontramos libros/)).toBeDefined()
     expect(screen.getByText('Sin resultados')).toBeDefined()
+  })
+
+  it('repite la consulta escrita y sugiere qué hacer, sin filtros (HU-07)', async () => {
+    simularApi([], 0)
+    pintar('/?q=gabrial garsia')
+
+    // El bloque se anuncia solo: es lo que una persona ciega necesita oír
+    // cuando la lista queda vacía.
+    const aviso = await screen.findByRole('status')
+
+    // Ver lo escrito es lo que deja descubrir el error de ortografía.
+    expect(within(aviso).getByText('«gabrial garsia»')).toBeDefined()
+    expect(within(aviso).getByText(/Revise la ortografía/)).toBeDefined()
+    expect(within(aviso).getByText(/palabras más generales/)).toBeDefined()
+    expect(within(aviso).getByText(/mostrador/)).toBeDefined()
+
+    // Sin filtros puestos no se ofrece quitarlos.
+    expect(
+      within(aviso).queryByRole('button', {
+        name: 'Quitar los filtros y buscar de nuevo',
+      }),
+    ).toBeNull()
+  })
+
+  it('enlaza tres temas de la portada cuando no hay resultados (HU-07)', async () => {
+    simularApi([], 0)
+    pintar('/?q=zzzz')
+    const aviso = await screen.findByRole('status')
+
+    const temas = within(aviso).getAllByRole('link')
+    expect(temas).toHaveLength(3)
+    expect(temas.map((t) => t.getAttribute('href'))).toEqual([
+      '/?q=Historia%20del%20Caribe',
+      '/?q=Cuentos%20infantiles',
+      '/?q=Poes%C3%ADa%20contempor%C3%A1nea',
+    ])
+  })
+
+  it('con filtros puestos, «Quitar los filtros» limpia la URL y deja la consulta (HU-07)', async () => {
+    simularApi([], 0)
+    pintar(`/?q=cien&sala=${ID_SALA}&disponibles=true`)
+    const aviso = await screen.findByRole('status')
+
+    expect(within(aviso).getByText(/Quite los filtros/)).toBeDefined()
+    fireEvent.click(
+      within(aviso).getByRole('button', {
+        name: 'Quitar los filtros y buscar de nuevo',
+      }),
+    )
+
+    await waitFor(() => {
+      const enviados = parametrosDeLaBusqueda()
+      expect(enviados.has('roomId')).toBe(false)
+      expect(enviados.has('available')).toBe(false)
+      expect(enviados.get('q')).toBe('cien')
+    })
+  })
+
+  it('sin consulta y solo con filtros, no inventa una consulta escrita', async () => {
+    simularApi([], 0)
+    pintar('/?disponibles=true')
+    const aviso = await screen.findByRole('status')
+
+    expect(within(aviso).getByText(/No encontramos libros con esos filtros/)).toBeDefined()
+    expect(within(aviso).queryByText(/Buscó:/)).toBeNull()
+    expect(
+      within(aviso).getByRole('button', {
+        name: 'Quitar los filtros y buscar de nuevo',
+      }),
+    ).toBeDefined()
   })
 
   it('avisa del fallo de red y deja intentar de nuevo', async () => {
