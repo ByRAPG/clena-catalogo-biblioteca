@@ -1,5 +1,6 @@
 import {
   Alert,
+  Anchor,
   Button,
   Checkbox,
   Group,
@@ -10,7 +11,7 @@ import {
   Title,
 } from '@mantine/core'
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { ApiError, type Paginado } from '../../shared/api/client'
 import { EVENTO_TUTORIAL } from '../tutorial/pasos'
 import { TutorialBusqueda } from '../tutorial/tutorial-busqueda'
@@ -112,7 +113,14 @@ export function PaginaBusqueda() {
   const categoria = esUuid(categoriaCruda) ? categoriaCruda : ''
   const sala = leerSalaDeLaUrl(parametros) ?? ''
   const soloDisponibles = parametros.get('disponibles') === 'true'
-  const pagina = Math.max(1, Number(parametros.get('pagina') ?? '1') || 1)
+  // `?pagina=` llega de la URL, así que puede ser cualquier cosa. Una página
+  // solo existe si es un entero >= 1: con `1.5` o `abc` el backend responde
+  // 400, y con `9999` respondía el conteo y una lista vacía, sin explicar nada.
+  const paginaCruda = parametros.get('pagina')?.trim() ?? ''
+  const numeroDePagina = paginaCruda === '' ? 1 : Number(paginaCruda)
+  const paginaBienEscrita =
+    Number.isInteger(numeroDePagina) && numeroDePagina >= 1
+  const pagina = paginaBienEscrita ? numeroDePagina : 1
 
   // Sube con «Intentar de nuevo»: cambia los criterios efectivos y repite la
   // consulta aunque la URL siga igual.
@@ -258,6 +266,19 @@ export function PaginaBusqueda() {
   const total = resultado?.meta.total ?? 0
   const totalDePaginas = Math.max(1, Math.ceil(total / TAMANO_DE_PAGINA))
   const obras = resultado?.data ?? []
+
+  // Si no hay ningún resultado, la página pedida no es el problema: ahí manda
+  // el mensaje de «sin resultados», que sí dice qué hacer (HU-07).
+  const paginaNoExiste =
+    !paginaBienEscrita || (total > 0 && pagina > totalDePaginas)
+
+  /** La misma búsqueda sin `?pagina=`: conserva el texto y los filtros. */
+  const urlDeLaPrimeraPagina = (() => {
+    const siguientes = new URLSearchParams(parametros)
+    siguientes.delete('pagina')
+    const cadena = siguientes.toString()
+    return cadena === '' ? '/' : `/?${cadena}`
+  })()
 
   return (
     <div className="portada">
@@ -407,7 +428,7 @@ export function PaginaBusqueda() {
             <Text>Buscando…</Text>
           </Group>
         )}
-        {!cargando && error === null && resultado !== null && (
+        {!cargando && error === null && resultado !== null && !paginaNoExiste && (
           <Text className="rotulo">
             {total === 0
               ? 'Sin resultados'
@@ -439,7 +460,25 @@ export function PaginaBusqueda() {
         </Alert>
       )}
 
-      {!cargando && error === null && resultado !== null && total === 0 && (
+      {!cargando && error === null && resultado !== null && paginaNoExiste && (
+        <section role="status">
+          <Stack gap="xs" align="flex-start">
+            <Title order={2} size="h3">
+              Esta página no existe
+            </Title>
+            <Text>
+              {total > 0
+                ? `Esta búsqueda llega hasta la página ${totalDePaginas}.`
+                : 'Revise la dirección: el número de página no es válido.'}
+            </Text>
+            <Anchor component={Link} to={urlDeLaPrimeraPagina} fw={600}>
+              Ver la primera página
+            </Anchor>
+          </Stack>
+        </section>
+      )}
+
+      {!cargando && error === null && resultado !== null && !paginaNoExiste && total === 0 && (
         <SinResultados
           consulta={q}
           hayFiltros={hayFiltros}
@@ -449,7 +488,7 @@ export function PaginaBusqueda() {
         />
       )}
 
-      {obras.length > 0 && (
+      {!paginaNoExiste && obras.length > 0 && (
         <Stack
           component="ul"
           gap="md"
@@ -468,7 +507,7 @@ export function PaginaBusqueda() {
         </Stack>
       )}
 
-      {totalDePaginas > 1 && (
+      {!paginaNoExiste && totalDePaginas > 1 && (
         <Paginador
           pagina={pagina}
           totalDePaginas={totalDePaginas}
