@@ -5,6 +5,11 @@ export const MAX_FAILED_LOGINS = 5;
 export const LOCK_DURATION_MINUTES = 15;
 const MS_PER_MINUTE = 60_000;
 
+/** Hasta cuándo queda bloqueada una cuenta que se bloquea en `now`. */
+export function lockExpiryFrom(now: Date): Date {
+  return new Date(now.getTime() + LOCK_DURATION_MINUTES * MS_PER_MINUTE);
+}
+
 export interface UserProps {
   id: string;
   email: Email;
@@ -71,9 +76,7 @@ export class User {
   registerFailedLogin(now: Date): void {
     this.failedLoginCount += 1;
     if (this.failedLoginCount >= MAX_FAILED_LOGINS) {
-      this.lockedUntilDate = new Date(
-        now.getTime() + LOCK_DURATION_MINUTES * MS_PER_MINUTE,
-      );
+      this.lockedUntilDate = lockExpiryFrom(now);
       this.failedLoginCount = 0;
     }
   }

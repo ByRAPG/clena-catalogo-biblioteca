@@ -55,7 +55,7 @@ export class AuthController {
   @ApiOperation({
     summary: 'Iniciar sesión',
     description:
-      'Valida correo y contraseña. Devuelve el access token y el usuario, y deja el refresh token en una cookie httpOnly. Tras 5 intentos fallidos la cuenta se bloquea 15 minutos.',
+      'Valida correo y contraseña. Devuelve el access token y el usuario, y deja el refresh token en una cookie httpOnly. Tras 5 intentos fallidos la cuenta se bloquea 15 minutos; mientras dura, el login responde el mismo 401 que una contraseña incorrecta.',
   })
   @ApiOkResponse({ type: SessionResponseDto })
   @ApiBadRequestResponse({
@@ -63,7 +63,7 @@ export class AuthController {
   })
   @ApiUnauthorizedResponse({ description: 'Correo o contraseña incorrectos' })
   @ApiTooManyRequestsResponse({
-    description: 'Cuenta bloqueada por demasiados intentos fallidos',
+    description: 'Demasiadas peticiones desde la misma IP (límite por IP)',
     headers: {
       'Retry-After': {
         description: 'Segundos que faltan para poder intentarlo de nuevo',
