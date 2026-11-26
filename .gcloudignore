@@ -1,0 +1,9 @@
+# Lo que no se sube a Cloud Build (gcloud builds submit).
+.git
+**/node_modules
+**/dist
+**/coverage
+**/.env
+**/.env.*
+!**/.env.example
+docs
