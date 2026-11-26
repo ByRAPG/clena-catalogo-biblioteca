@@ -8,3 +8,7 @@ allowBuilds:
   esbuild: true
   onnxruntime-node: false
   protobufjs: false
+overrides:
+  # CVE-2026-40345 y CVE-2026-121707: transitivas de prisma (@prisma/config) con arreglo disponible.
+  deepmerge-ts: 8.0.2
+  effect: 3.22.1
