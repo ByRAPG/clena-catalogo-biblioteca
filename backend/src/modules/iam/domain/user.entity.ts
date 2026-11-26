@@ -62,25 +62,6 @@ export class User {
     return this.lockedUntilDate !== null && this.lockedUntilDate > now;
   }
 
-  /** Segundos que faltan para el desbloqueo, redondeados hacia arriba. */
-  secondsUntilUnlock(now: Date): number {
-    if (!this.isLockedAt(now) || this.lockedUntilDate === null) return 0;
-    return Math.ceil((this.lockedUntilDate.getTime() - now.getTime()) / 1000);
-  }
-
-  /**
-   * Regla de bloqueo: al llegar al quinto intento fallido la cuenta se bloquea
-   * 15 minutos y el contador vuelve a cero, así al terminar el bloqueo
-   * hay cinco intentos nuevos.
-   */
-  registerFailedLogin(now: Date): void {
-    this.failedLoginCount += 1;
-    if (this.failedLoginCount >= MAX_FAILED_LOGINS) {
-      this.lockedUntilDate = lockExpiryFrom(now);
-      this.failedLoginCount = 0;
-    }
-  }
-
   /** Un ingreso correcto reinicia los intentos. */
   registerSuccessfulLogin(): void {
     this.failedLoginCount = 0;

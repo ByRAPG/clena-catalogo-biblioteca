@@ -15,14 +15,6 @@ export class InvalidCredentialsError extends Error {
   }
 }
 
-/** La cuenta está bloqueada; `retryAfterSeconds` alimenta la cabecera Retry-After. */
-export class AccountLockedError extends Error {
-  constructor(readonly retryAfterSeconds: number) {
-    super('Acceso bloqueado por demasiados intentos fallidos');
-    this.name = 'AccountLockedError';
-  }
-}
-
 export class InvalidRefreshTokenError extends Error {
   constructor() {
     super('La sesión no es válida o expiró. Inicia sesión de nuevo.');

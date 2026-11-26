@@ -181,10 +181,10 @@ describe('inicio de sesión', () => {
     )
   })
 
-  it('bloquea el formulario y muestra la espera enviada con 429', async () => {
+  it('con 429 bloquea el formulario y muestra la espera enviada', async () => {
     simularApi({
       login: () =>
-        respuesta({ statusCode: 429, message: 'Cuenta bloqueada' }, 429, {
+        respuesta({ statusCode: 429, message: 'Demasiadas peticiones' }, 429, {
           'Retry-After': '90',
         }),
     })
@@ -195,17 +195,36 @@ describe('inicio de sesión', () => {
 
     await waitFor(() =>
       expect(screen.getByRole('alert').textContent).toContain(
-        'Acceso bloqueado tras 5 intentos',
+        'Demasiados intentos desde este equipo',
       ),
     )
-    expect(screen.getByRole('alert').textContent).toContain(
-      '1 minuto y 30 segundos',
-    )
+    // El aviso es fijo; la cuenta regresiva va aparte para el lector de pantalla.
+    const aviso = screen.getByRole('alert')
+    expect(aviso.textContent).toContain('Espere un momento e intente de nuevo.')
+    expect(aviso.textContent).not.toContain('segundos')
+    expect(
+      screen.getByText(/Puede volver a intentarlo en 1 minuto y 30 segundos/),
+    ).toBeDefined()
     expect(
       screen
-        .getByRole('button', { name: 'Acceso bloqueado' })
+        .getByRole('button', { name: 'Espere un momento' })
         .hasAttribute('disabled'),
     ).toBe(true)
+  })
+
+  it('con 429 sin Retry-After usa una espera de 60 segundos', async () => {
+    simularApi({
+      login: () =>
+        respuesta({ statusCode: 429, message: 'Demasiadas peticiones' }, 429),
+    })
+    pintarIngreso()
+
+    await llenarFormulario('personal@example.org', 'incorrecta')
+    enviarFormulario()
+
+    expect(
+      await screen.findByText(/Puede volver a intentarlo en 1 minuto\./),
+    ).toBeDefined()
   })
 })
 

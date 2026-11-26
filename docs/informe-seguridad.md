@@ -60,7 +60,7 @@ No se incluye diagrama de flujo de datos: la arquitectura ya está en `docs/arqu
 | A02 Fallos criptográficos | Contraseñas con Argon2id; refresh token guardado solo como hash; secretos JWT distintos, de al menos 32 caracteres y sin valores de ejemplo en producción | `argon2-password-hasher.ts` (clase `Argon2PasswordHasher`); `env.validation.ts` (comprobación de longitud en integración; `superRefine` de rechazo de `change-me` e igualdad, rama `wt-seguridad`) | Base y #109 |
 | A02 Fallos criptográficos | TLS automático con Caddy y HSTS de un año | `frontend/Caddyfile` (sitio con TLS automático y cabecera `Strict-Transport-Security`) | #118 |
 | A03 Inyección | `ValidationPipe` con `whitelist` y `forbidNonWhitelisted`; consultas SQL crudas solo con plantilla etiquetada de Prisma (valores parametrizados); sin `innerHTML` ni `dangerouslySetInnerHTML` en la SPA | `app.setup.ts` (`ValidationPipe`); `prisma-search.repository.ts` (`$queryRaw` con `Prisma.sql`); sin `innerHTML` en el código de producción de `frontend/src` (solo aparece en pruebas) | Base |
-| A04 Diseño inseguro | Bloqueo de cuenta tras 5 fallos durante 15 minutos; límite global por IP y límite estricto en rutas de autenticación; tiempo y concurrencia máximos de la búsqueda semántica | `user.entity.ts` (`registerFailedLogin`, `MAX_FAILED_LOGINS`, `LOCK_DURATION_MINUTES`); `throttler.config.ts` (límites `default` y `auth`); `env.validation.ts` (`SEMANTIC_TIMEOUT_MS`, `SEMANTIC_MAX_CONCURRENCY`) | Base, #109, #113 |
+| A04 Diseño inseguro | Bloqueo de cuenta tras 5 fallos durante 15 minutos; límite global por IP y límite estricto en rutas de autenticación; tiempo y concurrencia máximos de la búsqueda semántica | `user.entity.ts` (`lockExpiryFrom`, `MAX_FAILED_LOGINS`, `LOCK_DURATION_MINUTES`); `login-user.use-case.ts`; `throttler.config.ts` (límites `default` y `auth`); `env.validation.ts` (`SEMANTIC_TIMEOUT_MS`, `SEMANTIC_MAX_CONCURRENCY`) | Base, #109, #113 |
 | A05 Configuración incorrecta | Helmet con CSP de la API en `default-src 'none'`; CSP de la SPA sin `unsafe-inline` en scripts; `Server` y `X-Powered-By` eliminados; CORS con lista de orígenes; `trust proxy` solo si `TRUST_PROXY` lo indica | `security-headers.ts` (`apiHeaders`, `docsHeaders`); `Caddyfile` (bloques `header`, `-Server`, `Content-Security-Policy`); `main.ts` (`trust proxy` y `enableCors`) | #109, #118 |
 | A05 Configuración incorrecta | Contenedores de producción sin root, con sistema de archivos de solo lectura, sin capacidades y con límites de memoria; solo `web` publica puertos | `backend/Dockerfile` (`USER node`); `frontend/Dockerfile` (`USER 65532:65532`); `docker-compose.prod.yml` (`read_only`, `cap_drop`, `no-new-privileges`, `mem_limit`) | #114, #118 |
 | A05 Configuración incorrecta | Puertos de desarrollo ligados a `127.0.0.1` | `docker-compose.yml` (mapeos `127.0.0.1:` de `ports`, rama `wt-pgvector`) | #108 |
@@ -74,7 +74,7 @@ No se incluye diagrama de flujo de datos: la arquitectura ya está en `docs/arqu
 
 | Capítulo ASVS | Estado | Evidencia |
 |---|---|---|
-| V2 Autenticación | Cumple, con las excepciones H-03 a H-05 | Argon2id, bloqueo, mensaje único |
+| V2 Autenticación | Cumple; H-03 y H-05 corregidos y H-04 corregido en parte (riesgo residual R-06) | Argon2id, bloqueo, mensaje único, hash ficticio, contador atómico |
 | V3 Gestión de sesión | Cumple con el riesgo residual R-01 | Cookie `httpOnly`/`strict`, rotación, cierre de familia |
 | V4 Control de acceso | Cumple | Guards por rol en cada ruta de escritura |
 | V5 Validación | Cumple, con la excepción H-06 | `ValidationPipe`, parámetros SQL, tope JSON de 2 MB |
@@ -105,14 +105,14 @@ Severidad: **Alta** (explotable con impacto serio sin condiciones especiales), *
 | H-07 | Enlace digital de una obra aceptaba cualquier esquema, incluido `javascript:` | Media | Solo `http:` y `https:` (`url-web.ts`) | #115 |
 | H-08 | Caddy no limitaba el cuerpo; solo la API cortaba a 2 MB | Baja | `request_body { max_size 2MB }` para `/api` (`frontend/Caddyfile`, bloque `request_body`, rama `wt-prod`) | #118 |
 | H-09 | `ADMIN_PASSWORD` seguía en el entorno del proceso tras crear el administrador | Baja | Se elimina del entorno y se admite `ADMIN_PASSWORD_FILE` (`create-admin.cli.ts`, `delete process.env.ADMIN_PASSWORD`, rama `wt-admin`) | #120 |
+| H-03 | El contador de intentos fallidos no era atómico: dos peticiones simultáneas podían contar un solo fallo | Media | Incremento atómico en la base de datos (`failedLogins: { increment: 1 }`) y bloqueo decidido con el valor devuelto (`prisma-user.repository.ts`, `incrementFailedLogins`) | #155 |
+| H-04 | La respuesta 429 de «cuenta bloqueada» revelaba que el correo existe | Media | **Corregido en parte.** La cuenta bloqueada responde el mismo 401 genérico que una contraseña incorrecta, sin 429 ni `Retry-After` (`login-user.use-case.ts`). Queda el riesgo residual R-06 | #155 |
+| H-05 | Enumeración de correos por tiempo: con correo inexistente no se calculaba ningún hash | Baja | Se verifica un hash ficticio calculado una vez al arrancar (`login-user.use-case.ts`, `dummyHash`) y la contraseña se verifica también con la cuenta bloqueada | #155 |
 
 ### 4.2 Abiertos y asignados
 
 | Id | Hallazgo | Severidad | Recomendación | Responsable |
 |---|---|---|---|---|
-| H-03 | El contador de intentos fallidos no es atómico: dos peticiones simultáneas pueden leer el mismo valor y contar un solo fallo (`login-user.use-case.ts`, `user.entity.ts`: `registerFailedLogin`) | Media | Incremento atómico en SQL (`UPDATE ... SET failed = failed + 1 ... RETURNING`) dentro de una transacción | T-27, Juan Camilo |
-| H-04 | Un tercero puede bloquear la cuenta ajena con cinco intentos, y la respuesta 429 de «cuenta bloqueada» (`login-user.use-case.ts`: `AccountLockedError`) revela que el correo existe | Media | Mantener la respuesta 401 genérica durante el bloqueo, o bloquear por pareja correo más IP; avisar al titular por otro canal | T-27, Juan Camilo |
-| H-05 | Enumeración de correos por tiempo: con correo inexistente no se calcula ningún hash y la respuesta es más rápida (`login-user.use-case.ts`: `findByEmail` y `hasher.verify`) | Baja | Verificar contra un hash ficticio precalculado cuando el usuario no existe | T-27, Juan Camilo |
 | H-06 | La importación CSV no tiene tope de filas ni de longitud por campo; solo el límite global de 2 MB | Media | Máximo de filas (por ejemplo 5 000) y de caracteres por campo en el DTO de importación | T-35 y T-36, Humberto |
 
 ### 4.3 Riesgos aceptados o residuales
@@ -123,6 +123,7 @@ Severidad: **Alta** (explotable con impacto serio sin condiciones especiales), *
 | R-02 | Password spraying distribuido: el límite es por IP y el bloqueo por cuenta, de modo que muchas IP con pocas pruebas cada una pasan | Baja | Aceptado: Argon2id encarece cada intento y las contraseñas del personal son pocas. Recomendar contraseñas largas y, a futuro, doble factor para `ADMIN` |
 | R-03 | `pnpm audit` del backend: 2 altas transitivas de `prisma > @prisma/config` (`deepmerge-ts` 7.1.5, `effect` 3.21.0, ReDoS) | Baja | Aceptado: solo las usa la CLI de Prisma en migraciones, no la ruta de una petición. Se resolverá al actualizar Prisma (Dependabot) |
 | R-04 | El tope JSON de 2 MB es global, no por ruta (`app.setup.ts`: `JSON_BODY_LIMIT`) | Baja | Aceptado: Caddy ya corta a 2 MB. Si se amplía, reducir el tope en las rutas que no importan |
+| R-06 | Un tercero puede bloquear 15 minutos una cuenta ajena con cinco intentos fallidos (parte de H-04) | Baja | Aceptado para la entrega: el límite de 20 peticiones por minuto por IP en `/auth/*` lo mitiga. A futuro, bloquear por pareja correo más IP y avisar al titular por otro canal |
 | R-05 | La CSP estricta está solo en la SPA; la API usa `default-src 'none'` y `/docs` relaja a `unsafe-inline` para Swagger | Baja | Aceptado: `/docs` no contiene datos. Considerar desactivar `/docs` en producción |
 | R-06 | Los secretos viajan en variables de entorno, no en Docker secrets | Baja | Aceptado para una sola máquina. El archivo `.env.prod` no se versiona (`.gitignore`) y se restringe con permisos `600` |
 | R-07 | HSTS sin `preload` (`Caddyfile`, cabecera `Strict-Transport-Security`) | Baja | Aceptado: la precarga es difícil de revertir. Revisar cuando el dominio definitivo esté estable |
@@ -148,12 +149,12 @@ Los escáneres se ejecutaron el 20 de noviembre de 2026 sobre el código de inte
 
 - El sistema cubre las categorías OWASP Top 10 relevantes para una aplicación de catálogo sin pagos ni datos personales sensibles. Los controles esenciales (autorización por rol, Argon2id, cookie de sesión endurecida, cabeceras, contenedores sin privilegios, escáneres en CI) están implementados y respaldados por pruebas.
 - No hay secretos en el historial ni vulnerabilidades críticas. Las dos altas del backend son transitivas, solo de la CLI de Prisma, y no están en la ruta de una petición.
-- El hallazgo de mayor prioridad es el endurecimiento del login (H-03, H-04, H-05), que ya está asignado.
+- El endurecimiento del login (H-03, H-04, H-05) quedó corregido en #155; de H-04 se acepta como riesgo residual (R-06) que un tercero bloquee una cuenta ajena. El hallazgo abierto de mayor prioridad es H-06.
 
 **Próximos pasos**
 
 1. Fusionar los PR que contienen las correcciones del 20 de noviembre (#108, #109, #115, #118 y #120) y confirmar que CodeQL, gitleaks y Trivy quedan en verde en `main`.
-2. Cerrar T-27 (H-03 a H-05) y T-35 y T-36 (H-06) antes de la entrega.
+2. Cerrar T-35 y T-36 (H-06) antes de la entrega. T-27 (H-03 a H-05) quedó corregida en #155.
 3. Cuando exista la URL de producción, medir las cabeceras con una herramienta de calificación y repetir el análisis de imágenes.
 4. Actualizar Prisma para eliminar las dos altas transitivas (R-03) y revisar los PR de Dependabot cada semana.
 5. Evaluar, si hay tiempo, comprobar el estado del usuario en cada petición (R-01) y desactivar `/docs` en producción (R-05).

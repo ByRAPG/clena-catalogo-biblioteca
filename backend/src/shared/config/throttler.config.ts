@@ -11,7 +11,7 @@ export interface ThrottleSettings {
 
 /**
  * Dos límites por IP: `default` para toda la API y `auth` solo para /auth/*.
- * Complementa (no reemplaza) el bloqueo de cuenta del login (AccountLockedError).
+ * Complementa el bloqueo de cuenta del login, que responde un 401 genérico.
  * Al superarlos, ThrottlerGuard responde 429 con la cabecera Retry-After.
  */
 export function buildThrottlerOptions(
