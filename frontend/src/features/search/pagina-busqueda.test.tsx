@@ -171,9 +171,11 @@ describe('Pantalla de búsqueda', () => {
     simularApi([], 0)
     pintar('/?q=gabrial garsia')
 
-    // El bloque se anuncia solo: es lo que una persona ciega necesita oír
-    // cuando la lista queda vacía.
-    const aviso = await screen.findByRole('status')
+    // El bloque es una región con nombre: se encuentra navegando por
+    // regiones, sin que el lector lo lea entero de un tirón al aparecer.
+    const aviso = await screen.findByRole('region', {
+      name: /No encontramos libros/,
+    })
 
     // Ver lo escrito es lo que deja descubrir el error de ortografía.
     expect(within(aviso).getByText('«gabrial garsia»')).toBeDefined()
@@ -192,7 +194,9 @@ describe('Pantalla de búsqueda', () => {
   it('enlaza tres temas de la portada cuando no hay resultados (HU-07)', async () => {
     simularApi([], 0)
     pintar('/?q=zzzz')
-    const aviso = await screen.findByRole('status')
+    const aviso = await screen.findByRole('region', {
+      name: /No encontramos libros/,
+    })
 
     const temas = within(aviso).getAllByRole('link')
     expect(temas).toHaveLength(3)
@@ -206,7 +210,9 @@ describe('Pantalla de búsqueda', () => {
   it('con filtros puestos, «Quitar los filtros» limpia la URL y deja la consulta (HU-07)', async () => {
     simularApi([], 0)
     pintar(`/?q=cien&sala=${ID_SALA}&disponibles=true`)
-    const aviso = await screen.findByRole('status')
+    const aviso = await screen.findByRole('region', {
+      name: /No encontramos libros/,
+    })
 
     expect(within(aviso).getByText(/Quite los filtros/)).toBeDefined()
     fireEvent.click(
@@ -226,7 +232,9 @@ describe('Pantalla de búsqueda', () => {
   it('sin consulta y solo con filtros, no inventa una consulta escrita', async () => {
     simularApi([], 0)
     pintar('/?disponibles=true')
-    const aviso = await screen.findByRole('status')
+    const aviso = await screen.findByRole('region', {
+      name: /No encontramos libros/,
+    })
 
     expect(within(aviso).getByText(/No encontramos libros con esos filtros/)).toBeDefined()
     expect(within(aviso).queryByText(/Buscó:/)).toBeNull()

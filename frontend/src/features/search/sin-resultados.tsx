@@ -6,9 +6,12 @@ import { TEMAS_PORTADA, rutaDelTema } from './temas-portada'
  * Bloque que aparece cuando la búsqueda no devuelve nada (HU-07).
  *
  * Decisiones:
- * - `role="status"`: el bloque se anuncia solo, sin que haya que ir a buscarlo
- *   con el lector de pantalla. El conteo («Sin resultados») lo anuncia la
- *   región de arriba; aquí se anuncia el qué hacer ahora.
+ * - Sin `role="status"` en la sección (F1 de la revisión del PR #157): el
+ *   conteo ya lo anuncia la región `aria-live` de arriba, y marcar todo el
+ *   bloque hacía que el lector leyera de un tirón el título, las sugerencias,
+ *   el botón y los tres temas a quien acaba de fallar una búsqueda. La sección
+ *   queda con `aria-labelledby`, así se encuentra navegando por regiones y se
+ *   lee cuando la persona decide leerla.
  * - La consulta se repite tal como se escribió. Si alguien buscó «Gabrial
  *   García» y lo ve escrito, descubre el error sin que haya que señalárselo.
  * - Cada sugerencia es accionable o comprobable: el botón quita los filtros y
@@ -30,7 +33,7 @@ export function SinResultados({
   alQuitarFiltros: () => void
 }) {
   return (
-    <section role="status" aria-labelledby="titulo-sin-resultados">
+    <section aria-labelledby="titulo-sin-resultados">
       <Stack gap="md" align="flex-start">
         <Stack gap="xs">
           <Title id="titulo-sin-resultados" order={2} size="h3">
