@@ -7,9 +7,7 @@ export class LogEmailSender implements EmailSender {
   private readonly logger = new Logger('Correo');
 
   send(message: EmailMessage): Promise<void> {
-    this.logger.log(
-      `(sin SMTP_HOST) Para ${message.to}: ${message.subject}`,
-    );
+    this.logger.log(`(sin SMTP_HOST) Para ${message.to}: ${message.subject}`);
     return Promise.resolve();
   }
 }

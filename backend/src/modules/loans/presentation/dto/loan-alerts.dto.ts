@@ -8,7 +8,10 @@ export class RequestAvailabilityAlertDto {
   @IsUUID('all', { message: 'El lector no es válido' })
   readerId!: string;
 
-  @ApiProperty({ format: 'uuid', description: 'Libro sin ejemplares disponibles' })
+  @ApiProperty({
+    format: 'uuid',
+    description: 'Libro sin ejemplares disponibles',
+  })
   @IsUUID('all', { message: 'El libro no es válido' })
   workId!: string;
 }
@@ -43,7 +46,8 @@ export class AvailabilityAlertDto {
 export class LoanAlertsPanelDto {
   @ApiProperty({
     type: [LoanAlertDto],
-    description: 'Préstamos vencidos primero y luego los que vencen en menos de 48 h',
+    description:
+      'Préstamos vencidos primero y luego los que vencen en menos de 48 h',
   })
   loans!: LoanAlertDto[];
 
@@ -80,7 +84,9 @@ export function toAvailabilityAlertDto(
   };
 }
 
-export function toLoanAlertsPanelDto(panel: LoanAlertsPanel): LoanAlertsPanelDto {
+export function toLoanAlertsPanelDto(
+  panel: LoanAlertsPanel,
+): LoanAlertsPanelDto {
   return {
     loans: panel.loans.map((a) => ({
       loanId: a.loanId,

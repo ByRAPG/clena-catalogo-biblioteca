@@ -75,7 +75,10 @@ export class PrismaLoanAlertsRepository implements LoanAlertsRepository {
     }));
   }
 
-  async claimNotification(loanId: string, type: DueAlertType): Promise<boolean> {
+  async claimNotification(
+    loanId: string,
+    type: DueAlertType,
+  ): Promise<boolean> {
     try {
       await this.prisma.notification.create({ data: { loanId, type } });
       return true;
@@ -170,7 +173,11 @@ export class PrismaLoanAlertsRepository implements LoanAlertsRepository {
       },
     });
     if (!work) return null;
-    return { id: work.id, title: work.title, available: work.copies.length > 0 };
+    return {
+      id: work.id,
+      title: work.title,
+      available: work.copies.length > 0,
+    };
   }
 
   async createAvailabilityAlert(

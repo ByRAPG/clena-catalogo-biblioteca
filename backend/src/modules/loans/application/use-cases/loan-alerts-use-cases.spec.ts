@@ -13,7 +13,10 @@ import type {
 import { ListLoanAlertsUseCase } from './list-loan-alerts.use-case';
 import { NotifyAvailabilityUseCase } from './notify-availability.use-case';
 import { RequestAvailabilityAlertUseCase } from './request-availability-alert.use-case';
-import { NO_EMAIL_ERROR, RunLoanAlertsUseCase } from './run-loan-alerts.use-case';
+import {
+  NO_EMAIL_ERROR,
+  RunLoanAlertsUseCase,
+} from './run-loan-alerts.use-case';
 
 const AHORA = new Date('2026-11-26T15:00:00.000Z');
 const horas = (h: number) => new Date(AHORA.getTime() + h * 3_600_000);
@@ -95,14 +98,14 @@ describe('RunLoanAlertsUseCase', () => {
 
   it('usa el aviso VENCIDO cuando la fecha ya pasó', async () => {
     const repo = fakeRepo({
-      findDueLoans: jest
-        .fn()
-        .mockResolvedValue([
-          prestamo({
-            dueAt: horas(-3),
-            notifications: [{ type: 'POR_VENCER', sentAt: horas(-40), error: null }],
-          }),
-        ]),
+      findDueLoans: jest.fn().mockResolvedValue([
+        prestamo({
+          dueAt: horas(-3),
+          notifications: [
+            { type: 'POR_VENCER', sentAt: horas(-40), error: null },
+          ],
+        }),
+      ]),
     });
     await revision(repo, fakeEmail()).execute();
     expect(repo.claimNotification).toHaveBeenCalledWith('l1', 'VENCIDO');
@@ -112,7 +115,9 @@ describe('RunLoanAlertsUseCase', () => {
     const repo = fakeRepo({
       findDueLoans: jest.fn().mockResolvedValue([
         prestamo({
-          notifications: [{ type: 'POR_VENCER', sentAt: horas(-1), error: null }],
+          notifications: [
+            { type: 'POR_VENCER', sentAt: horas(-1), error: null },
+          ],
         }),
       ]),
     });
@@ -135,9 +140,13 @@ describe('RunLoanAlertsUseCase', () => {
 
   it('deja el aviso en el panel si el lector no tiene correo', async () => {
     const repo = fakeRepo({
-      findDueLoans: jest.fn().mockResolvedValue([
-        prestamo({ reader: { id: 'r2', fullName: 'Sin correo', email: null } }),
-      ]),
+      findDueLoans: jest
+        .fn()
+        .mockResolvedValue([
+          prestamo({
+            reader: { id: 'r2', fullName: 'Sin correo', email: null },
+          }),
+        ]),
     });
     const email = fakeEmail();
     const resumen = await revision(repo, email).execute();
@@ -167,7 +176,9 @@ describe('RunLoanAlertsUseCase', () => {
 
   it('ignora préstamos que todavía no están cerca de vencer', async () => {
     const repo = fakeRepo({
-      findDueLoans: jest.fn().mockResolvedValue([prestamo({ dueAt: horas(72) })]),
+      findDueLoans: jest
+        .fn()
+        .mockResolvedValue([prestamo({ dueAt: horas(72) })]),
     });
     await revision(repo, fakeEmail()).execute();
     expect(repo.claimNotification).not.toHaveBeenCalled();
@@ -180,9 +191,11 @@ describe('NotifyAvailabilityUseCase', () => {
       findDeliverableAvailabilityAlerts: jest.fn().mockResolvedValue([aviso()]),
     });
     const email = fakeEmail();
-    const resumen = await new NotifyAvailabilityUseCase(repo, email, reloj).execute(
-      'w1',
-    );
+    const resumen = await new NotifyAvailabilityUseCase(
+      repo,
+      email,
+      reloj,
+    ).execute('w1');
     expect(repo.findDeliverableAvailabilityAlerts).toHaveBeenCalledWith('w1');
     expect(repo.claimAvailabilityAlert).toHaveBeenCalledWith('a1', AHORA);
     expect(email.send).toHaveBeenCalledWith(
@@ -207,7 +220,11 @@ describe('NotifyAvailabilityUseCase', () => {
     });
     const email = fakeEmail();
     email.send.mockRejectedValue(new Error('SMTP caído'));
-    const resumen = await new NotifyAvailabilityUseCase(repo, email, reloj).execute();
+    const resumen = await new NotifyAvailabilityUseCase(
+      repo,
+      email,
+      reloj,
+    ).execute();
     expect(repo.releaseAvailabilityAlert).toHaveBeenCalledWith('a1');
     expect(resumen).toEqual({ sent: 0, failed: 1 });
   });
@@ -255,7 +272,11 @@ describe('RequestAvailabilityAlertUseCase', () => {
   });
 
   it.each([
-    ['lector inexistente', { findReader: jest.fn().mockResolvedValue(null) }, ReaderNotFoundError],
+    [
+      'lector inexistente',
+      { findReader: jest.fn().mockResolvedValue(null) },
+      ReaderNotFoundError,
+    ],
     [
       'lector sin correo',
       { findReader: jest.fn().mockResolvedValue({ ...lector, email: null }) },

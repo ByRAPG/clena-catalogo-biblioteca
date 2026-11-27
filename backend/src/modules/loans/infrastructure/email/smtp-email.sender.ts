@@ -93,7 +93,9 @@ class SmtpSession {
     return new Promise((resolve, reject) => {
       const socket = createConnection(settings.port, settings.host);
       socket.setTimeout(settings.timeoutMs ?? 10_000, () =>
-        socket.destroy(new Error('El servidor de correo no respondió a tiempo')),
+        socket.destroy(
+          new Error('El servidor de correo no respondió a tiempo'),
+        ),
       );
       socket.once('connect', () => resolve(new SmtpSession(socket)));
       socket.once('error', reject);

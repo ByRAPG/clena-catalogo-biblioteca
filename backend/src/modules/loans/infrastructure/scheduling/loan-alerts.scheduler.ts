@@ -44,9 +44,13 @@ export class LoanAlertsScheduler
   private async run(origin: string): Promise<void> {
     try {
       const summary = await this.runAlerts.execute();
-      this.logger.log(`Revisión de avisos (${origin}): ${JSON.stringify(summary)}`);
+      this.logger.log(
+        `Revisión de avisos (${origin}): ${JSON.stringify(summary)}`,
+      );
     } catch (error) {
-      this.logger.error(`Revisión de avisos (${origin}) falló: ${String(error)}`);
+      this.logger.error(
+        `Revisión de avisos (${origin}) falló: ${String(error)}`,
+      );
     }
   }
 }

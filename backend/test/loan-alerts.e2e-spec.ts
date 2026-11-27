@@ -101,11 +101,7 @@ describe('Alertas de devolución y disponibilidad (e2e, HU-21)', () => {
       database.copy.create({
         data: { workId, shelfId: shelf.id, inventoryCode: code, status },
       });
-    const loan = async (
-      copyId: string,
-      readerId: string,
-      dueInMs: number,
-    ) =>
+    const loan = async (copyId: string, readerId: string, dueInMs: number) =>
       (
         await database.loan.create({
           data: { copyId, readerId, dueAt: new Date(Date.now() + dueInMs) },

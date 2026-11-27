@@ -57,7 +57,11 @@ export class RunLoanAlertsUseCase {
       }
       if (!loan.reader.email) {
         // El aviso queda en el panel aunque no se pueda enviar el correo.
-        await this.alerts.markNotificationFailed(loan.loanId, type, NO_EMAIL_ERROR);
+        await this.alerts.markNotificationFailed(
+          loan.loanId,
+          type,
+          NO_EMAIL_ERROR,
+        );
         reminders.withoutEmail += 1;
         continue;
       }
@@ -72,7 +76,11 @@ export class RunLoanAlertsUseCase {
             type,
           }),
         );
-        await this.alerts.markNotificationSent(loan.loanId, type, this.clock.now());
+        await this.alerts.markNotificationSent(
+          loan.loanId,
+          type,
+          this.clock.now(),
+        );
         reminders.sent += 1;
       } catch (error) {
         await this.alerts.markNotificationFailed(

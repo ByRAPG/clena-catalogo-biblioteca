@@ -85,7 +85,9 @@ export class AlertWorkNotFoundError extends LoanDomainError {
 /** 400: el aviso se envía por correo y el lector no tiene uno (HU-21). */
 export class ReaderWithoutEmailError extends LoanDomainError {
   constructor() {
-    super('El lector no tiene correo registrado; agréguelo para poder avisarle');
+    super(
+      'El lector no tiene correo registrado; agréguelo para poder avisarle',
+    );
   }
 }
 
