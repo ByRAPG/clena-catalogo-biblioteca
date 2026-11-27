@@ -185,12 +185,13 @@ export class PrismaLoanRepository implements LoanRepository {
           },
         });
         if (foreign > 0) throw new CopyNotAvailableError('RESERVADO');
-        // Si presta a quien reservó, la reserva queda cumplida (RECOGIDA).
+        // Si presta a quien reservó, sus reservas activas de esa obra (de este
+        // ejemplar o de otro) quedan cumplidas (RECOGIDA).
         await tx.reservation.updateMany({
           where: {
-            copyId: input.copyId,
             status: 'ACTIVA',
             readerId: input.readerId,
+            work: { copies: { some: { id: input.copyId } } },
           },
           data: { status: 'RECOGIDA', resolvedAt: input.loanedAt },
         });
