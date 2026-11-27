@@ -72,15 +72,24 @@ export function PaginaEditarEjemplar() {
   const [guardando, setGuardando] = useState(false)
   const [errorGuardar, setErrorGuardar] = useState('')
   const [mensajeOk, setMensajeOk] = useState('')
+  const [errorEstantes, setErrorEstantes] = useState(false)
+  const [intentoEstantes, setIntentoEstantes] = useState(0)
 
   useEffect(() => {
     if (!token) return
     const control = new AbortController()
     listarEstantes(token, control.signal)
-      .then(setEstantes)
-      .catch(() => undefined)
+      .then((lista) => {
+        setEstantes(lista)
+        setErrorEstantes(false)
+      })
+      .catch((causa: unknown) => {
+        if (control.signal.aborted) return
+        if (causa instanceof DOMException && causa.name === 'AbortError') return
+        setErrorEstantes(true)
+      })
     return () => control.abort()
-  }, [token])
+  }, [token, intentoEstantes])
 
   const opcionesEstantes = useMemo(
     () => estantes.map((e) => ({ value: e.id, label: rotuloEstante(e) })),
@@ -179,6 +188,31 @@ export function PaginaEditarEjemplar() {
       />
 
       <Stack gap="lg">
+        {errorEstantes && (
+          <Alert
+            color="red"
+            variant="light"
+            icon={<IconoAlerta size={20} />}
+            role="alert"
+            title="No se pudieron cargar los estantes"
+          >
+            <Group justify="space-between" align="center" wrap="wrap">
+              <Text size="sm">
+                Sin la lista de estantes no se puede registrar ni mover un
+                ejemplar.
+              </Text>
+              <Button
+                size="xs"
+                variant="light"
+                color="red"
+                onClick={() => setIntentoEstantes((n) => n + 1)}
+              >
+                Intentar de nuevo
+              </Button>
+            </Group>
+          </Alert>
+        )}
+
         <SeccionNuevoEjemplar estantes={estantes} token={token} />
 
         {mensajeOk && (
@@ -313,6 +347,13 @@ export function PaginaEditarEjemplar() {
                   allowDeselect={false}
                   disabled={guardando}
                 />
+                {estado === 'BAJA' && seleccionado.status !== 'BAJA' && (
+                  <Alert color="yellow" variant="light" role="note">
+                    Un ejemplar dado de baja deja de aparecer en esta búsqueda y
+                    en los préstamos. Confirme que es lo que desea antes de
+                    guardar.
+                  </Alert>
+                )}
                 <Group>
                   <Button type="submit" loading={guardando}>
                     Guardar cambios

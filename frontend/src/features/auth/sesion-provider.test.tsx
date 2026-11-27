@@ -227,5 +227,25 @@ describe('SesionProvider', () => {
 
       expect(await screen.findByText('sin sesión')).toBeDefined()
     })
+
+    it('no cierra la sesión por un fallo de red y reintenta', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      const simulada = vi
+        .fn()
+        .mockResolvedValueOnce(sesionQueVenceEn(2 * 60_000))
+        .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+        .mockResolvedValueOnce(sesionQueVenceEn(15 * 60_000))
+      vi.stubGlobal('fetch', simulada)
+      pintar()
+      expect(await screen.findByText('Marta Bibliotecaria · STAFF')).toBeDefined()
+
+      await vi.advanceTimersByTimeAsync(61_000)
+      await waitFor(() => expect(simulada).toHaveBeenCalledTimes(2))
+      expect(screen.getByText('Marta Bibliotecaria · STAFF')).toBeDefined()
+
+      await vi.advanceTimersByTimeAsync(5_500)
+      await waitFor(() => expect(simulada).toHaveBeenCalledTimes(3))
+      expect(screen.getByText('Marta Bibliotecaria · STAFF')).toBeDefined()
+    })
   })
 })

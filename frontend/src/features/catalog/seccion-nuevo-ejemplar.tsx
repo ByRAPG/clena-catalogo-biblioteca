@@ -22,6 +22,9 @@ import {
   type Estante,
 } from './ejemplares.api'
 
+const UUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 interface Obra {
   id: string
   title: string
@@ -52,14 +55,17 @@ export function SeccionNuevoEjemplar({
   token: string | undefined
 }) {
   const [parametros] = useSearchParams()
-  const obraInicial: Obra | null = parametros.get('obra')
-    ? { id: parametros.get('obra') ?? '', title: parametros.get('titulo') ?? 'Libro elegido' }
-    : null
+  const obraParametro = parametros.get('obra')
+  const obraInicial: Obra | null =
+    obraParametro && UUID.test(obraParametro)
+      ? { id: obraParametro, title: parametros.get('titulo') ?? 'Libro elegido' }
+      : null
 
   const [textoObra, setTextoObra] = useState('')
   const [obras, setObras] = useState<Obra[]>(obraInicial ? [obraInicial] : [])
   const [obraId, setObraId] = useState<string | null>(obraInicial?.id ?? null)
   const [buscandoObras, setBuscandoObras] = useState(false)
+  const [sinResultados, setSinResultados] = useState(false)
   const [codigo, setCodigo] = useState('')
   const [estanteId, setEstanteId] = useState<string | null>(null)
   const [estado, setEstado] = useState<string | null>('DISPONIBLE')
@@ -76,8 +82,10 @@ export function SeccionNuevoEjemplar({
     if (!q || buscandoObras) return
     setBuscandoObras(true)
     setErrorGeneral('')
+    setSinResultados(false)
     try {
       const respuesta = await buscarObras({ q })
+      setSinResultados(respuesta.data.length === 0)
       setObras(respuesta.data.map((o) => ({ id: o.id, title: o.title })))
       setObraId(respuesta.data.length === 1 ? respuesta.data[0].id : null)
     } catch (causa) {
@@ -195,6 +203,11 @@ export function SeccionNuevoEjemplar({
               Buscar libro
             </Button>
           </Group>
+          {sinResultados && (
+            <Alert color="yellow" variant="light" role="status">
+              No se encontró ningún libro con ese título.
+            </Alert>
+          )}
           <Select
             label="Libro"
             withAsterisk

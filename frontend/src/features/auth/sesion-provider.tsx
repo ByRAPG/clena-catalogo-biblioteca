@@ -5,8 +5,12 @@ import {
   iniciarSesionEnApi,
   type RespuestaDeSesion,
 } from './sesion.api'
+import { ApiError } from '../../shared/api/client'
 import { SesionContext, type Sesion } from './sesion-context'
 import { esperaHastaRenovar } from './vencimiento-token'
+
+const REINTENTOS_MAXIMOS = 3
+const ESPERA_REINTENTO_MS = 5_000
 
 /**
  * Sesión del personal según el ADR-03.
@@ -24,7 +28,7 @@ import { esperaHastaRenovar } from './vencimiento-token'
  *
  * Con la sesión abierta, el access token se renueva solo un minuto antes de
  * vencer (y al volver a la pestaña, si el navegador durmió el temporizador).
- * Si la renovación falla, la sesión se cierra en este navegador y las rutas
+ * Si la renovación es rechazada (401 o 403), la sesión se cierra en este navegador y las rutas
  * protegidas llevan a «Ingresar».
  */
 function aSesion(respuesta: RespuestaDeSesion): Sesion {
@@ -73,14 +77,28 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     if (token === null) return
     let activo = true
 
+    let reintentos = 0
+    let temporizadorReintento: number | undefined
+
     const renovar = () => {
       renovarSesionCompartida()
         .then((respuesta) => {
           if (activo) setSesion(aSesion(respuesta))
         })
-        .catch(() => {
-          // Cookie vencida o revocada: no hay forma de seguir dentro.
-          if (activo) setSesion(null)
+        .catch((causa: unknown) => {
+          if (!activo) return
+          // Solo un 401 o 403 indica cookie vencida o revocada. Un corte de
+          // red o un 5xx puntual no deben sacar a la persona de su trabajo:
+          // se reintenta unas pocas veces antes de rendirse.
+          const rechazada =
+            causa instanceof ApiError &&
+            (causa.statusCode === 401 || causa.statusCode === 403)
+          if (rechazada || reintentos >= REINTENTOS_MAXIMOS) {
+            setSesion(null)
+            return
+          }
+          reintentos += 1
+          temporizadorReintento = window.setTimeout(renovar, ESPERA_REINTENTO_MS)
         })
     }
 
@@ -105,6 +123,7 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     return () => {
       activo = false
       window.clearTimeout(temporizador)
+      window.clearTimeout(temporizadorReintento)
       document.removeEventListener('visibilitychange', alVolver)
     }
   }, [token])

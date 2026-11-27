@@ -150,8 +150,11 @@ export function PaginaImportacion() {
       {reporte && (
         <section className="tarjeta-seccion" aria-label="Resultado de la importación">
           <Text role="status">
-            Ejemplares creados: {reporte.created}. Actualizados:{' '}
-            {reporte.updated}. Filas con errores: {reporte.failed}.
+            {reporte.works && reporte.copies
+              ? `Libros creados: ${reporte.works.created}. Ejemplares creados: ${reporte.copies.created}. `
+              : `Filas creadas: ${reporte.created}. `}
+            Filas actualizadas: {reporte.updated}. Filas con errores:{' '}
+            {reporte.failed}.
           </Text>
           <div className="cifras" aria-hidden="true">
             <div className="cifra cifra-azul">
