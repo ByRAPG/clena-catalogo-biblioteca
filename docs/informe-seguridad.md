@@ -124,7 +124,7 @@ Severidad: **Alta** (explotable con impacto serio sin condiciones especiales), *
 | R-02 | Password spraying distribuido: el límite es por IP y el bloqueo por cuenta, de modo que muchas IP con pocas pruebas cada una pasan | Baja | Aceptado: Argon2id encarece cada intento y las contraseñas del personal son pocas. Recomendar contraseñas largas y, a futuro, doble factor para `ADMIN` |
 | R-03 | `pnpm audit` del backend: 2 altas transitivas de `prisma > @prisma/config` (`deepmerge-ts` 7.1.5, `effect` 3.21.0, ReDoS) | Baja | **Cerrado el 26 nov** con `overrides` a `deepmerge-ts` 8.0.2 y `effect` 3.22.1 (`backend/pnpm-workspace.yaml`, #152). Prisma 7 se pospone: es una versión mayor y su PR de Dependabot rompía el build |
 | R-04 | El tope JSON de 2 MB es global, no por ruta (`app.setup.ts`: `JSON_BODY_LIMIT`) | Baja | Aceptado: Caddy ya corta a 2 MB. Si se amplía, reducir el tope en las rutas que no importan |
-| R-05 | La CSP estricta está solo en la SPA; la API usa `default-src 'none'` y `/docs` relaja a `unsafe-inline` para Swagger | Baja | Aceptado: `/docs` no contiene datos. Considerar desactivar `/docs` en producción |
+| R-05 | La CSP estricta está solo en la SPA; la API usa `default-src 'none'` y `/docs` relaja a `unsafe-inline` para Swagger | Baja | Cerrado en producción: con `NODE_ENV=production` Swagger no se monta (`backend/src/app.setup.ts`) y `/api/v1/docs` responde 404 en la URL pública; solo existe en desarrollo y pruebas |
 | R-06 | Los secretos viajan en variables de entorno, no en Docker secrets | Baja | Aceptado para una sola máquina. El archivo `.env.prod` no se versiona (`.gitignore`) y se restringe con permisos `600` |
 | R-07 | HSTS sin `preload` (`Caddyfile`, cabecera `Strict-Transport-Security`) | Baja | Aceptado: la precarga es difícil de revertir. Revisar cuando el dominio definitivo esté estable |
 | R-08 | Un tercero puede bloquear 15 minutos una cuenta ajena con cinco intentos fallidos (parte de H-04) | Baja | Aceptado para la entrega: el límite de 20 peticiones por minuto por IP en `/auth/*` lo mitiga. A futuro, bloquear por pareja correo más IP y avisar al titular por otro canal |
@@ -172,4 +172,4 @@ Cabeceras medidas el 25 de noviembre de 2026 con `curl -sI` sobre la vista previ
 2. Revisar cada semana las alertas descartadas de Trivy por si Debian o Caddy publican el parche (Dependabot vigila las imágenes base).
 3. Cuando exista la URL de producción, repetir la medición de cabeceras sobre ella (con una herramienta de calificación) y el análisis de imágenes.
 4. Actualizar a Prisma 7 en un PR propio después de la entrega y revisar los PR de Dependabot cada semana.
-5. Evaluar, si hay tiempo, comprobar el estado del usuario en cada petición (R-01) y desactivar `/docs` en producción (R-05).
+5. Evaluar, si hay tiempo, comprobar el estado del usuario en cada petición (R-01).
