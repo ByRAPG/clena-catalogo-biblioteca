@@ -136,3 +136,10 @@ export const IconoUsuario = (p: Props) => (
     <path d="M5 20a7 7 0 0 1 14 0" />
   </Base>
 )
+
+export const IconoMicrofono = (p: Props) => (
+  <Base {...p}>
+    <rect x="9" y="3" width="6" height="11" rx="3" />
+    <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+  </Base>
+)

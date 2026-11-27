@@ -4,12 +4,13 @@ import {
   Button,
   Checkbox,
   Group,
-  Loader,
+  Skeleton,
   Select,
   Stack,
   Text,
   Title,
 } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ApiError, type Paginado } from '../../shared/api/client'
@@ -107,6 +108,8 @@ interface AccesoRapido {
 
 export function PaginaBusqueda() {
   const [parametros, setParametros] = useSearchParams()
+  const movimientoReducido =
+    useMediaQuery('(prefers-reduced-motion: reduce)') === true
 
   const q = parametros.get('q')?.trim() ?? ''
   const categoriaCruda = parametros.get('categoria')?.trim() ?? ''
@@ -423,10 +426,12 @@ export function PaginaBusqueda() {
       {/* Un lector de pantalla anuncia el conteo sin que haya que ir a buscarlo. */}
       <div aria-live="polite" aria-atomic="true">
         {cargando && (
-          <Group gap="sm">
-            <Loader size="sm" />
+          <Stack gap="md" aria-busy="true">
             <Text>Buscando…</Text>
-          </Group>
+            {[0, 1, 2].map((n) => (
+              <Skeleton key={n} height={110} animate={!movimientoReducido} />
+            ))}
+          </Stack>
         )}
         {!cargando && error === null && resultado !== null && !paginaNoExiste && (
           <Text className="rotulo">

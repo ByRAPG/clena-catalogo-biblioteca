@@ -12,6 +12,8 @@ La consulta pública del catálogo no requiere una cuenta. Las cuentas prevén n
 
 La búsqueda híbrida y semántica utiliza un modelo de embeddings de código abierto que corre en el propio servidor (ADR-08). Las consultas de búsqueda no se envían a servicios externos de IA ni a terceros.
 
+La búsqueda por voz es opcional: solo funciona si el navegador la ofrece y la persona pulsa el botón del micrófono. El dictado lo procesa el servicio de reconocimiento de voz del navegador (en Chrome, de Google), no este sitio; Busca Fácil no recibe ni guarda el audio, solo el texto resultante que se usa como búsqueda.
+
 La importación CSV trata datos bibliográficos. Su historial conserva la cuenta del administrador, el nombre del archivo, la fecha, los totales y los errores por fila. No se deben incluir datos personales de lectores en el archivo, su nombre o sus celdas. El importador no almacena el archivo CSV completo.
 
 ## Derechos del titular

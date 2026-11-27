@@ -66,6 +66,19 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+async function elegirArchivo(contenedor: HTMLElement) {
+  const archivo = new File(['contenido CSV'], 'catalogo.csv', {
+    type: 'text/csv',
+  })
+  Object.defineProperty(archivo, 'text', {
+    value: async () => 'contenido CSV',
+  })
+  await screen.findByRole('button', { name: 'Simular' })
+  const input = contenedor.querySelector('input[type="file"]')
+  if (!input) throw new Error('Falta el selector de archivo')
+  fireEvent.change(input, { target: { files: [archivo] } })
+}
+
 describe('Importación CSV', () => {
   it('ofrece plantilla descargable y desactiva importar sin archivo', async () => {
     pintar('ADMIN')
@@ -77,17 +90,22 @@ describe('Importación CSV', () => {
       ).getAttribute('href'),
     ).toContain('/catalog/imports/template')
     expect(
-      screen.getByRole('button', { name: 'Importar' }).hasAttribute('disabled'),
+      screen.getByRole('button', { name: 'Simular' }).hasAttribute('disabled'),
     ).toBe(true)
   })
 
-  it('envía el archivo con el token y muestra éxitos y errores por fila', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({
+  it('simula, muestra el resumen y confirma la importación con el token', async () => {
+    const fetchMock = vi.fn((url: string) => {
+      const esVista = String(url).endsWith('/preview')
+      return Promise.resolve(
+        Response.json({
+          importId: esVista ? undefined : 'id-1',
+          dryRun: esVista,
           created: 1,
           updated: 0,
           failed: 1,
+          works: { created: 1, updated: 0 },
+          copies: { created: 1, updated: 0 },
           rows: [
             { row: 2, status: 'created' },
             {
@@ -98,23 +116,31 @@ describe('Importación CSV', () => {
             },
           ],
         }),
-        { status: 200 },
-      ),
-    )
+      )
+    })
     vi.stubGlobal('fetch', fetchMock)
     const { container } = pintar('ADMIN')
-    const archivo = new File(['contenido CSV'], 'catalogo.csv', {
-      type: 'text/csv',
+    await elegirArchivo(container)
+    fireEvent.click(await screen.findByRole('button', { name: 'Simular' }))
+    await screen.findByRole('button', { name: 'Confirmar importación' })
+    expect(screen.getByText(/Libros por crear: 1/)).toBeDefined()
+    expect(screen.getByText(/Fila 3: titulo: Falta el título/)).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Elegir otro archivo' })).toBeDefined()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const [urlVista, options] = fetchMock.mock.calls[0] as unknown as [
+      string,
+      RequestInit,
+    ]
+    expect(urlVista).toContain('/catalog/imports/preview')
+    expect((options.headers as Headers).get('Authorization')).toBe(
+      'Bearer token-prueba',
+    )
+    expect(JSON.parse(options.body as string)).toEqual({
+      content: 'contenido CSV',
+      fileName: 'catalogo.csv',
     })
-    Object.defineProperty(archivo, 'text', {
-      value: async () => 'contenido CSV',
-    })
-    // La pantalla aparece cuando `/auth/refresh` devuelve la sesión.
-    await screen.findByRole('button', { name: 'Importar' })
-    const input = container.querySelector('input[type="file"]')
-    if (!input) throw new Error('Falta el selector de archivo')
-    fireEvent.change(input, { target: { files: [archivo] } })
-    fireEvent.click(screen.getByRole('button', { name: 'Importar' }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar importación' }))
     await waitFor(() =>
       expect(screen.getByRole('status').textContent).toContain(
         'Filas con errores: 1',
@@ -128,13 +154,57 @@ describe('Importación CSV', () => {
         .getAllByRole('link', { name: /Volver al panel de gestión/ })[0]
         .getAttribute('href'),
     ).toBe('/gestion')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    const [, options] = fetchMock.mock.calls[0]
-    expect(options.headers.get('Authorization')).toBe('Bearer token-prueba')
-    expect(JSON.parse(options.body)).toEqual({
-      content: 'contenido CSV',
-      fileName: 'catalogo.csv',
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(String(fetchMock.mock.calls[1][0]).endsWith('/catalog/imports')).toBe(
+      true,
+    )
+  })
+
+  it('descarga el CSV de errores de la importación ejecutada', async () => {
+    const fetchMock = vi.fn((url: string) => {
+      if (String(url).endsWith('/errors')) {
+        return Promise.resolve(
+          new Response('fila,campo,error\n3,titulo,Falta', {
+            headers: { 'Content-Type': 'text/csv' },
+          }),
+        )
+      }
+      return Promise.resolve(
+        Response.json({
+          importId: 'id-1',
+          dryRun: false,
+          created: 0,
+          updated: 0,
+          failed: 1,
+          rows: [{ row: 3, status: 'failed', error: 'Falta' }],
+        }),
+      )
     })
+    vi.stubGlobal('fetch', fetchMock)
+    const crear = vi.fn(() => 'blob:prueba')
+    const revocar = vi.fn()
+    URL.createObjectURL = crear
+    URL.revokeObjectURL = revocar
+    const clic = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {})
+    const { container } = pintar('ADMIN')
+    await elegirArchivo(container)
+    fireEvent.click(await screen.findByRole('button', { name: 'Simular' }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Confirmar importación' }),
+    )
+    await screen.findByRole('button', { name: 'Importar otro archivo' })
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Descargar errores (CSV)' }),
+    )
+    await waitFor(() => expect(clic).toHaveBeenCalledTimes(1))
+    expect(crear).toHaveBeenCalledTimes(1)
+    expect(revocar).toHaveBeenCalledWith('blob:prueba')
+    expect(String(fetchMock.mock.calls[2][0])).toContain(
+      '/catalog/imports/id-1/errors',
+    )
+    clic.mockRestore()
   })
 
   it('muestra el mensaje de IAM pendiente devuelto por el servidor', async () => {
@@ -151,13 +221,8 @@ describe('Importación CSV', () => {
       ),
     )
     const { container } = pintar('ADMIN')
-    const archivo = new File(['CSV'], 'catalogo.csv')
-    Object.defineProperty(archivo, 'text', { value: async () => 'CSV' })
-    await screen.findByRole('button', { name: 'Importar' })
-    const input = container.querySelector('input[type="file"]')
-    if (!input) throw new Error('Falta el selector de archivo')
-    fireEvent.change(input, { target: { files: [archivo] } })
-    fireEvent.click(screen.getByRole('button', { name: 'Importar' }))
+    await elegirArchivo(container)
+    fireEvent.click(await screen.findByRole('button', { name: 'Simular' }))
     await waitFor(() =>
       expect(screen.getByRole('alert').textContent).toContain(
         'Autenticación pendiente de conectar',
@@ -213,12 +278,12 @@ describe('Importación CSV', () => {
       value: async () => win1252Bytes.buffer,
     })
 
-    await screen.findByRole('button', { name: 'Importar' })
+    await screen.findByRole('button', { name: 'Simular' })
     const input = container.querySelector('input[type="file"]')
     if (!input) throw new Error('Falta el selector de archivo')
 
     fireEvent.change(input, { target: { files: [archivoWin] } })
-    fireEvent.click(screen.getByRole('button', { name: 'Importar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Simular' }))
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
     const [, options] = fetchMock.mock.calls[0]
@@ -230,7 +295,7 @@ describe('Importación CSV', () => {
     const archivoGrande = new File(['x'], 'grande.csv', { type: 'text/csv' })
     Object.defineProperty(archivoGrande, 'size', { value: 1_000_001 })
     fireEvent.change(input, { target: { files: [archivoGrande] } })
-    fireEvent.click(screen.getByRole('button', { name: 'Importar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Simular' }))
 
     expect(await screen.findByRole('alert')).toBeDefined()
     expect(screen.getByRole('alert').textContent).toContain('1 MB')
