@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SesionContext } from '../auth/sesion-context'
+import * as alertas from './alertas.api'
 import { PaginaPrestamos } from './pagina-prestamos'
 import * as api from './prestamos.api'
 
@@ -63,6 +64,10 @@ function renderPagina() {
 describe('PaginaPrestamos (HU-20)', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    vi.mocked(alertas.obtenerAlertas).mockResolvedValue({
+      loans: [],
+      availability: [],
+    })
     vi.mocked(api.buscarEjemplares).mockResolvedValue([
       {
         id: 'copy-1',

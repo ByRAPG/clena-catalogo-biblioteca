@@ -71,11 +71,19 @@ export function SeccionAlertas({
     [token],
   )
 
-  useEffect(() => {
+    useEffect(() => {
     const control = new AbortController()
-    void cargar(control.signal)
+    obtenerAlertas(token, control.signal)
+      .then((datos) => {
+        setPanel(datos)
+        setError('')
+      })
+      .catch((causa: unknown) => {
+        if (!control.signal.aborted)
+          setError(mensaje(causa, 'No se pudieron cargar las alertas'))
+      })
     return () => control.abort()
-  }, [cargar])
+  }, [token])
 
   async function revisar() {
     setRevisando(true)
