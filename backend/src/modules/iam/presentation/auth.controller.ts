@@ -1,15 +1,21 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   Post,
   Req,
   Res,
   UseFilters,
+  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
@@ -19,13 +25,23 @@ import {
 } from '@nestjs/swagger';
 import type { CookieOptions, Request, Response } from 'express';
 import { Env } from '../../../shared/config/env.validation';
+import { DeleteMyAccount } from '../application/delete-my-account.use-case';
+import { GetMyAccount } from '../application/get-my-account.use-case';
+import { RegisterReader } from '../application/register-reader.use-case';
 import { LoginUser } from '../application/login-user.use-case';
 import { LogoutUser } from '../application/logout-user.use-case';
 import { RefreshSession } from '../application/refresh-session.use-case';
 import { SessionResult } from '../application/session';
 import { InvalidRefreshTokenError } from '../domain/iam-errors';
+import {
+  AccountResponseDto,
+  DeleteAccountDto,
+  RegisterDto,
+  RegisterResponseDto,
+} from './dto/account.dto';
 import { LoginDto } from './dto/login.dto';
 import { SessionResponseDto } from './dto/session-response.dto';
+import { AuthenticatedRequest, JwtAuthGuard } from './guards/jwt-auth.guard';
 import { IamErrorsFilter } from './iam-errors.filter';
 
 const REFRESH_COOKIE = 'refresh_token';
@@ -47,6 +63,9 @@ export class AuthController {
     private readonly loginUser: LoginUser,
     private readonly refreshSession: RefreshSession,
     private readonly logoutUser: LogoutUser,
+    private readonly registerReader: RegisterReader,
+    private readonly getMyAccount: GetMyAccount,
+    private readonly deleteMyAccount: DeleteMyAccount,
     private readonly config: ConfigService<Env, true>,
   ) {}
 
@@ -126,6 +145,62 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
     await this.logoutUser.execute(this.readRefreshCookie(req));
+    this.clearRefreshCookie(res);
+  }
+
+  @Post('register')
+  @HttpCode(201)
+  @ApiOperation({
+    summary: 'Crear una cuenta de lector',
+    description:
+      'Registro público (HU-16). Exige acceptPrivacy=true y guarda la fecha y la versión del aviso aceptado. La respuesta es la misma exista o no el correo, para no revelar qué correos tienen cuenta; no abre sesión: después se ingresa con /auth/login.',
+  })
+  @ApiCreatedResponse({ type: RegisterResponseDto })
+  @ApiBadRequestResponse({
+    description: 'Datos inválidos, contraseña débil o aviso no aceptado',
+  })
+  async register(@Body() dto: RegisterDto): Promise<RegisterResponseDto> {
+    await this.registerReader.execute(dto);
+    return { registrado: true };
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Datos de mi cuenta' })
+  @ApiOkResponse({ type: AccountResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Sesión ausente o inválida' })
+  async me(@Req() req: AuthenticatedRequest): Promise<AccountResponseDto> {
+    const profile = await this.getMyAccount.execute(req.auth!.userId);
+    return {
+      nombre: profile.fullName,
+      correo: profile.email,
+      consentimientoEn: profile.consentAt?.toISOString() ?? null,
+      versionAviso: profile.privacyVersion,
+    };
+  }
+
+  @Post('me/delete')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(204)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Eliminar mi cuenta',
+    description:
+      'Confirma con la contraseña y anonimiza la cuenta (HU-17). Con un préstamo activo responde 409. Revoca las sesiones y borra la cookie.',
+  })
+  @ApiNoContentResponse({ description: 'Cuenta eliminada' })
+  @ApiForbiddenResponse({ description: 'Contraseña incorrecta' })
+  @ApiConflictResponse({ description: 'Tiene un préstamo activo' })
+  async deleteMe(
+    @Body() dto: DeleteAccountDto,
+    @Req() req: AuthenticatedRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    await this.deleteMyAccount.execute({
+      userId: req.auth!.userId,
+      password: dto.password,
+    });
     this.clearRefreshCookie(res);
   }
 

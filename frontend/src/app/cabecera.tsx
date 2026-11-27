@@ -53,6 +53,12 @@ function AccionesSesion({ alElegir }: { alElegir?: () => void }) {
           Gestión
         </NavLink>
       )}
+      {!recuperando && sesion?.rol === 'READER' && (
+        <NavLink to="/mi-cuenta" className="navegacion-enlace" onClick={alElegir}>
+          <IconoUsuario size={18} />
+          Mi cuenta
+        </NavLink>
+      )}
       {!recuperando && !sesion && (
         <NavLink to="/ingresar" className="navegacion-enlace" onClick={alElegir}>
           <IconoUsuario size={18} />

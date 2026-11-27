@@ -169,7 +169,7 @@ export function PaginaIngreso() {
               Iniciar sesión
             </Title>
             <Text c="dimmed" size="sm">
-              Acceso exclusivo para el personal bibliotecario.
+              Ingrese con su cuenta de lector o de personal.
             </Text>
           </div>
 
@@ -240,6 +240,9 @@ export function PaginaIngreso() {
               </Button>
             </Stack>
           </form>
+          <Link to="/registro" className="enlace-centrado">
+            Crear cuenta
+          </Link>
           <Link to="/" className="enlace-centrado">
             Volver al catálogo
           </Link>

@@ -6,6 +6,8 @@ import { PaginaImportacion } from '../features/catalog/pagina-importacion'
 import { PaginaEditarEjemplar } from '../features/catalog/pagina-editar-ejemplar'
 import { PaginaRegistrarLibro } from '../features/catalog/pagina-registrar-libro'
 import { PaginaPrestamos } from '../features/loans/pagina-prestamos'
+import { PaginaMiCuenta } from '../features/account/pagina-mi-cuenta'
+import { PaginaRegistro } from '../features/account/pagina-registro'
 import { PaginaUsuarios } from '../features/users/pagina-usuarios'
 import { PaginaPrivacidad } from '../features/privacy/pagina-privacidad'
 import { PaginaBusqueda } from '../features/search/pagina-busqueda'
@@ -25,6 +27,15 @@ export function Rutas() {
         <Route index element={<PaginaBusqueda />} />
         <Route path="obras/:id" element={<PaginaDetalleObra />} />
         <Route path="ingresar" element={<PaginaIngreso />} />
+        <Route path="registro" element={<PaginaRegistro />} />
+        <Route
+          path="mi-cuenta"
+          element={
+            <RutaProtegida roles={['READER']}>
+              <PaginaMiCuenta />
+            </RutaProtegida>
+          }
+        />
         <Route path="privacidad" element={<PaginaPrivacidad />} />
         <Route
           path="gestion/importar"
