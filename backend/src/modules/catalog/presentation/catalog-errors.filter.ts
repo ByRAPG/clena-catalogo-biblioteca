@@ -14,6 +14,8 @@ import {
   CopyOnLoanError,
   CopyReservedError,
   CopyChangedError,
+  CopyWorkNotFoundError,
+  InventoryCodeTakenError,
 } from '../domain/errors/copy.errors';
 import { InvalidWorkError } from '../domain/errors/invalid-work.error';
 import { RoomNotFoundError } from '../domain/qr-destination';
@@ -37,14 +39,16 @@ export class CatalogErrorsFilter implements ExceptionFilter {
 function toHttp(exception: CatalogDomainError): HttpException {
   if (
     exception instanceof RoomNotFoundError ||
-    exception instanceof CopyNotFoundError
+    exception instanceof CopyNotFoundError ||
+    exception instanceof CopyWorkNotFoundError
   ) {
     return new NotFoundException(exception.message);
   }
   if (
     exception instanceof CopyOnLoanError ||
     exception instanceof CopyReservedError ||
-    exception instanceof CopyChangedError
+    exception instanceof CopyChangedError ||
+    exception instanceof InventoryCodeTakenError
   ) {
     return new ConflictException(exception.message);
   }

@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsOptional, IsUUID } from 'class-validator';
+import {
+  IsIn,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+} from 'class-validator';
 import { EDITABLE_COPY_STATUSES } from '../../domain/entities/copy-update';
 
 export class UpdateCopyDto {
@@ -44,4 +51,31 @@ export class ShelfDto {
 
 export class ShelfListDto {
   @ApiProperty({ type: [ShelfDto] }) data!: ShelfDto[];
+}
+
+export class RegisterCopyDto {
+  @ApiProperty({ example: 'CLENA-0042-1', maxLength: 50 })
+  @IsString({ message: 'El código de inventario debe ser texto' })
+  @IsNotEmpty({ message: 'Escriba el código de inventario' })
+  @MaxLength(50, {
+    message: 'El código de inventario admite máximo 50 caracteres',
+  })
+  inventoryCode!: string;
+
+  @ApiProperty({
+    format: 'uuid',
+    description: 'Estante (GET /api/v1/catalog/shelves): define sala y sección',
+  })
+  @IsUUID('all', { message: 'El estante no es válido' })
+  shelfId!: string;
+
+  @ApiPropertyOptional({
+    enum: EDITABLE_COPY_STATUSES,
+    default: 'DISPONIBLE',
+  })
+  @IsOptional()
+  @IsIn([...EDITABLE_COPY_STATUSES], {
+    message: 'El estado debe ser DISPONIBLE, MANTENIMIENTO o BAJA',
+  })
+  status?: string;
 }

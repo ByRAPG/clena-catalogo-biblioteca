@@ -1,3 +1,4 @@
+import type { NewCopy } from '../../domain/entities/new-copy';
 import type {
   CopyCirculation,
   CopyStatus,
@@ -44,4 +45,9 @@ export interface CopyManagementRepository {
   ): Promise<CopyView | null>;
   /** Estantes ordenados por sala, sección y código. */
   listShelves(): Promise<ShelfOption[]>;
+  /** HU-19: la obra existe y no está eliminada. */
+  workExists(workId: string): Promise<boolean>;
+  inventoryCodeExists(inventoryCode: string): Promise<boolean>;
+  /** HU-19: lanza InventoryCodeTakenError si el código se registró a la vez. */
+  create(workId: string, copy: NewCopy): Promise<CopyView>;
 }

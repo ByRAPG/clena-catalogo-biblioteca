@@ -56,8 +56,8 @@ export function PaginaGestion() {
           tono="azul"
           numero="03"
           icono={<IconoSala />}
-          titulo="Editar ejemplar"
-          descripcion="Cambiar el estante de un ejemplar o marcarlo en mantenimiento."
+          titulo="Ejemplares"
+          descripcion="Registrar las copias de un libro, cambiarlas de estante o marcarlas en mantenimiento."
           to="/gestion/ejemplares"
         />
         {esAdmin && (

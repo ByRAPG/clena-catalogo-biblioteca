@@ -50,3 +50,20 @@ export class CopyReservedError extends CopyDomainError {
     );
   }
 }
+
+/** 404: la obra a la que se agrega el ejemplar no existe o está eliminada (HU-19). */
+export class CopyWorkNotFoundError extends CopyDomainError {
+  constructor() {
+    super('No existe el libro indicado');
+  }
+}
+
+/** 400: datos del ejemplar nuevo inválidos (HU-19). */
+export class InvalidNewCopyError extends CopyDomainError {}
+
+/** 409: el código de inventario ya está registrado (HU-19). */
+export class InventoryCodeTakenError extends CopyDomainError {
+  constructor(code: string) {
+    super(`El código de inventario «${code}» ya está registrado`);
+  }
+}

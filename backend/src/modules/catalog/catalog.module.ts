@@ -33,6 +33,7 @@ import { PrismaCatalogTermRepository } from './infrastructure/persistence/prisma
 import { CatalogWorksController } from './presentation/catalog-works.controller';
 import { UpdateCopyUseCase } from './application/use-cases/update-copy.use-case';
 import { ListShelvesUseCase } from './application/use-cases/list-shelves.use-case';
+import { RegisterCopyUseCase } from './application/use-cases/register-copy.use-case';
 import { COPY_MANAGEMENT_REPOSITORY } from './application/ports/copy-management.repository';
 import { PrismaCopyManagementRepository } from './infrastructure/persistence/prisma-copy-management.repository';
 import { CatalogCopiesController } from './presentation/catalog-copies.controller';
@@ -66,6 +67,7 @@ import { CatalogCopiesController } from './presentation/catalog-copies.controlle
     { provide: CATALOG_TERM_REPOSITORY, useClass: PrismaCatalogTermRepository },
     UpdateCopyUseCase,
     ListShelvesUseCase,
+    RegisterCopyUseCase,
     {
       provide: COPY_MANAGEMENT_REPOSITORY,
       useClass: PrismaCopyManagementRepository,

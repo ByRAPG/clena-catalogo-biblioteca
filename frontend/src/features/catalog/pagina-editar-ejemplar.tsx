@@ -29,6 +29,7 @@ import {
   type EstadoEjemplar,
   type Estante,
 } from './ejemplares.api'
+import { SeccionNuevoEjemplar } from './seccion-nuevo-ejemplar'
 
 const TEXTO_ESTADO: Record<EstadoEjemplar, string> = {
   DISPONIBLE: 'Disponible',
@@ -47,7 +48,10 @@ function mensajeDe(causa: unknown, porDefecto: string): string {
   return causa instanceof Error && causa.message ? causa.message : porDefecto
 }
 
-/** HU-11: el personal cambia el estante o el estado de un ejemplar. */
+/**
+ * Ejemplares del catálogo: registrar uno nuevo (HU-19) y cambiar el estante o
+ * el estado de uno existente (HU-11).
+ */
 export function PaginaEditarEjemplar() {
   const { sesion } = useSesion()
   const token = sesion?.token
@@ -166,15 +170,17 @@ export function PaginaEditarEjemplar() {
         migas={[
           { texto: 'Inicio', to: '/' },
           { texto: 'Gestión', to: '/gestion' },
-          { texto: 'Editar ejemplar' },
+          { texto: 'Ejemplares' },
         ]}
         volver={{ texto: 'Volver a gestión', to: '/gestion' }}
         rotulo="Catálogo"
-        titulo="Editar ubicación y estado de un ejemplar"
-        descripcion="Busque el ejemplar, cambie su estante o su estado y guarde. La búsqueda pública se actualiza de inmediato."
+        titulo="Ejemplares"
+        descripcion="Registre las copias físicas de un libro o cambie el estante y el estado de una. La búsqueda pública se actualiza de inmediato."
       />
 
       <Stack gap="lg">
+        <SeccionNuevoEjemplar estantes={estantes} token={token} />
+
         {mensajeOk && (
           <Alert
             color="green"
