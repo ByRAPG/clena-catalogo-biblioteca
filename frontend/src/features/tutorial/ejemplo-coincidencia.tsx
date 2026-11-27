@@ -7,7 +7,7 @@ import type { MuestraCoincidencia } from './pasos'
  * Ejemplo ilustrativo del paso «Entienda por qué aparece un libro»: mini
  * tarjetas ficticias hechas con los mismos elementos que `TarjetaResultado`
  * (término resaltado, «Coincide en …» con el campo subrayado e insignia
- * «Coincide por significado»). Es decoración: se oculta a los lectores de
+ * «Relacionado por tema»). Es decoración: se oculta a los lectores de
  * pantalla y se sustituye por un texto equivalente. No toca la búsqueda real.
  */
 export function EjemploCoincidencia({ muestras }: { muestras: readonly MuestraCoincidencia[] }) {
@@ -15,7 +15,7 @@ export function EjemploCoincidencia({ muestras }: { muestras: readonly MuestraCo
     .map(
       (m) =>
         `Si busca «${m.consulta}», aparece «${m.titulo}» con la nota ${
-          m.donde !== undefined ? textoDeLaCoincidencia(m.donde) : 'Coincide por significado'
+          m.donde !== undefined ? textoDeLaCoincidencia(m.donde) : 'Relacionado por tema'
         }.`,
     )
     .join(' ')
@@ -39,7 +39,7 @@ export function EjemploCoincidencia({ muestras }: { muestras: readonly MuestraCo
                 </span>
               </p>
             ) : (
-              <span className="insignia-significado">Coincide por significado</span>
+              <span className="insignia-significado">Relacionado por tema</span>
             )}
           </div>
         ))}

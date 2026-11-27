@@ -51,7 +51,7 @@ export const PASOS_TUTORIAL: readonly PasoTutorial[] = [
     id: 'coincidencia',
     titulo: 'Entienda por qué aparece un libro',
     texto:
-      '«Coincide en…» dice en qué campo se encontró lo que escribió (título, autor, tema). «Coincide por significado» marca libros parecidos a su idea, aunque no usen las mismas palabras.',
+      '«Coincide en…» dice en qué campo se encontró lo que escribió (título, autor, tema). «Relacionado por tema» marca libros parecidos a su idea, aunque no usen las mismas palabras.',
     objetivo: 'primer-resultado',
     completo: true,
     muestras: [
