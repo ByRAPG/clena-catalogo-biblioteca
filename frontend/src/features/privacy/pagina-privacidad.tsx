@@ -29,6 +29,14 @@ export function PaginaPrivacidad() {
         servicios externos de inteligencia artificial ni a terceros.
       </Text>
       <Text>
+        La búsqueda por voz es opcional: solo funciona si su navegador la ofrece
+        y usted pulsa el botón del micrófono. El dictado lo procesa el servicio
+        de reconocimiento de voz de su navegador (en Chrome, de Google), no
+        este sitio; Busca Fácil no recibe ni guarda el audio, solo el texto
+        resultante que se usa como búsqueda. Puede escribir su búsqueda en
+        cualquier momento.
+      </Text>
+      <Text>
         La importación CSV recibe datos bibliográficos y registra la cuenta del
         administrador, el nombre del archivo, la fecha, los totales y los
         errores de las filas. No incluya información personal de lectores en el

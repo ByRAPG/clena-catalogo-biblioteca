@@ -57,4 +57,89 @@ describe('CampoBusqueda', () => {
     fireEvent.focus(campo)
     expect(campo.getAttribute('data-animando')).toBe('false')
   })
+
+  describe('búsqueda por voz', () => {
+    afterEach(() => {
+      delete (window as unknown as Record<string, unknown>)
+        .webkitSpeechRecognition
+    })
+
+    it('no muestra el botón si el navegador no tiene reconocimiento de voz', () => {
+      pintar()
+      expect(screen.queryByRole('button', { name: 'Buscar por voz' })).toBeNull()
+    })
+
+    it('con soporte, el resultado llena la caja y envía la búsqueda', () => {
+      class FalsoVoz {
+        static ultima: FalsoVoz | null = null
+        lang = ''
+        interimResults = true
+        maxAlternatives = 0
+        onresult: (e: unknown) => void = () => {}
+        onerror: (e: { error: string }) => void = () => {}
+        onend: () => void = () => {}
+        constructor() {
+          FalsoVoz.ultima = this
+        }
+        start() {}
+        stop() {}
+      }
+      ;(window as unknown as Record<string, unknown>).webkitSpeechRecognition =
+        FalsoVoz
+      const alEnviar = vi.fn()
+      const { container } = render(
+        <MantineProvider theme={theme}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              alEnviar()
+            }}
+          >
+            <CampoBusqueda valorInicial="" />
+          </form>
+        </MantineProvider>,
+      )
+      const boton = screen.getByRole('button', { name: 'Buscar por voz' })
+      fireEvent.click(boton)
+      expect(boton.getAttribute('aria-pressed')).toBe('true')
+      expect(screen.getByRole('status').textContent).toBe('Escuchando…')
+      const voz = FalsoVoz.ultima
+      if (voz === null) throw new Error('No se creó el reconocimiento')
+      expect(voz.lang).toBe('es-CO')
+      expect(voz.interimResults).toBe(false)
+      expect(voz.maxAlternatives).toBe(1)
+      act(() => {
+        voz.onresult({ results: [[{ transcript: 'cien años de soledad' }]] })
+      })
+      const campo = container.querySelector(
+        'input[name="q"]',
+      ) as HTMLInputElement
+      expect(campo.value).toBe('cien años de soledad')
+      expect(alEnviar).toHaveBeenCalledTimes(1)
+    })
+
+    it('explica los errores de voz sin bloquear la búsqueda escrita', () => {
+      class FalsoVoz {
+        static ultima: FalsoVoz | null = null
+        onerror: (e: { error: string }) => void = () => {}
+        constructor() {
+          FalsoVoz.ultima = this
+        }
+        start() {}
+      }
+      ;(window as unknown as Record<string, unknown>).webkitSpeechRecognition =
+        FalsoVoz
+      pintar()
+      fireEvent.click(screen.getByRole('button', { name: 'Buscar por voz' }))
+      const voz = FalsoVoz.ultima
+      if (voz === null) throw new Error('No se creó el reconocimiento')
+      act(() => voz.onerror({ error: 'not-allowed' }))
+      expect(screen.getByRole('status').textContent).toContain('micrófono')
+      expect(
+        screen
+          .getByLabelText('Busque por título, autor o tema')
+          .hasAttribute('disabled'),
+      ).toBe(false)
+    })
+  })
 })
