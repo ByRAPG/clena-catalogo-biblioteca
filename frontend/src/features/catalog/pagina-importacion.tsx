@@ -14,7 +14,9 @@ import { IconoAlerta, IconoArchivo } from '../../shared/ui/iconos'
 import { useSesion } from '../auth/sesion-context'
 import { apiUrl } from '../../shared/api/client'
 import {
+  descargarErroresCsv,
   importarCatalogo,
+  simularImportacion,
   type ReporteImportacion,
 } from './importar-catalogo.api'
 import { leerArchivoCsv } from './decodificar-csv'
@@ -27,13 +29,52 @@ export function PaginaImportacion() {
   const [archivo, setArchivo] = useState<File | null>(null)
   const [reporte, setReporte] = useState<ReporteImportacion | null>(null)
   const [error, setError] = useState('')
+  const [vistaPrevia, setVistaPrevia] = useState<ReporteImportacion | null>(
+    null,
+  )
+  const [contenido, setContenido] = useState('')
   const [ocupado, setOcupado] = useState(false)
+  const [descargando, setDescargando] = useState(false)
 
-  async function importar(evento: FormEvent<HTMLFormElement>) {
+  function reiniciar() {
+    setReporte(null)
+    setVistaPrevia(null)
+    setError('')
+  }
+
+  async function descargarErrores(origen: ReporteImportacion | null) {
+    if (!sesion || !archivo || !origen || descargando) return
+    setDescargando(true)
+    setError('')
+    try {
+      const blob = await descargarErroresCsv(sesion.token, {
+        importId: origen.dryRun ? undefined : origen.importId,
+        content: contenido,
+        fileName: archivo.name,
+      })
+      const url = URL.createObjectURL(blob)
+      const enlace = document.createElement('a')
+      enlace.href = url
+      enlace.download = 'errores-importacion.csv'
+      document.body.appendChild(enlace)
+      enlace.click()
+      enlace.remove()
+      URL.revokeObjectURL(url)
+    } catch (causa: unknown) {
+      setError(
+        causa instanceof Error
+          ? causa.message
+          : 'No se pudo descargar el informe de errores',
+      )
+    } finally {
+      setDescargando(false)
+    }
+  }
+
+  async function procesar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
     if (!archivo || !sesion || ocupado) return
-    setError('')
-    setReporte(null)
+    reiniciar()
     if (!EXTENSIONES_PERMITIDAS.test(archivo.name)) {
       setError(
         'Seleccione un archivo .csv, .tsv o .txt guardado desde Excel o su sistema de biblioteca.',
@@ -46,13 +87,32 @@ export function PaginaImportacion() {
     }
     setOcupado(true)
     try {
-      const contenido = await leerArchivoCsv(archivo)
+      const texto = await leerArchivoCsv(archivo)
+      setContenido(texto)
+      setVistaPrevia(await simularImportacion(texto, archivo.name, sesion.token))
+    } catch (causa: unknown) {
+      setError(
+        causa instanceof Error
+          ? causa.message
+          : 'No se pudo simular la importación',
+      )
+    } finally {
+      setOcupado(false)
+    }
+  }
+
+  async function confirmar() {
+    if (!archivo || !sesion || ocupado || !vistaPrevia) return
+    setError('')
+    setOcupado(true)
+    try {
       const resultado = await importarCatalogo(
         contenido,
         archivo.name,
         sesion.token,
       )
       setReporte(resultado)
+      setVistaPrevia(null)
     } catch (causa: unknown) {
       setError(
         causa instanceof Error
@@ -108,7 +168,7 @@ export function PaginaImportacion() {
         </ol>
       </section>
 
-      <form onSubmit={importar} className="formulario-tarjeta formulario-archivo">
+      <form onSubmit={procesar} className="formulario-tarjeta formulario-archivo">
         <div className="zona-archivo">
           <FileInput
             label="Archivo CSV o TSV"
@@ -119,22 +179,78 @@ export function PaginaImportacion() {
             leftSection={<IconoArchivo size={20} />}
             onChange={(nuevo) => {
               setArchivo(nuevo)
-              setReporte(null)
-              setError('')
+              reiniciar()
             }}
           />
         </div>
         <div className="acciones-formulario">
           <Button type="submit" loading={ocupado} disabled={!archivo} size="lg">
-            Importar
+            Simular
           </Button>
         </div>
         {ocupado && (
           <p className="aviso-discreto" role="status">
-            Importando el archivo, puede tardar unos segundos…
+            Procesando el archivo, puede tardar unos segundos…
           </p>
         )}
       </form>
+
+      {vistaPrevia && (
+        <section className="tarjeta-seccion" aria-label="Vista previa de la importación">
+          <Text>
+            Simulación sin cambios en el catálogo. Libros por crear:{' '}
+            {vistaPrevia.works?.created ?? vistaPrevia.created}; por actualizar:{' '}
+            {vistaPrevia.works?.updated ?? vistaPrevia.updated}. Ejemplares por
+            crear: {vistaPrevia.copies?.created ?? vistaPrevia.created}; por
+            actualizar: {vistaPrevia.copies?.updated ?? vistaPrevia.updated}.
+            Filas con errores: {vistaPrevia.failed}.
+          </Text>
+          {vistaPrevia.failed > 0 && (
+            <ul>
+              {vistaPrevia.rows.map((fila) =>
+                fila.status === 'failed' ? (
+                  <li key={fila.row}>
+                    Fila {fila.row}: {fila.field ? `${fila.field}: ` : ''}
+                    {fila.error}
+                  </li>
+                ) : null,
+              )}
+            </ul>
+          )}
+          <Group gap="sm">
+            <Button
+              type="button"
+              loading={ocupado}
+              style={{ minHeight: 44 }}
+              onClick={confirmar}
+            >
+              Confirmar importación
+            </Button>
+            <Button
+              type="button"
+              variant="default"
+              style={{ minHeight: 44 }}
+              onClick={() => {
+                setArchivo(null)
+                reiniciar()
+              }}
+            >
+              Elegir otro archivo
+            </Button>
+            {vistaPrevia.failed > 0 && (
+              <Button
+                type="button"
+                variant="default"
+                loading={descargando}
+                style={{ minHeight: 44 }}
+                onClick={() => descargarErrores(vistaPrevia)}
+              >
+                Descargar errores (CSV)
+              </Button>
+            )}
+          </Group>
+        </section>
+      )}
 
       {error && (
         <Alert
@@ -176,14 +292,24 @@ export function PaginaImportacion() {
               variant="default"
               style={{ minHeight: 44 }}
               onClick={() => {
-                setReporte(null)
+                reiniciar()
                 setArchivo(null)
-                setError('')
                 window.scrollTo({ top: 0 })
               }}
             >
               Importar otro archivo
             </Button>
+            {reporte.failed > 0 && (
+              <Button
+                type="button"
+                variant="default"
+                loading={descargando}
+                style={{ minHeight: 44 }}
+                onClick={() => descargarErrores(reporte)}
+              >
+                Descargar errores (CSV)
+              </Button>
+            )}
             <Button
               component={Link}
               to="/gestion"
