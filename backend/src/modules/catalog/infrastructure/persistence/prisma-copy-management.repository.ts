@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../shared/infrastructure/prisma.service';
 import type { CopyCirculation } from '../../domain/entities/copy-update';
+import type { NewCopy } from '../../domain/entities/new-copy';
+import { InventoryCodeTakenError } from '../../domain/errors/copy.errors';
 import type {
   CopyChanges,
   CopyManagementRepository,
@@ -13,6 +16,29 @@ const LOCATION_SELECT = {
   code: true,
   section: { select: { name: true, room: { select: { name: true } } } },
 } as const;
+
+const COPY_VIEW_SELECT = {
+  id: true,
+  inventoryCode: true,
+  status: true,
+  shelf: { select: LOCATION_SELECT },
+} as const;
+
+type CopyWithLocation = Prisma.CopyGetPayload<{
+  select: typeof COPY_VIEW_SELECT;
+}>;
+
+function toView(copy: CopyWithLocation): CopyView {
+  return {
+    id: copy.id,
+    inventoryCode: copy.inventoryCode,
+    status: copy.status,
+    shelfId: copy.shelf.id,
+    shelf: copy.shelf.code,
+    section: copy.shelf.section.name,
+    room: copy.shelf.section.room.name,
+  };
+}
 
 @Injectable()
 export class PrismaCopyManagementRepository implements CopyManagementRepository {
@@ -48,22 +74,44 @@ export class PrismaCopyManagementRepository implements CopyManagementRepository 
     const copy = await this.prisma.copy.update({
       where: { id: copyId },
       data: changes,
-      select: {
-        id: true,
-        inventoryCode: true,
-        status: true,
-        shelf: { select: LOCATION_SELECT },
-      },
+      select: COPY_VIEW_SELECT,
     });
-    return {
-      id: copy.id,
-      inventoryCode: copy.inventoryCode,
-      status: copy.status,
-      shelfId: copy.shelf.id,
-      shelf: copy.shelf.code,
-      section: copy.shelf.section.name,
-      room: copy.shelf.section.room.name,
-    };
+    return toView(copy);
+  }
+
+  async workExists(workId: string): Promise<boolean> {
+    const count = await this.prisma.work.count({
+      where: { id: workId, deletedAt: null },
+    });
+    return count > 0;
+  }
+
+  async inventoryCodeExists(inventoryCode: string): Promise<boolean> {
+    return (await this.prisma.copy.count({ where: { inventoryCode } })) > 0;
+  }
+
+  async create(workId: string, copy: NewCopy): Promise<CopyView> {
+    try {
+      const created = await this.prisma.copy.create({
+        data: {
+          workId,
+          shelfId: copy.shelfId,
+          inventoryCode: copy.inventoryCode,
+          status: copy.status,
+        },
+        select: COPY_VIEW_SELECT,
+      });
+      return toView(created);
+    } catch (error: unknown) {
+      // Dos personas registran el mismo código a la vez: gana la primera.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new InventoryCodeTakenError(copy.inventoryCode);
+      }
+      throw error;
+    }
   }
 
   async listShelves(): Promise<ShelfOption[]> {

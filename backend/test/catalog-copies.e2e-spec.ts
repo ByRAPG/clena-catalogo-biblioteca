@@ -10,10 +10,10 @@ import { ACCESS_TOKEN_VERIFIER } from '../src/modules/iam/application/ports/acce
 import { PrismaService } from '../src/shared/infrastructure/prisma.service';
 
 /**
- * e2e de HU-11 (editar ubicación y estado de un ejemplar) contra PostgreSQL
- * real, en una base temporal con las migraciones aplicadas.
+ * e2e de HU-11 (editar ubicación y estado de un ejemplar) y HU-19 (registrar
+ * ejemplares) contra PostgreSQL real, en una base temporal con las migraciones.
  */
-describe('Editar ubicación y estado de un ejemplar (e2e, HU-11)', () => {
+describe('Ejemplares: registrar y editar (e2e, HU-11 y HU-19)', () => {
   const fakeVerifier = {
     verifyAccessToken: async (token: string) => {
       if (token === 'test-staff')
@@ -41,6 +41,7 @@ describe('Editar ubicación y estado de un ejemplar (e2e, HU-11)', () => {
   let loanedCopy: string;
   let importedLoanedCopy: string;
   let reservedCopy: string;
+  let emptyWorkId: string;
 
   beforeAll(async () => {
     originalDatabaseUrl = process.env.DATABASE_URL;
@@ -99,6 +100,16 @@ describe('Editar ubicación y estado de un ejemplar (e2e, HU-11)', () => {
           shelfId: shelfA,
           inventoryCode: 'CLENA-E2E-001',
           status: CopyStatus.DISPONIBLE,
+        },
+      })
+    ).id;
+
+    // Libro sin ejemplares para HU-19.
+    emptyWorkId = (
+      await database.work.create({
+        data: {
+          title: 'Obra ficticia sin ejemplares',
+          searchText: 'obra ficticia sin ejemplares',
         },
       })
     ).id;
@@ -255,5 +266,86 @@ describe('Editar ubicación y estado de un ejemplar (e2e, HU-11)', () => {
   it('responde 404 si el ejemplar no existe y 400 si el id no es UUID', async () => {
     await patch(randomUUID(), { status: 'BAJA' }).expect(404);
     await patch('no-es-uuid', { status: 'BAJA' }).expect(400);
+  });
+
+  describe('HU-19: registrar un ejemplar', () => {
+    const register = (workId: string, body: object, auth = STAFF) =>
+      http()
+        .post(`/api/v1/catalog/works/${workId}/copies`)
+        .set('Authorization', auth)
+        .send(body);
+
+    it('responde 401 sin sesión y 403 a un lector', async () => {
+      await http()
+        .post(`/api/v1/catalog/works/${emptyWorkId}/copies`)
+        .send({ inventoryCode: 'X-1', shelfId: shelfA })
+        .expect(401);
+      await register(
+        emptyWorkId,
+        { inventoryCode: 'X-1', shelfId: shelfA },
+        READER,
+      ).expect(403);
+    });
+
+    it('registra el ejemplar y el detalle público muestra su ubicación', async () => {
+      const res = await register(emptyWorkId, {
+        inventoryCode: 'CLENA-E2E-100',
+        shelfId: shelfB,
+      }).expect(201);
+      expect(res.body).toMatchObject({
+        inventoryCode: 'CLENA-E2E-100',
+        status: 'DISPONIBLE',
+        shelfId: shelfB,
+        room: 'Sala Norte',
+        section: 'Historia',
+        shelf: 'B-02',
+      });
+      const obra = await detail(emptyWorkId);
+      expect(obra.availability.status).toBe('DISPONIBLE');
+      expect(obra.copies).toEqual([
+        expect.objectContaining({
+          inventoryCode: 'CLENA-E2E-100',
+          room: 'Sala Norte',
+          shelf: 'B-02',
+        }),
+      ]);
+    });
+
+    it('no duplica un código de inventario existente', async () => {
+      const antes = await database.copy.count();
+      const res = await register(soloWorkId, {
+        inventoryCode: 'CLENA-E2E-100',
+        shelfId: shelfA,
+      }).expect(409);
+      expect(res.body.message).toContain('CLENA-E2E-100');
+      expect(await database.copy.count()).toBe(antes);
+    });
+
+    it('dado de baja deja de contar como disponible', async () => {
+      const copy = await database.copy.findUniqueOrThrow({
+        where: { inventoryCode: 'CLENA-E2E-100' },
+      });
+      await patch(copy.id, { status: 'BAJA' }).expect(200);
+      const obra = await detail(emptyWorkId);
+      expect(obra.availability.status).toBe('NO_DISPONIBLE');
+      expect(obra.copies).toEqual([]);
+    });
+
+    it('responde 404 si el libro no existe y 400 con datos inválidos', async () => {
+      await register(randomUUID(), {
+        inventoryCode: 'CLENA-E2E-200',
+        shelfId: shelfA,
+      }).expect(404);
+      await register(emptyWorkId, {
+        inventoryCode: 'CLENA-E2E-201',
+        shelfId: randomUUID(),
+      }).expect(400);
+      await register(emptyWorkId, { shelfId: shelfA }).expect(400);
+      await register(emptyWorkId, {
+        inventoryCode: 'CLENA-E2E-202',
+        shelfId: shelfA,
+        status: 'PRESTADO',
+      }).expect(400);
+    });
   });
 });

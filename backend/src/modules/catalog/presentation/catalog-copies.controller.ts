@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
+  Post,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +14,7 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiConflictResponse,
+  ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -24,15 +27,20 @@ import { JwtAuthGuard } from '../../iam/presentation/guards/jwt-auth.guard';
 import { Roles } from '../../iam/presentation/guards/roles.decorator';
 import { RolesGuard } from '../../iam/presentation/guards/roles.guard';
 import { ListShelvesUseCase } from '../application/use-cases/list-shelves.use-case';
+import { RegisterCopyUseCase } from '../application/use-cases/register-copy.use-case';
 import { UpdateCopyUseCase } from '../application/use-cases/update-copy.use-case';
 import { CatalogErrorsFilter } from './catalog-errors.filter';
 import {
   CopyResponseDto,
+  RegisterCopyDto,
   ShelfListDto,
   UpdateCopyDto,
 } from './dto/update-copy.dto';
 
-/** HU-11: editar ubicación y estado de un ejemplar. Solo personal y administradores. */
+/**
+ * Ejemplares: registrar (HU-19) y editar ubicación y estado (HU-11).
+ * Solo personal y administradores.
+ */
 @ApiTags('catalog')
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({ description: 'Sesión ausente o inválida' })
@@ -45,7 +53,29 @@ export class CatalogCopiesController {
   constructor(
     private readonly updateCopy: UpdateCopyUseCase,
     private readonly listShelves: ListShelvesUseCase,
+    private readonly registerCopy: RegisterCopyUseCase,
   ) {}
+
+  @Post('works/:id/copies')
+  @HttpCode(201)
+  @ApiOperation({
+    summary: 'Registrar un ejemplar de un libro',
+    description:
+      'Crea el ejemplar con su código de inventario y su estante (que fija sala y sección). El detalle público lo muestra de inmediato.',
+  })
+  @ApiParam({ name: 'id', format: 'uuid', description: 'Id del libro' })
+  @ApiCreatedResponse({ type: CopyResponseDto })
+  @ApiBadRequestResponse({
+    description: 'Datos inválidos o estante inexistente',
+  })
+  @ApiNotFoundResponse({ description: 'El libro no existe' })
+  @ApiConflictResponse({ description: 'El código de inventario ya existe' })
+  register(
+    @Param('id', ParseUUIDPipe) workId: string,
+    @Body() dto: RegisterCopyDto,
+  ): Promise<CopyResponseDto> {
+    return this.registerCopy.execute(workId, dto);
+  }
 
   @Patch('copies/:id')
   @ApiOperation({

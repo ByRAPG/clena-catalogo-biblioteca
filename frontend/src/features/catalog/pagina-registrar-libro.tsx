@@ -150,6 +150,15 @@ export function PaginaRegistrarLibro() {
             <Anchor component={Link} to={`/obras/${registrada.id}`}>
               Ver la ficha del libro
             </Anchor>
+            <Anchor
+              component={Link}
+              to={`/gestion/ejemplares?${new URLSearchParams({
+                obra: registrada.id,
+                titulo: registrada.title,
+              }).toString()}`}
+            >
+              Agregar sus ejemplares
+            </Anchor>
             <Group gap="sm">
               <Button
                 type="button"

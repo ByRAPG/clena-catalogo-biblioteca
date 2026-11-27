@@ -60,3 +60,21 @@ export function rotuloEstante(e: {
 }): string {
   return `${e.room} › ${e.section} › ${e.shelf ?? e.code ?? ''}`
 }
+
+/** Cuerpo de `POST /catalog/works/:id/copies` (HU-19). */
+export interface DatosEjemplarNuevo {
+  inventoryCode: string
+  shelfId: string
+  status: EstadoEditable
+}
+
+export function registrarEjemplar(
+  workId: string,
+  datos: DatosEjemplarNuevo,
+  token: string,
+): Promise<EjemplarActualizado> {
+  return peticion<EjemplarActualizado>(
+    `/catalog/works/${encodeURIComponent(workId)}/copies`,
+    { metodo: 'POST', cuerpo: datos, token },
+  )
+}
