@@ -14,6 +14,7 @@ import {
   TextInput,
   Title,
 } from '@mantine/core'
+import { useDebouncedValue } from '@mantine/hooks'
 import { EncabezadoSeccion } from '../../shared/ui/encabezado-seccion'
 import { IconoAlerta, IconoCheck } from '../../shared/ui/iconos'
 import { useSesion } from '../auth/sesion-context'
@@ -31,6 +32,13 @@ import {
 } from './prestamos.api'
 
 const PLAZO_POR_DEFECTO = 15
+
+const TEXTO_ESTADO_EJEMPLAR: Record<EjemplarParaPrestamo['status'], string> = {
+  DISPONIBLE: 'Disponible',
+  PRESTADO: 'Prestado',
+  MANTENIMIENTO: 'En mantenimiento',
+  BAJA: 'Dado de baja',
+}
 
 function formatearFecha(iso: string): string {
   const fecha = new Date(iso)
@@ -61,7 +69,18 @@ export function PaginaPrestamos() {
   const [copyId, setCopyId] = useState<string | null>(null)
   const [codigoManual, setCodigoManual] = useState('')
   const [readerId, setReaderId] = useState<string | null>(null)
-  const [plazoDias, setPlazoDias] = useState<number>(PLAZO_POR_DEFECTO)
+  // Lo elegido se conserva aparte: al cambiar la búsqueda la lista se
+  // reemplaza y la opción elegida no debe desaparecer del campo.
+  const [ejemplarElegido, setEjemplarElegido] =
+    useState<EjemplarParaPrestamo | null>(null)
+  const [lectorElegido, setLectorElegido] = useState<LectorMostrador | null>(
+    null,
+  )
+  const [textoEjemplar, setTextoEjemplar] = useState('')
+  const [textoLector, setTextoLector] = useState('')
+  const [busquedaEjemplar] = useDebouncedValue(textoEjemplar.trim(), 300)
+  const [busquedaLector] = useDebouncedValue(textoLector.trim(), 300)
+  const [plazoDias, setPlazoDias] = useState<number | ''>(PLAZO_POR_DEFECTO)
   const [registrando, setRegistrando] = useState(false)
   const [mensajeOk, setMensajeOk] = useState('')
   const [errorPrestamo, setErrorPrestamo] = useState('')
@@ -81,31 +100,42 @@ export function PaginaPrestamos() {
   const [busqueda, setBusqueda] = useState('')
   const [prestamos, setPrestamos] = useState<Prestamo[]>([])
   const [total, setTotal] = useState(0)
-  const [cargandoLista, setCargandoLista] = useState(false)
   const [errorLista, setErrorLista] = useState('')
   const [devolviendoId, setDevolviendoId] = useState<string | null>(null)
   const [refresco, setRefresco] = useState(0)
+  // La lista está cargando mientras la última carga terminada no sea la de los
+  // filtros actuales; así vuelve a «cargando» en cada petición nueva.
+  const claveLista = `${filtroEstado}|${busqueda.trim()}|${refresco}`
+  const [listaCargada, setListaCargada] = useState<string | null>(null)
+  const cargandoLista = listaCargada !== claveLista
 
   const recargarTodo = useCallback(() => {
     setRefresco((n) => n + 1)
   }, [])
 
+  // Las sugerencias se piden al backend con lo que la persona escribe, para
+  // que un ejemplar o lector fuera de los primeros 30 también se pueda elegir.
   useEffect(() => {
     if (!token) return
     const control = new AbortController()
-    Promise.all([
-      buscarEjemplares('', token, control.signal),
-      buscarLectores('', token, control.signal),
-    ])
-      .then(([listaEjemplares, listaLectores]) => {
-        setEjemplares(listaEjemplares)
-        setLectores(listaLectores)
-      })
+    buscarEjemplares(busquedaEjemplar, token, control.signal)
+      .then(setEjemplares)
       .catch(() => {
         // Si fallan las sugerencias, igual se puede ingresar código manual.
       })
     return () => control.abort()
-  }, [token, refresco])
+  }, [token, refresco, busquedaEjemplar])
+
+  useEffect(() => {
+    if (!token) return
+    const control = new AbortController()
+    buscarLectores(busquedaLector, token, control.signal)
+      .then(setLectores)
+      .catch(() => {
+        // Sin sugerencias se puede registrar un lector nuevo.
+      })
+    return () => control.abort()
+  }, [token, refresco, busquedaLector])
 
   useEffect(() => {
     if (!token) return
@@ -136,26 +166,36 @@ export function PaginaPrestamos() {
         )
       })
       .finally(() => {
-        if (!cancelado) setCargandoLista(false)
+        if (!cancelado) setListaCargada(claveLista)
       })
     return () => {
       cancelado = true
       control.abort()
     }
-  }, [token, filtroEstado, busqueda, refresco])
+  }, [token, filtroEstado, busqueda, refresco, claveLista])
 
   const opcionesEjemplares = useMemo(
     () =>
-      ejemplares.map((ej) => ({
+      (ejemplarElegido && !ejemplares.some((e) => e.id === ejemplarElegido.id)
+        ? [ejemplarElegido, ...ejemplares]
+        : ejemplares
+      ).map((ej) => ({
         value: ej.id,
-        label: `${ej.inventoryCode} · ${ej.workTitle} (${ej.status})`,
+        label:
+          ej.status === 'DISPONIBLE'
+            ? `${ej.inventoryCode} · ${ej.workTitle}`
+            : `${ej.inventoryCode} · ${ej.workTitle} (${TEXTO_ESTADO_EJEMPLAR[ej.status]})`,
+        disabled: ej.status !== 'DISPONIBLE',
       })),
-    [ejemplares],
+    [ejemplares, ejemplarElegido],
   )
 
   const opcionesLectores = useMemo(
     () =>
-      lectores.map((lec) => ({
+      (lectorElegido && !lectores.some((l) => l.id === lectorElegido.id)
+        ? [lectorElegido, ...lectores]
+        : lectores
+      ).map((lec) => ({
         value: lec.id,
         label: lec.documentId
           ? `${lec.fullName} · Doc. ${lec.documentId}`
@@ -163,7 +203,7 @@ export function PaginaPrestamos() {
             ? `${lec.fullName} · ${lec.email}`
             : lec.fullName,
       })),
-    [lectores],
+    [lectores, lectorElegido],
   )
 
   async function guardarPrestamo(evento: FormEvent<HTMLFormElement>) {
@@ -175,6 +215,10 @@ export function PaginaPrestamos() {
     const codigo = codigoManual.trim()
     if (!copyId && !codigo) {
       setErrorPrestamo('Seleccione un ejemplar o escriba su código de inventario')
+      return
+    }
+    if (plazoDias === '' || plazoDias < 1 || plazoDias > 60) {
+      setErrorPrestamo('Escriba un plazo entre 1 y 60 días')
       return
     }
     if (!readerId) {
@@ -233,6 +277,7 @@ export function PaginaPrestamos() {
       )
       setLectores((prev) => [creado, ...prev])
       setReaderId(creado.id)
+      setLectorElegido(creado)
       setNuevoLectorNombre('')
       setNuevoLectorDocumento('')
       setNuevoLectorCorreo('')
@@ -321,10 +366,15 @@ export function PaginaPrestamos() {
                   value={copyId}
                   onChange={(valor) => {
                     setCopyId(valor)
+                    setEjemplarElegido(
+                      ejemplares.find((e) => e.id === valor) ?? null,
+                    )
                     if (valor) setCodigoManual('')
                   }}
                   searchable
                   clearable
+                  filter={({ options }) => options}
+                  onSearchChange={setTextoEjemplar}
                   nothingFoundMessage="No se encontraron ejemplares"
                 />
 
@@ -345,9 +395,16 @@ export function PaginaPrestamos() {
                     placeholder="Seleccione un lector"
                     data={opcionesLectores}
                     value={readerId}
-                    onChange={setReaderId}
+                    onChange={(valor) => {
+                      setReaderId(valor)
+                      setLectorElegido(
+                        lectores.find((l) => l.id === valor) ?? null,
+                      )
+                    }}
                     searchable
                     clearable
+                    filter={({ options }) => options}
+                    onSearchChange={setTextoLector}
                     nothingFoundMessage="No se encontraron lectores"
                   />
                   <Button
@@ -366,17 +423,17 @@ export function PaginaPrestamos() {
                     max={60}
                     value={plazoDias}
                     onChange={(valor) =>
-                      setPlazoDias(
-                        typeof valor === 'number' && valor >= 1
-                          ? valor
-                          : PLAZO_POR_DEFECTO,
-                      )
+                      setPlazoDias(typeof valor === 'number' ? valor : '')
                     }
                     w={160}
                   />
                   <Text size="sm" c="dimmed" pb={8}>
                     Fecha límite estimada:{' '}
-                    <strong>{calcularFechaLimite(plazoDias)}</strong>
+                    <strong>
+                      {plazoDias === ''
+                        ? 'indique el plazo'
+                        : calcularFechaLimite(plazoDias)}
+                    </strong>
                   </Text>
                 </Group>
 
