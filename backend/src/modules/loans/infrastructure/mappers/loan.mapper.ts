@@ -54,8 +54,7 @@ export const LOAN_COPY_INCLUDE = {
   },
   reservations: {
     where: { status: 'ACTIVA' },
-    select: { id: true },
-    take: 1,
+    select: { readerId: true, expiresAt: true },
   },
 } as const satisfies Prisma.CopyInclude;
 
@@ -79,6 +78,9 @@ export function toCopyStatusDomain(status: CopyStatus): CopyStatusDomain {
 export function toLoanCopySummary(
   row: PrismaCopyWithRelations,
 ): LoanCopySummary {
+  // Una reserva ACTIVA ya vencida (aun sin marcar) no bloquea el préstamo.
+  const now = new Date();
+  const reservation = row.reservations.find((r) => r.expiresAt > now);
   return {
     id: row.id,
     inventoryCode: row.inventoryCode,
@@ -88,7 +90,8 @@ export function toLoanCopySummary(
     room: row.shelf.section.room.name,
     section: row.shelf.section.name,
     shelf: row.shelf.code,
-    hasActiveReservation: row.reservations.length > 0,
+    hasActiveReservation: reservation !== undefined,
+    reservedByReaderId: reservation?.readerId ?? null,
   };
 }
 

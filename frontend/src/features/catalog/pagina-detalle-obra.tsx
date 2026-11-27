@@ -18,6 +18,7 @@ import { Resaltado } from '../../shared/ui/resaltado'
 import { esUrlWeb } from '../../shared/texto/url-web'
 import { ApiError } from '../../shared/api/client'
 import { obtenerObra, type ObraDetalle } from '../search/busqueda.api'
+import { BotonReservar } from '../reservations/boton-reservar'
 import { EtiquetaDisponibilidad } from '../search/etiqueta-disponibilidad'
 import { BotonCopiarUbicacion } from '../search/boton-copiar-ubicacion'
 import { textoDeUbicacion, textoDelEstadoDeEjemplar } from '../search/textos'
@@ -146,6 +147,10 @@ export function PaginaDetalleObra() {
       </section>
 
       <EtiquetaDisponibilidad disponibilidad={obra.availability} />
+      <BotonReservar
+        workId={obra.id}
+        disponibles={obra.availability.availableCopies}
+      />
 
       <Group gap="sm" className="no-imprimir">
         <Button

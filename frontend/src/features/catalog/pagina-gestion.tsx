@@ -8,6 +8,7 @@ import {
   IconoQr,
   IconoSala,
   IconoSubir,
+  IconoUsuario,
 } from '../../shared/ui/iconos'
 import { useSesion } from '../auth/sesion-context'
 import { SeccionCodigosQr } from '../qr/seccion-codigos-qr'
@@ -86,6 +87,16 @@ export function PaginaGestion() {
           descripcion="Revisar cómo ve el público las búsquedas y las fichas."
           to="/"
         />
+        {esAdmin && (
+          <CuadroMarca
+            tono="azul"
+            numero="07"
+            icono={<IconoUsuario />}
+            titulo="Cuentas del personal"
+            descripcion="Crear cuentas para el personal y activarlas o desactivarlas."
+            to="/gestion/usuarios"
+          />
+        )}
       </RejillaCuadros>
 
       {!esAdmin && (

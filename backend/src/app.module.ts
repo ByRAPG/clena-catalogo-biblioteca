@@ -6,6 +6,7 @@ import { Env, validateEnv } from './shared/config/env.validation';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { IamModule } from './modules/iam/iam.module';
 import { LoansModule } from './modules/loans/loans.module';
+import { ReservationsModule } from './modules/reservations/reservations.module';
 import { SearchReindexModule } from './modules/search/search-reindex.module';
 import { SearchModule } from './modules/search/search.module';
 import { AppThrottlerGuard } from './shared/http/app-throttler.guard';
@@ -34,6 +35,7 @@ import { SharedModule } from './shared/shared.module';
     CatalogModule,
     IamModule,
     LoansModule,
+    ReservationsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: AppThrottlerGuard }],
 })

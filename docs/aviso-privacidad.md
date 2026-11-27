@@ -32,7 +32,7 @@ La eliminación de cuentas desde la aplicación corresponde a HU-17 y aún no es
 
 Texto propuesto: «He leído el aviso de privacidad y autorizo el tratamiento de mis datos para gestionar mi cuenta y los servicios de biblioteca que solicite».
 
-El registro de lectores deberá presentar una aceptación expresa no preseleccionada y guardar `privacyVersion = 2026-11-25` y `consentAt` al aceptar. El esquema existente ya contiene esos campos en User y Reader. La integración corresponde a IAM/HU-16 y está pendiente. Leer la página pública no registra consentimiento.
+El registro de lectores (`/registro`) presenta una casilla «Acepto el tratamiento de mis datos» sin preseleccionar y guarda `privacyVersion = 2026-11-25` y `consentAt` en User y en el Reader vinculado. Solo se recogen nombre completo, correo y la fecha de aceptación. Quien tiene cuenta puede eliminarla desde `/mi-cuenta` (confirmando con su contraseña): se anonimizan sus datos personales y se conserva el historial de préstamos sin identificarla. Leer la página pública no registra consentimiento.
 
 ## Licencia del código
 

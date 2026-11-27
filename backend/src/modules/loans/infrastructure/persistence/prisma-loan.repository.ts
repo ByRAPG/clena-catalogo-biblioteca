@@ -174,6 +174,28 @@ export class PrismaLoanRepository implements LoanRepository {
           );
         }
 
+        // Una reserva vigente de otro lector impide el préstamo (se revisa
+        // aquí, ya con el ejemplar bloqueado, por si se reservó hace un instante).
+        const foreign = await tx.reservation.count({
+          where: {
+            copyId: input.copyId,
+            status: 'ACTIVA',
+            expiresAt: { gt: input.loanedAt },
+            readerId: { not: input.readerId },
+          },
+        });
+        if (foreign > 0) throw new CopyNotAvailableError('RESERVADO');
+        // Si presta a quien reservó, sus reservas activas de esa obra (de este
+        // ejemplar o de otro) quedan cumplidas (RECOGIDA).
+        await tx.reservation.updateMany({
+          where: {
+            status: 'ACTIVA',
+            readerId: input.readerId,
+            work: { copies: { some: { id: input.copyId } } },
+          },
+          data: { status: 'RECOGIDA', resolvedAt: input.loanedAt },
+        });
+
         return tx.loan.create({
           data: {
             copyId: input.copyId,

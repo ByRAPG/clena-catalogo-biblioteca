@@ -169,7 +169,7 @@ export function PaginaIngreso() {
               Iniciar sesión
             </Title>
             <Text c="dimmed" size="sm">
-              Acceso exclusivo para el personal bibliotecario.
+              Ingrese con su cuenta de lector o de personal.
             </Text>
           </div>
 
@@ -200,7 +200,7 @@ export function PaginaIngreso() {
           <form onSubmit={ingresar}>
             <Stack gap="md">
               <TextInput
-                label="Correo institucional"
+                label="Correo"
                 type="email"
                 autoComplete="username"
                 required
@@ -240,6 +240,9 @@ export function PaginaIngreso() {
               </Button>
             </Stack>
           </form>
+          <Link to="/registro" className="enlace-centrado">
+            Crear cuenta
+          </Link>
           <Link to="/" className="enlace-centrado">
             Volver al catálogo
           </Link>

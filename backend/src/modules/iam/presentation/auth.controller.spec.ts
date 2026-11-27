@@ -62,6 +62,9 @@ function setup(nodeEnv = 'development') {
     loginUser as unknown as LoginUser,
     refreshSession as unknown as RefreshSession,
     logoutUser as unknown as LogoutUser,
+    {} as never,
+    {} as never,
+    {} as never,
     config,
   );
   return {

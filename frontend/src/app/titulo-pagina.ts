@@ -12,8 +12,12 @@ const TITULOS: ReadonlyArray<readonly [string, string]> = [
   ['/gestion/importar', 'Importar catálogo'],
   ['/gestion/registrar-libro', 'Registrar libro'],
   ['/gestion/prestamos', 'Préstamos y devoluciones'],
+  ['/gestion/ejemplares', 'Ejemplares'],
+  ['/gestion/usuarios', 'Cuentas del personal'],
   ['/gestion', 'Gestión del catálogo'],
   ['/sin-permiso', 'Sin permiso'],
+  ['/registro', 'Crear cuenta'],
+  ['/mi-cuenta', 'Mi cuenta'],
 ]
 
 export function tituloDeRuta(ruta: string): string {

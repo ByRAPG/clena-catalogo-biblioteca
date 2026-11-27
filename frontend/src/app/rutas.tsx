@@ -20,6 +20,15 @@ const PaginaRegistrarLibro = lazy(() =>
 const PaginaGestion = lazy(() =>
   import('../features/catalog/pagina-gestion').then((m) => ({ default: m.PaginaGestion })),
 )
+const PaginaUsuarios = lazy(() =>
+  import('../features/users/pagina-usuarios').then((m) => ({ default: m.PaginaUsuarios })),
+)
+const PaginaMiCuenta = lazy(() =>
+  import('../features/account/pagina-mi-cuenta').then((m) => ({ default: m.PaginaMiCuenta })),
+)
+const PaginaRegistro = lazy(() =>
+  import('../features/account/pagina-registro').then((m) => ({ default: m.PaginaRegistro })),
+)
 const PaginaPrestamos = lazy(() =>
   import('../features/loans/pagina-prestamos').then((m) => ({ default: m.PaginaPrestamos })),
 )
@@ -36,12 +45,29 @@ export function Rutas() {
         <Route index element={<PaginaBusqueda />} />
         <Route path="obras/:id" element={<PaginaDetalleObra />} />
         <Route path="ingresar" element={<PaginaIngreso />} />
+        <Route path="registro" element={<PaginaRegistro />} />
+        <Route
+          path="mi-cuenta"
+          element={
+            <RutaProtegida roles={['READER']}>
+              <PaginaMiCuenta />
+            </RutaProtegida>
+          }
+        />
         <Route path="privacidad" element={<PaginaPrivacidad />} />
         <Route
           path="gestion/importar"
           element={
             <RutaProtegida roles={['ADMIN']}>
               <PaginaImportacion />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="gestion/usuarios"
+          element={
+            <RutaProtegida roles={['ADMIN']}>
+              <PaginaUsuarios />
             </RutaProtegida>
           }
         />

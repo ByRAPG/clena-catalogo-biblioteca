@@ -13,6 +13,13 @@ describe('validateEnv', () => {
     expect(env.LOG_LEVEL).toBe('info');
   });
 
+  it('las reservas tienen valores por defecto y rechazan un plazo inválido', () => {
+    const env = validateEnv(base);
+    expect(env.RESERVATION_HOURS).toBe(48);
+    expect(env.RESERVATION_EXPIRY_INTERVAL_SECONDS).toBe(60);
+    expect(() => validateEnv({ ...base, RESERVATION_HOURS: '0' })).toThrow();
+  });
+
   it('PUBLIC_WEB_URL tiene valor por defecto y exige http(s)', () => {
     expect(validateEnv(base).PUBLIC_WEB_URL).toBe('http://localhost:5173');
     expect(() =>

@@ -27,7 +27,7 @@ Dos tipos de personas usan el sistema: el visitante, que busca y consulta, y el 
 
 ![Figura 3. Componentes de la API REST (C4 nivel 3)](img/c4-3-componentes.png)
 
-Los controladores solo invocan casos de uso de los módulos (`iam`, `catalog`, `search`, `loans`). Los módulos dependen del dominio y nunca al revés; la infraestructura implementa los puertos que el dominio y la aplicación declaran. La sección 4 detalla las capas.
+Los controladores solo invocan casos de uso de los módulos (`iam`, `catalog`, `search`, `loans`, `reservations`). Los módulos dependen del dominio y nunca al revés; la infraestructura implementa los puertos que el dominio y la aplicación declaran. La sección 4 detalla las capas.
 
 ## 2. Stack
 
@@ -50,7 +50,8 @@ Cada módulo es un contexto del negocio con sus propias capas.
 | `iam` | Usuarios, roles, autenticación JWT y comando para crear el primer administrador (HU-09, integrado). Cuenta de lector con consentimiento, eliminación de cuenta y gestión de cuentas del personal (HU-16, HU-17, HU-18) no se terminaron | HU-09, HU-16, HU-17, HU-18 |
 | `catalog` | Obras, autores, temas, ejemplares, ubicaciones e importación CSV idempotente con ISBN validado (HU-10 y HU-12, integrados). La edición de ubicación y estado y el alta de ejemplares aparte (HU-11, HU-19) no se terminaron | HU-10, HU-11, HU-12, HU-19 |
 | `search` | Búsqueda híbrida (léxica y semántica), filtros, detalle público, disponibilidad (HU-01, 02, 03, 06 y 08, integrados). La búsqueda por voz (HU-13) no se terminó | HU-01, HU-02, HU-03, HU-06, HU-07, HU-08, HU-13 |
-| `loans` | Préstamos y devoluciones registrados por el personal (HU-20, integrado en `main`). Reservas y alertas (HU-14, HU-21) no se terminaron | HU-14, HU-20, HU-21 |
+| `loans` | Préstamos y devoluciones registrados por el personal (HU-20) y alertas de devolución y disponibilidad (HU-21). Un ejemplar con reserva activa solo se presta a quien lo reservó | HU-20, HU-21 |
+| `reservations` | El lector con cuenta reserva un ejemplar disponible por un plazo (48 h por defecto), ve y cancela sus reservas; las vencidas se marcan solas (HU-14) | HU-14 |
 | Frontend transversal | Accesibilidad, QR, tutorial | HU-04, HU-05, HU-15 |
 | `shared` | Configuración, errores, logs, Prisma, salud, correo | Transversal |
 

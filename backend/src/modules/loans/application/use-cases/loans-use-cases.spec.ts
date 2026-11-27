@@ -34,6 +34,7 @@ function buildCopy(overrides: Partial<LoanCopySummary> = {}): LoanCopySummary {
     section: 'Literatura',
     shelf: 'E-01',
     hasActiveReservation: false,
+    reservedByReaderId: null,
     ...overrides,
   };
 }
@@ -190,6 +191,47 @@ describe('Loans use cases (HU-20)', () => {
         }),
       ).rejects.toThrow(CopyNotAvailableError);
       expect(repo.createLoanAndMarkCopyLoaned).not.toHaveBeenCalled();
+    });
+
+    it('impide prestar un ejemplar reservado por otro lector', async () => {
+      const repo = createRepoMock();
+      repo.findCopyById.mockResolvedValue(
+        buildCopy({
+          hasActiveReservation: true,
+          reservedByReaderId: 'reader-2',
+        }),
+      );
+      repo.findReaderById.mockResolvedValue(buildReader());
+      const useCase = new RegisterLoanUseCase(repo, clock);
+
+      await expect(
+        useCase.execute({
+          copyId: 'copy-1',
+          readerId: 'reader-1',
+          staffId: 'staff-1',
+        }),
+      ).rejects.toThrow('reserva activa');
+      expect(repo.createLoanAndMarkCopyLoaned).not.toHaveBeenCalled();
+    });
+
+    it('permite prestar al lector que reservó el ejemplar', async () => {
+      const repo = createRepoMock();
+      repo.findCopyById.mockResolvedValue(
+        buildCopy({
+          hasActiveReservation: true,
+          reservedByReaderId: 'reader-1',
+        }),
+      );
+      repo.findReaderById.mockResolvedValue(buildReader());
+      repo.createLoanAndMarkCopyLoaned.mockResolvedValue(buildLoanRecord());
+      const useCase = new RegisterLoanUseCase(repo, clock);
+
+      await useCase.execute({
+        copyId: 'copy-1',
+        readerId: 'reader-1',
+        staffId: 'staff-1',
+      });
+      expect(repo.createLoanAndMarkCopyLoaned).toHaveBeenCalledTimes(1);
     });
 
     it('impide prestar si el lector no existe o fue anonimizado', async () => {
