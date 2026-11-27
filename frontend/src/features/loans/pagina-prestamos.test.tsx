@@ -8,6 +8,8 @@ import { PaginaPrestamos } from './pagina-prestamos'
 import * as api from './prestamos.api'
 
 vi.mock('./prestamos.api')
+// El panel de alertas (HU-21) tiene su propia prueba.
+vi.mock('./alertas.api')
 
 const prestamoActivo: api.Prestamo = {
   id: 'loan-1',
