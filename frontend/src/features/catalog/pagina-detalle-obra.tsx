@@ -4,12 +4,14 @@ import {
   Button,
   Card,
   Group,
-  Loader,
+  Skeleton,
   Stack,
   Table,
   Text,
   Title,
+  VisuallyHidden,
 } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { Resaltado } from '../../shared/ui/resaltado'
@@ -18,7 +20,9 @@ import { ApiError } from '../../shared/api/client'
 import { obtenerObra, type ObraDetalle } from '../search/busqueda.api'
 import { BotonReservar } from '../reservations/boton-reservar'
 import { EtiquetaDisponibilidad } from '../search/etiqueta-disponibilidad'
-import { textoDelEstadoDeEjemplar } from '../search/textos'
+import { BotonCopiarUbicacion } from '../search/boton-copiar-ubicacion'
+import { textoDeUbicacion, textoDelEstadoDeEjemplar } from '../search/textos'
+import '../search/ficha-impresion.css'
 
 /**
  * Detalle público de una obra (HU-03, HU-06). Muestra la ubicación de **cada**
@@ -46,6 +50,20 @@ interface RespuestaRecibida {
   id: string
   obra: ObraDetalle | null
   error: string | null
+}
+
+function EsqueletoDetalle() {
+  const reducido = useMediaQuery('(prefers-reduced-motion: reduce)') === true
+  return (
+    <Stack gap="md" role="status" aria-live="polite" aria-busy="true">
+      <VisuallyHidden>Cargando la obra…</VisuallyHidden>
+      <Skeleton height={36} width="70%" animate={!reducido} />
+      <Skeleton height={20} width="45%" animate={!reducido} />
+      <Skeleton height={20} width="35%" animate={!reducido} />
+      <Skeleton height={140} animate={!reducido} />
+      <Skeleton height={90} animate={!reducido} />
+    </Stack>
+  )
 }
 
 export function PaginaDetalleObra() {
@@ -80,12 +98,7 @@ export function PaginaDetalleObra() {
   }, [id])
 
   if (cargando) {
-    return (
-      <Group gap="sm" aria-live="polite">
-        <Loader size="sm" />
-        <Text>Cargando la obra…</Text>
-      </Group>
-    )
+    return <EsqueletoDetalle />
   }
 
   if (error !== null) {
@@ -138,6 +151,20 @@ export function PaginaDetalleObra() {
         workId={obra.id}
         disponibles={obra.availability.availableCopies}
       />
+
+      <Group gap="sm" className="no-imprimir">
+        <Button
+          type="button"
+          variant="default"
+          style={{ minHeight: 44 }}
+          onClick={() => window.print()}
+        >
+          Imprimir ficha
+        </Button>
+        {obra.location !== null && (
+          <BotonCopiarUbicacion texto={textoDeUbicacion(obra.location)} />
+        )}
+      </Group>
 
       {esUrlWeb(obra.digitalUrl) && (
         <Button
@@ -222,6 +249,10 @@ export function PaginaDetalleObra() {
                     Ejemplar {ejemplar.inventoryCode} ·{' '}
                     {textoDelEstadoDeEjemplar(ejemplar.status)}
                   </Text>
+                  <BotonCopiarUbicacion
+                    texto={textoDeUbicacion(ejemplar)}
+                    etiqueta={`Copiar ubicación del ejemplar ${ejemplar.inventoryCode}`}
+                  />
                 </Stack>
               </Card>
             ))}

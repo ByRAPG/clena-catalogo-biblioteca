@@ -1,0 +1,45 @@
+.copiar-ubicacion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Ficha impresa: solo título, autor, datos y ubicación, en blanco y negro. */
+@media print {
+  .cabecera,
+  .pie,
+  .salto-al-contenido,
+  .no-imprimir,
+  .enlace-volver,
+  button,
+  nav {
+    display: none !important;
+  }
+
+  body,
+  .marco,
+  main {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  main * {
+    color: #000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  .mantine-Card-root {
+    border: 1px solid #000 !important;
+    break-inside: avoid;
+  }
+}

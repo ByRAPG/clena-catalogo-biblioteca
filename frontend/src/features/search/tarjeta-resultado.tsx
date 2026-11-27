@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom'
 import { Resaltado } from '../../shared/ui/resaltado'
 import type { ObraResumen } from './busqueda.api'
 import { EtiquetaDisponibilidad } from './etiqueta-disponibilidad'
-import { textoDeLaCoincidencia } from './textos'
+import { textoDeLaCoincidencia, textoDeUbicacion } from './textos'
+import { BotonCopiarUbicacion } from './boton-copiar-ubicacion'
 import { UbicacionObra } from './ubicacion-obra'
+import './ficha-impresion.css'
 
 /**
  * Un resultado de la búsqueda (HU-01, HU-02, HU-03, HU-06). Muestra el título
@@ -80,6 +82,12 @@ export function TarjetaResultado({
 
         <EtiquetaDisponibilidad disponibilidad={obra.availability} />
         <UbicacionObra ubicacion={obra.location} />
+        {obra.location !== null && (
+          <BotonCopiarUbicacion
+            texto={textoDeUbicacion(obra.location)}
+            etiqueta={`Copiar ubicación de ${obra.title}`}
+          />
+        )}
       </Stack>
     </li>
   )

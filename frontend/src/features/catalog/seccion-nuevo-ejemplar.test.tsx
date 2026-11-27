@@ -27,7 +27,7 @@ beforeEach(() => {
   vi.resetAllMocks()
 })
 
-function pintar(ruta = '/gestion/ejemplares?obra=w1&titulo=Cien%20a%C3%B1os%20de%20soledad') {
+function pintar(ruta = '/gestion/ejemplares?obra=11111111-1111-4111-8111-111111111111&titulo=Cien%20a%C3%B1os%20de%20soledad') {
   return render(
     <MantineProvider env="test">
       <MemoryRouter initialEntries={[ruta]}>
@@ -85,7 +85,7 @@ describe('Registrar un ejemplar (HU-19)', () => {
     await registrar()
 
     expect(api.registrarEjemplar).toHaveBeenCalledWith(
-      'w1',
+      '11111111-1111-4111-8111-111111111111',
       { inventoryCode: 'CLENA-0042-1', shelfId: 's2', status: 'DISPONIBLE' },
       'token-staff',
     )
@@ -101,7 +101,7 @@ describe('Registrar un ejemplar (HU-19)', () => {
       new ApiError(
         'El código de inventario «CLENA-0001-1» ya está registrado',
         409,
-        '/catalog/works/w1/copies',
+        '/catalog/works/11111111-1111-4111-8111-111111111111/copies',
       ),
     )
     pintar()

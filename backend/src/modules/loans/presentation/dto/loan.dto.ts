@@ -8,6 +8,7 @@ import {
   IsString,
   IsUUID,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 import {
@@ -76,6 +77,9 @@ export class ListLoansQueryDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(100, {
+    message: 'La búsqueda no puede superar los 100 caracteres',
+  })
   q?: string;
 
   @ApiPropertyOptional({ default: 1, minimum: 1 })
@@ -98,6 +102,9 @@ export class SearchCounterQueryDto {
   @ApiPropertyOptional({ description: 'Texto de búsqueda' })
   @IsOptional()
   @IsString()
+  @MaxLength(100, {
+    message: 'La búsqueda no puede superar los 100 caracteres',
+  })
   q?: string;
 
   @ApiPropertyOptional({ default: 20, minimum: 1, maximum: 50 })
@@ -113,21 +120,25 @@ export class RegisterReaderDto {
   @ApiProperty({ example: 'Carmen Pérez' })
   @IsString()
   @IsNotEmpty({ message: 'El nombre completo del lector es obligatorio' })
+  @MaxLength(150, { message: 'El nombre no puede superar los 150 caracteres' })
   fullName!: string;
 
   @ApiPropertyOptional({ example: '1045123456' })
   @IsOptional()
   @IsString()
+  @MaxLength(40, { message: 'El documento no puede superar los 40 caracteres' })
   documentId?: string;
 
   @ApiPropertyOptional({ example: 'carmen@example.org' })
   @IsOptional()
   @IsString()
+  @MaxLength(254, { message: 'El correo no puede superar los 254 caracteres' })
   email?: string;
 
   @ApiPropertyOptional({ example: '3001234567' })
   @IsOptional()
   @IsString()
+  @MaxLength(30, { message: 'El teléfono no puede superar los 30 caracteres' })
   phone?: string;
 }
 
