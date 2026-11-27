@@ -4,6 +4,7 @@ import {
   type CopyUpdateInput,
 } from '../../domain/entities/copy-update';
 import {
+  CopyChangedError,
   CopyNotFoundError,
   ShelfNotFoundError,
 } from '../../domain/errors/copy.errors';
@@ -34,6 +35,12 @@ export class UpdateCopyUseCase {
     const changes: CopyChanges = {};
     if (update.shelfId) changes.shelfId = update.shelfId;
     if (update.status) changes.status = update.status;
-    return this.copies.update(copyId, changes);
+    // Si cambia el estado, se guarda solo si sigue siendo el que se comprobó:
+    // así un préstamo registrado en ese mismo instante no queda pisado.
+    const view = update.status
+      ? await this.copies.update(copyId, changes, circulation.status)
+      : await this.copies.update(copyId, changes);
+    if (!view) throw new CopyChangedError();
+    return view;
   }
 }

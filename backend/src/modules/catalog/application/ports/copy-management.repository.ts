@@ -33,7 +33,16 @@ export interface CopyChanges {
 export interface CopyManagementRepository {
   findCirculation(copyId: string): Promise<CopyCirculation | null>;
   shelfExists(shelfId: string): Promise<boolean>;
-  update(copyId: string, changes: CopyChanges): Promise<CopyView>;
+  /**
+   * Guarda los cambios. Con `expectedStatus`, solo guarda si el ejemplar sigue
+   * en ese estado (comprobación y escritura en una sola sentencia) y devuelve
+   * `null` si cambió entretanto.
+   */
+  update(
+    copyId: string,
+    changes: CopyChanges,
+    expectedStatus?: CopyStatus,
+  ): Promise<CopyView | null>;
   /** Estantes ordenados por sala, sección y código. */
   listShelves(): Promise<ShelfOption[]>;
   /** HU-19: la obra existe y no está eliminada. */

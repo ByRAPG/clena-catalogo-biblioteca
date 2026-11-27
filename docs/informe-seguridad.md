@@ -77,7 +77,7 @@ No se incluye diagrama de flujo de datos: la arquitectura ya está en `docs/arqu
 | V2 Autenticación | Cumple; H-03 y H-05 corregidos y H-04 corregido en parte (riesgo residual R-08) | Argon2id, bloqueo, mensaje único, hash ficticio, contador atómico |
 | V3 Gestión de sesión | Cumple con el riesgo residual R-01 | Cookie `httpOnly`/`strict`, rotación, cierre de familia |
 | V4 Control de acceso | Cumple | Guards por rol en cada ruta de escritura |
-| V5 Validación | Cumple, con la excepción H-06 | `ValidationPipe`, parámetros SQL, tope JSON de 2 MB |
+| V5 Validación | Cumple (H-06 corregido en #142 y #143) | `ValidationPipe`, parámetros SQL, tope JSON de 2 MB |
 | V7 Errores y registro | Cumple parcialmente | Filtro de excepciones; sin registro de auditoría de negocio |
 | V8 Protección de datos | Cumple | Datos mínimos, sin secretos en el repositorio (gitleaks) |
 | V9 Comunicaciones | Cumple en producción | TLS y HSTS en Caddy |
@@ -108,12 +108,13 @@ Severidad: **Alta** (explotable con impacto serio sin condiciones especiales), *
 | H-03 | El contador de intentos fallidos no era atómico: dos peticiones simultáneas podían contar un solo fallo | Media | Incremento atómico en la base de datos (`failedLogins: { increment: 1 }`) y bloqueo decidido con el valor devuelto (`prisma-user.repository.ts`, `incrementFailedLogins`) | #155 |
 | H-04 | La respuesta 429 de «cuenta bloqueada» revelaba que el correo existe | Media | **Corregido en parte.** La cuenta bloqueada responde el mismo 401 genérico que una contraseña incorrecta, sin 429 ni `Retry-After` (`login-user.use-case.ts`). Queda el riesgo residual R-08 | #155 |
 | H-05 | Enumeración de correos por tiempo: con correo inexistente no se calculaba ningún hash | Baja | Se verifica un hash ficticio calculado una vez al arrancar (`login-user.use-case.ts`, `dummyHash`) y la contraseña se verifica también con la cuenta bloqueada | #155 |
+| H-06 | La importación CSV no tenía tope de filas ni de longitud por campo; solo el límite global de 2 MB | Media | Tope de 1 MB y 5 000 filas por archivo, longitud máxima por campo y máximo de 20 elementos por lista (`csv-limits.ts`, `CSV_IMPORT_LIMITS`; validación en `import-row.ts`) | #142, #143 |
 
 ### 4.2 Abiertos y asignados
 
 | Id | Hallazgo | Severidad | Recomendación | Responsable |
 |---|---|---|---|---|
-| H-06 | La importación CSV no tiene tope de filas ni de longitud por campo; solo el límite global de 2 MB | Media | Máximo de filas (por ejemplo 5 000) y de caracteres por campo en el DTO de importación | T-35 y T-36, Humberto |
+| — | Ninguno abierto a la fecha de la entrega (26 nov 2026) | — | — | — |
 
 ### 4.3 Riesgos aceptados o residuales
 
@@ -121,7 +122,7 @@ Severidad: **Alta** (explotable con impacto serio sin condiciones especiales), *
 |---|---|---|---|
 | R-01 | El access token sigue válido hasta 15 minutos tras cerrar sesión o desactivar la cuenta, porque `JwtAuthGuard` solo verifica la firma (`jwt-auth.guard.ts`: `canActivate`) | Baja | Aceptado (ADR-03): vida corta de 15 minutos. Si se exige, comprobar el estado del usuario en cada petición |
 | R-02 | Password spraying distribuido: el límite es por IP y el bloqueo por cuenta, de modo que muchas IP con pocas pruebas cada una pasan | Baja | Aceptado: Argon2id encarece cada intento y las contraseñas del personal son pocas. Recomendar contraseñas largas y, a futuro, doble factor para `ADMIN` |
-| R-03 | `pnpm audit` del backend: 2 altas transitivas de `prisma > @prisma/config` (`deepmerge-ts` 7.1.5, `effect` 3.21.0, ReDoS) | Baja | Aceptado: solo las usa la CLI de Prisma en migraciones, no la ruta de una petición. Se resolverá al actualizar Prisma (Dependabot) |
+| R-03 | `pnpm audit` del backend: 2 altas transitivas de `prisma > @prisma/config` (`deepmerge-ts` 7.1.5, `effect` 3.21.0, ReDoS) | Baja | **Cerrado el 26 nov** con `overrides` a `deepmerge-ts` 8.0.2 y `effect` 3.22.1 (`backend/pnpm-workspace.yaml`, #152). Prisma 7 se pospone: es una versión mayor y su PR de Dependabot rompía el build |
 | R-04 | El tope JSON de 2 MB es global, no por ruta (`app.setup.ts`: `JSON_BODY_LIMIT`) | Baja | Aceptado: Caddy ya corta a 2 MB. Si se amplía, reducir el tope en las rutas que no importan |
 | R-05 | La CSP estricta está solo en la SPA; la API usa `default-src 'none'` y `/docs` relaja a `unsafe-inline` para Swagger | Baja | Aceptado: `/docs` no contiene datos. Considerar desactivar `/docs` en producción |
 | R-06 | Los secretos viajan en variables de entorno, no en Docker secrets | Baja | Aceptado para una sola máquina. El archivo `.env.prod` no se versiona (`.gitignore`) y se restringe con permisos `600` |
@@ -162,13 +163,13 @@ Cabeceras medidas el 25 de noviembre de 2026 con `curl -sI` sobre la vista previ
 **Conclusiones**
 
 - El sistema cubre las categorías OWASP Top 10 relevantes para una aplicación de catálogo sin pagos ni datos personales sensibles. Los controles esenciales (autorización por rol, Argon2id, cookie de sesión endurecida, cabeceras, contenedores sin privilegios, escáneres en CI) están implementados y respaldados por pruebas.
-- No hay secretos en el historial ni vulnerabilidades críticas. Las dos altas del backend son transitivas, solo de la CLI de Prisma, y no están en la ruta de una petición.
-- El endurecimiento del login (H-03, H-04, H-05) quedó corregido en #155; de H-04 se acepta como riesgo residual (R-08) que un tercero bloquee una cuenta ajena. El hallazgo abierto de mayor prioridad es H-06.
+- No hay secretos en el historial ni vulnerabilidades críticas en el código. Las dos altas transitivas de la CLI de Prisma se cerraron con `overrides` (#152). Las alertas de Trivy sobre las imágenes son de paquetes de Debian 12 y de Caddy sin parche publicado: se descartaron el 26 nov como «won't fix» con su justificación y se revisan en el escaneo semanal.
+- El endurecimiento del login (H-03, H-04, H-05) quedó corregido en #155; de H-04 se acepta como riesgo residual (R-08) que un tercero bloquee una cuenta ajena. H-06 quedó corregido con los topes de la importación (#142 y #143): no quedan hallazgos abiertos.
 
 **Próximos pasos**
 
-1. Fusionar los PR que contienen las correcciones del 20 de noviembre (#108, #109, #115, #118 y #120) y confirmar que CodeQL, gitleaks y Trivy quedan en verde en `main`.
-2. Cerrar T-35 y T-36 (H-06) antes de la entrega. T-27 (H-03 a H-05) quedó corregida en #155.
+1. Hecho: las correcciones del 20 de noviembre (#108, #109, #115, #118 y #120), T-27 (#155) y T-35/T-36 (#142, #143) están en `main`, con CodeQL, gitleaks y Trivy en verde.
+2. Revisar cada semana las alertas descartadas de Trivy por si Debian o Caddy publican el parche (Dependabot vigila las imágenes base).
 3. Cuando exista la URL de producción, repetir la medición de cabeceras sobre ella (con una herramienta de calificación) y el análisis de imágenes.
-4. Actualizar Prisma para eliminar las dos altas transitivas (R-03) y revisar los PR de Dependabot cada semana.
+4. Actualizar a Prisma 7 en un PR propio después de la entrega y revisar los PR de Dependabot cada semana.
 5. Evaluar, si hay tiempo, comprobar el estado del usuario en cada petición (R-01) y desactivar `/docs` en producción (R-05).

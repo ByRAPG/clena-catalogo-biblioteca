@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../shared/infrastructure/prisma.service';
-import type { CopyCirculation } from '../../domain/entities/copy-update';
+import type {
+  CopyCirculation,
+  CopyStatus,
+} from '../../domain/entities/copy-update';
 import type { NewCopy } from '../../domain/entities/new-copy';
 import { InventoryCodeTakenError } from '../../domain/errors/copy.errors';
 import type {
@@ -70,7 +73,25 @@ export class PrismaCopyManagementRepository implements CopyManagementRepository 
     return (await this.prisma.shelf.count({ where: { id: shelfId } })) > 0;
   }
 
-  async update(copyId: string, changes: CopyChanges): Promise<CopyView> {
+  async update(
+    copyId: string,
+    changes: CopyChanges,
+    expectedStatus?: CopyStatus,
+  ): Promise<CopyView | null> {
+    if (expectedStatus !== undefined) {
+      // Comprobación y escritura en una sola sentencia: si otro proceso cambió
+      // el estado (p. ej. registró un préstamo), no se actualiza ninguna fila.
+      const { count } = await this.prisma.copy.updateMany({
+        where: { id: copyId, status: expectedStatus },
+        data: changes,
+      });
+      if (count === 0) return null;
+      const current = await this.prisma.copy.findUniqueOrThrow({
+        where: { id: copyId },
+        select: COPY_VIEW_SELECT,
+      });
+      return toView(current);
+    }
     const copy = await this.prisma.copy.update({
       where: { id: copyId },
       data: changes,

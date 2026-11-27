@@ -13,6 +13,7 @@ import {
   CopyNotFoundError,
   CopyOnLoanError,
   CopyReservedError,
+  CopyChangedError,
   CopyWorkNotFoundError,
   InventoryCodeTakenError,
 } from '../domain/errors/copy.errors';
@@ -46,6 +47,7 @@ function toHttp(exception: CatalogDomainError): HttpException {
   if (
     exception instanceof CopyOnLoanError ||
     exception instanceof CopyReservedError ||
+    exception instanceof CopyChangedError ||
     exception instanceof InventoryCodeTakenError
   ) {
     return new ConflictException(exception.message);
