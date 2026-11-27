@@ -4,11 +4,14 @@ import { PrismaService } from '../../../shared/infrastructure/prisma.service';
 import {
   AlreadyReservedError,
   NoCopyAvailableError,
+  ReservationAccountInvalidError,
+  ReservationLimitReachedError,
   WorkNotFoundForReservationError,
 } from '../domain/reservation.errors';
-import type {
-  ReservationRecord,
-  ReservationRepository,
+import {
+  MAX_ACTIVE_RESERVATIONS_PER_READER,
+  type ReservationRecord,
+  type ReservationRepository,
 } from '../domain/reservation.repository';
 
 const RESERVATION_INCLUDE = {
@@ -42,15 +45,25 @@ export class PrismaReservationRepository implements ReservationRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async ensureReaderForUser(userId: string): Promise<string> {
-    const existing = await this.prisma.reader.findUnique({
-      where: { userId },
-      select: { id: true },
-    });
-    if (existing) return existing.id;
-    const user = await this.prisma.user.findUniqueOrThrow({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { fullName: true, email: true },
+      select: {
+        fullName: true,
+        email: true,
+        active: true,
+        anonymizedAt: true,
+        reader: { select: { id: true, anonymizedAt: true } },
+      },
     });
+    if (!user || !user.active || user.anonymizedAt !== null) {
+      throw new ReservationAccountInvalidError();
+    }
+    if (user.reader) {
+      if (user.reader.anonymizedAt !== null) {
+        throw new ReservationAccountInvalidError();
+      }
+      return user.reader.id;
+    }
     try {
       const created = await this.prisma.reader.create({
         data: { userId, fullName: user.fullName, email: user.email },
@@ -118,6 +131,14 @@ export class PrismaReservationRepository implements ReservationRepository {
           },
         });
         if (duplicate > 0) throw new AlreadyReservedError();
+        const active = await tx.reservation.count({
+          where: { readerId: input.readerId, status: 'ACTIVA' },
+        });
+        if (active >= MAX_ACTIVE_RESERVATIONS_PER_READER) {
+          throw new ReservationLimitReachedError(
+            MAX_ACTIVE_RESERVATIONS_PER_READER,
+          );
+        }
 
         const candidate = await tx.copy.findFirst({
           where: {

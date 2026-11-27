@@ -1,5 +1,7 @@
 import {
   NoCopyAvailableError,
+  ReservationAccountInvalidError,
+  ReservationLimitReachedError,
   ReservationNotFoundError,
 } from '../domain/reservation.errors';
 import type {
@@ -57,6 +59,45 @@ describe('ReserveWork (HU-14)', () => {
     await expect(
       new ReserveWork(r, clock, 48).execute({ userId: 'u1', workId: 'w1' }),
     ).rejects.toBeInstanceOf(NoCopyAvailableError);
+  });
+});
+
+describe('cuentas eliminadas o inactivas y tope de reservas', () => {
+  const invalida = () =>
+    repo({
+      ensureReaderForUser: jest.fn(() =>
+        Promise.reject(new ReservationAccountInvalidError()),
+      ),
+    });
+
+  it('reservar, listar y cancelar rechazan la cuenta no válida sin tocar reservas', async () => {
+    const r = invalida();
+    await expect(
+      new ReserveWork(r, clock, 48).execute({ userId: 'u1', workId: 'w1' }),
+    ).rejects.toBeInstanceOf(ReservationAccountInvalidError);
+    await expect(
+      new ListMyReservations(r, clock).execute('u1'),
+    ).rejects.toBeInstanceOf(ReservationAccountInvalidError);
+    await expect(
+      new CancelReservation(r, clock).execute({
+        userId: 'u1',
+        reservationId: 'r1',
+      }),
+    ).rejects.toBeInstanceOf(ReservationAccountInvalidError);
+    expect(r.reserveAvailableCopy).not.toHaveBeenCalled();
+    expect(r.listActiveByReader).not.toHaveBeenCalled();
+    expect(r.cancel).not.toHaveBeenCalled();
+  });
+
+  it('propaga el error del tope de reservas activas', async () => {
+    const r = repo({
+      reserveAvailableCopy: jest.fn(() =>
+        Promise.reject(new ReservationLimitReachedError(3)),
+      ),
+    });
+    await expect(
+      new ReserveWork(r, clock, 48).execute({ userId: 'u1', workId: 'w1' }),
+    ).rejects.toThrow('Tiene el máximo de 3 reservas activas');
   });
 });
 

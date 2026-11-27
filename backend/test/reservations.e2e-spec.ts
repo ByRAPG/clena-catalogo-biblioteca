@@ -15,12 +15,21 @@ describe('Reservas (e2e, HU-14)', () => {
     ana: randomUUID(),
     beto: randomUUID(),
     staff: randomUUID(),
+    carla: randomUUID(),
+    inactiva: randomUUID(),
+    anonima: randomUUID(),
   };
   const verifier = {
     verifyAccessToken: async (token: string) => {
       if (token === 'ana') return { userId: ids.ana, role: 'READER' as const };
       if (token === 'beto')
         return { userId: ids.beto, role: 'READER' as const };
+      if (token === 'carla')
+        return { userId: ids.carla, role: 'READER' as const };
+      if (token === 'inactiva')
+        return { userId: ids.inactiva, role: 'READER' as const };
+      if (token === 'anonima')
+        return { userId: ids.anonima, role: 'READER' as const };
       if (token === 'staff')
         return { userId: ids.staff, role: 'STAFF' as const };
       return null;
@@ -321,5 +330,144 @@ describe('Reservas (e2e, HU-14)', () => {
         where: { workId: work.id, status: 'ACTIVA' },
       }),
     ).toBe(1);
+  });
+
+  it('una cuenta inactiva o anonimizada con token vigente recibe 401 y no obtiene lector', async () => {
+    await database.user.createMany({
+      data: [
+        {
+          id: ids.inactiva,
+          email: 'inactiva@example.org',
+          passwordHash: 'x',
+          fullName: 'Inactiva',
+          role: 'READER',
+          active: false,
+        },
+        {
+          id: ids.anonima,
+          email: 'anonima@anonimo.invalid',
+          passwordHash: '!anonimizada',
+          fullName: 'Cuenta eliminada',
+          role: 'READER',
+          active: false,
+          anonymizedAt: new Date(),
+        },
+      ],
+    });
+    for (const token of ['inactiva', 'anonima']) {
+      const auth = `Bearer ${token}`;
+      await http()
+        .post('/api/v1/reservations')
+        .set('Authorization', auth)
+        .send({ workId })
+        .expect(401);
+      await http()
+        .get('/api/v1/reservations/mine')
+        .set('Authorization', auth)
+        .expect(401);
+      await http()
+        .delete(`/api/v1/reservations/${randomUUID()}`)
+        .set('Authorization', auth)
+        .expect(401);
+    }
+    expect(
+      await database.reader.count({
+        where: { userId: { in: [ids.inactiva, ids.anonima] } },
+      }),
+    ).toBe(0);
+  });
+
+  it('un lector no puede tener más de 3 reservas activas; cancelar una libera el cupo', async () => {
+    await database.user.create({
+      data: {
+        id: ids.carla,
+        email: 'carla@example.org',
+        passwordHash: 'x',
+        fullName: 'Carla',
+        role: 'READER',
+      },
+    });
+    const CARLA = 'Bearer carla';
+    const obras: string[] = [];
+    for (let i = 0; i < 4; i += 1) {
+      const work = await database.work.create({
+        data: { title: `Tope ${i}`, searchText: `tope${i}` },
+      });
+      await database.copy.create({
+        data: {
+          workId: work.id,
+          shelfId,
+          inventoryCode: `RSV-TOPE-${i}`,
+          status: 'DISPONIBLE',
+        },
+      });
+      obras.push(work.id);
+    }
+    const reservas: string[] = [];
+    for (const id of obras.slice(0, 3)) {
+      const res = await http()
+        .post('/api/v1/reservations')
+        .set('Authorization', CARLA)
+        .send({ workId: id })
+        .expect(201);
+      reservas.push(res.body.id);
+    }
+    const rechazo = await http()
+      .post('/api/v1/reservations')
+      .set('Authorization', CARLA)
+      .send({ workId: obras[3] })
+      .expect(409);
+    expect(rechazo.body.message).toBe(
+      'Tiene el máximo de 3 reservas activas; cancele una para reservar otra',
+    );
+    await http()
+      .delete(`/api/v1/reservations/${reservas[0]}`)
+      .set('Authorization', CARLA)
+      .expect(204);
+    await http()
+      .post('/api/v1/reservations')
+      .set('Authorization', CARLA)
+      .send({ workId: obras[3] })
+      .expect(201);
+  });
+
+  it('al prestar un ejemplar se cierran todas las reservas activas del lector para esa obra', async () => {
+    const work = await database.work.create({
+      data: { title: 'Dos copias, una reserva', searchText: 'dos copias' },
+    });
+    const [copyA, copyB] = await Promise.all(
+      ['RSV-PA', 'RSV-PB'].map((inventoryCode) =>
+        database.copy.create({
+          data: {
+            workId: work.id,
+            shelfId,
+            inventoryCode,
+            status: 'DISPONIBLE',
+          },
+        }),
+      ),
+    );
+    const reader = await database.reader.create({
+      data: { fullName: 'Lector de mostrador' },
+    });
+    const reserva = await database.reservation.create({
+      data: {
+        workId: work.id,
+        copyId: copyA.id,
+        readerId: reader.id,
+        expiresAt: new Date(Date.now() + 3_600_000),
+      },
+    });
+    // Se presta el OTRO ejemplar de la obra: la reserva del lector se cumple.
+    await http()
+      .post('/api/v1/loans')
+      .set('Authorization', STAFF)
+      .send({ copyId: copyB.id, readerId: reader.id })
+      .expect(201);
+    const after = await database.reservation.findUniqueOrThrow({
+      where: { id: reserva.id },
+    });
+    expect(after.status).toBe('RECOGIDA');
+    expect(after.resolvedAt).not.toBeNull();
   });
 });
