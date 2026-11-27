@@ -5,11 +5,17 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../../shared/api/client'
 import { SesionContext } from '../auth/sesion-context'
+import * as reservas from '../reservations/reservas.api'
 import * as api from './cuenta.api'
 import { PaginaMiCuenta } from './pagina-mi-cuenta'
 import { PaginaRegistro } from './pagina-registro'
 
 vi.mock('./cuenta.api')
+vi.mock('../reservations/reservas.api', () => ({
+  listarMisReservas: vi.fn().mockResolvedValue([]),
+  cancelarReserva: vi.fn(),
+  reservarObra: vi.fn(),
+}))
 
 function conSesion(
   ui: React.ReactNode,
@@ -100,6 +106,7 @@ describe('PaginaRegistro (HU-16)', () => {
 describe('PaginaMiCuenta (HU-16 y HU-17)', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    vi.mocked(reservas.listarMisReservas).mockResolvedValue([])
     vi.mocked(api.obtenerMiCuenta).mockResolvedValue({
       nombre: 'Carmen Pérez',
       correo: 'carmen@example.org',

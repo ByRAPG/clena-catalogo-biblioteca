@@ -48,6 +48,15 @@ export const envSchema = z
     JWT_ACCESS_TTL: z.string().default('15m'),
     JWT_REFRESH_SECRET: z.string().min(1),
     JWT_REFRESH_TTL: z.string().default('7d'),
+    // Reservas (HU-14): horas para recoger el libro y segundos entre pasadas
+    // que marcan las vencidas (0 desactiva el intervalo). Ambas con valor por
+    // defecto: no exigen variables nuevas en producción.
+    RESERVATION_HOURS: z.coerce.number().int().min(1).max(720).default(48),
+    RESERVATION_EXPIRY_INTERVAL_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .default(60),
     SEMANTIC_SEARCH: z.enum(['on', 'off']).default('off'),
     EMBEDDING_PROVIDER: z.enum(['fake', 'local']).default('fake'),
     // Carpeta del modelo local (solo con EMBEDDING_PROVIDER=local); nunca se descarga en ejecución.

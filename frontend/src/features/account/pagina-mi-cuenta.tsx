@@ -12,6 +12,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { EncabezadoSeccion } from '../../shared/ui/encabezado-seccion'
 import { useSesion } from '../auth/sesion-context'
+import { MisReservas } from '../reservations/mis-reservas'
 import { eliminarMiCuenta, obtenerMiCuenta, type MiCuenta } from './cuenta.api'
 
 function formatearFecha(iso: string | null): string {
@@ -106,6 +107,8 @@ export function PaginaMiCuenta() {
           </Text>
         </dl>
       )}
+
+      <MisReservas token={token} />
 
       <Stack gap="sm">
         <Title order={2} size="h4">

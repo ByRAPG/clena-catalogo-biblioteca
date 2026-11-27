@@ -45,11 +45,14 @@ export function calculateDueDate(
 export function assertCopyCanBeLoaned(
   status: CopyStatusDomain,
   hasActiveReservation = false,
+  reservedByReaderId: string | null = null,
+  borrowerId?: string,
 ): void {
   if (status !== 'DISPONIBLE') {
     throw new CopyNotAvailableError(status);
   }
-  if (hasActiveReservation) {
+  // Una reserva vigente solo la puede cumplir quien reservó (HU-14).
+  if (hasActiveReservation && reservedByReaderId !== borrowerId) {
     throw new CopyNotAvailableError('RESERVADO');
   }
 }

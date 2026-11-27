@@ -57,12 +57,20 @@ export class RegisterLoanUseCase {
       throw new CopyNotFoundError(inventoryCode ?? copyId);
     }
 
-    assertCopyCanBeLoaned(copy.status, copy.hasActiveReservation);
+    // Primero el estado del ejemplar; la reserva se evalúa con el lector conocido.
+    assertCopyCanBeLoaned(copy.status);
 
     const reader = await this.loans.findReaderById(input.readerId);
     if (!reader || reader.anonymizedAt !== null) {
       throw new ReaderNotFoundError();
     }
+
+    assertCopyCanBeLoaned(
+      copy.status,
+      copy.hasActiveReservation,
+      copy.reservedByReaderId,
+      reader.id,
+    );
 
     return this.loans.createLoanAndMarkCopyLoaned({
       copyId: copy.id,

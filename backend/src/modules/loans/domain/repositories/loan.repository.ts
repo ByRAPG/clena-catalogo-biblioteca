@@ -11,6 +11,8 @@ export interface LoanCopySummary {
   readonly section: string;
   readonly shelf: string;
   readonly hasActiveReservation: boolean;
+  /** Lector que tiene la reserva vigente del ejemplar, si la hay. */
+  readonly reservedByReaderId: string | null;
 }
 
 export interface LoanReaderSummary {
