@@ -203,7 +203,7 @@ describe('Pantalla de búsqueda', () => {
     expect(temas.map((t) => t.getAttribute('href'))).toEqual([
       '/?q=Historia%20del%20Caribe',
       '/?q=Cuentos%20infantiles',
-      '/?q=Poes%C3%ADa%20contempor%C3%A1nea',
+      '/?q=Poes%C3%ADa%20rom%C3%A1ntica',
     ])
   })
 

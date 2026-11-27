@@ -13,7 +13,7 @@
 export const TEMAS_PORTADA: readonly string[] = [
   'Historia del Caribe',
   'Cuentos infantiles',
-  'Poesía contemporánea',
+  'Poesía romántica',
 ]
 
 /**
