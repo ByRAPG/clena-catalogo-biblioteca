@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   Inject,
+  Logger,
   Param,
   ParseUUIDPipe,
   Post,
@@ -33,6 +34,7 @@ import { RolesGuard } from '../../iam/presentation/guards/roles.guard';
 import type { LoanClock } from '../application/ports/clock.port';
 import { LOAN_CLOCK } from '../application/tokens';
 import { ListLoansUseCase } from '../application/use-cases/list-loans.use-case';
+import { NotifyAvailabilityUseCase } from '../application/use-cases/notify-availability.use-case';
 import {
   RegisterReaderUseCase,
   SearchLoanCopiesUseCase,
@@ -66,6 +68,8 @@ import { LoansErrorsFilter } from './loans-errors.filter';
 @Roles('STAFF', 'ADMIN')
 @UseFilters(LoansErrorsFilter)
 export class LoansController {
+  private readonly logger = new Logger(LoansController.name);
+
   constructor(
     private readonly registerLoan: RegisterLoanUseCase,
     private readonly returnLoan: ReturnLoanUseCase,
@@ -74,6 +78,7 @@ export class LoansController {
     private readonly registerReader: RegisterReaderUseCase,
     private readonly searchCopies: SearchLoanCopiesUseCase,
     @Inject(LOAN_CLOCK) private readonly clock: LoanClock,
+    private readonly notifyAvailability: NotifyAvailabilityUseCase,
   ) {}
 
   @Get()
@@ -128,7 +133,7 @@ export class LoansController {
   @ApiOperation({
     summary: 'Registrar la devolución de un préstamo',
     description:
-      'Cierra un préstamo activo con la fecha actual y devuelve el ejemplar al estado DISPONIBLE.',
+      'Cierra un préstamo activo con la fecha actual y devuelve el ejemplar al estado DISPONIBLE. Avisa por correo a quien pidió «Avísame cuando esté disponible» (HU-21).',
   })
   @ApiOkResponse({ type: LoanResponseDto })
   @ApiNotFoundResponse({ description: 'Préstamo no encontrado' })
@@ -137,6 +142,13 @@ export class LoansController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<LoanResponseDto> {
     const record = await this.returnLoan.execute(id);
+    // HU-21: avisa a quien pidió el libro. No retrasa ni hace fallar la
+    // devolución; si el correo falla, la revisión periódica lo reintenta.
+    void this.notifyAvailability
+      .execute(record.copy.workId)
+      .catch((error: unknown) =>
+        this.logger.warn(`Aviso de disponibilidad pendiente: ${String(error)}`),
+      );
     return toLoanResponseDto(record, this.clock.now());
   }
 

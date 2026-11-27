@@ -4,10 +4,13 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SesionContext } from '../auth/sesion-context'
+import * as alertas from './alertas.api'
 import { PaginaPrestamos } from './pagina-prestamos'
 import * as api from './prestamos.api'
 
 vi.mock('./prestamos.api')
+// El panel de alertas (HU-21) tiene su propia prueba.
+vi.mock('./alertas.api')
 
 const prestamoActivo: api.Prestamo = {
   id: 'loan-1',
@@ -61,6 +64,10 @@ function renderPagina() {
 describe('PaginaPrestamos (HU-20)', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    vi.mocked(alertas.obtenerAlertas).mockResolvedValue({
+      loans: [],
+      availability: [],
+    })
     vi.mocked(api.buscarEjemplares).mockResolvedValue([
       {
         id: 'copy-1',
