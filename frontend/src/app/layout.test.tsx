@@ -232,6 +232,8 @@ describe('tituloDeRuta', () => {
     expect(tituloDeRuta('/')).toBe('Buscar libros · Busca Fácil')
     expect(tituloDeRuta('/obras/abc')).toBe('Detalle de la obra · Busca Fácil')
     expect(tituloDeRuta('/gestion/importar')).toBe('Importar catálogo · Busca Fácil')
+    expect(tituloDeRuta('/mi-cuenta')).toBe('Mi cuenta · Busca Fácil')
+    expect(tituloDeRuta('/gestion/usuarios')).toBe('Cuentas del personal · Busca Fácil')
     expect(tituloDeRuta('/xyz')).toBe('Página no encontrada · Busca Fácil')
   })
 })

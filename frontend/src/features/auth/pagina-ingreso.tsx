@@ -200,7 +200,7 @@ export function PaginaIngreso() {
           <form onSubmit={ingresar}>
             <Stack gap="md">
               <TextInput
-                label="Correo institucional"
+                label="Correo"
                 type="email"
                 autoComplete="username"
                 required

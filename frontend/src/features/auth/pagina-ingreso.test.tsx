@@ -89,7 +89,7 @@ function pintarLayout() {
 
 /** El formulario aparece cuando termina la recuperación de la sesión. */
 async function llenarFormulario(correo: string, contrasena: string) {
-  fireEvent.change(await screen.findByLabelText(/Correo institucional/), {
+  fireEvent.change(await screen.findByLabelText(/^Correo/), {
     target: { value: correo },
   })
   fireEvent.change(screen.getByLabelText(/^Contraseña/), {
@@ -161,7 +161,7 @@ describe('inicio de sesión', () => {
     expect(
       await screen.findByRole('heading', { name: 'Gestión destino' }),
     ).toBeDefined()
-    expect(screen.queryByLabelText(/Correo institucional/)).toBeNull()
+    expect(screen.queryByLabelText(/^Correo/)).toBeNull()
   })
 
   it('muestra el mensaje de credenciales incorrectas al recibir 401', async () => {
