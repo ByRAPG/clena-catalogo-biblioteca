@@ -140,13 +140,11 @@ describe('RunLoanAlertsUseCase', () => {
 
   it('deja el aviso en el panel si el lector no tiene correo', async () => {
     const repo = fakeRepo({
-      findDueLoans: jest
-        .fn()
-        .mockResolvedValue([
-          prestamo({
-            reader: { id: 'r2', fullName: 'Sin correo', email: null },
-          }),
-        ]),
+      findDueLoans: jest.fn().mockResolvedValue([
+        prestamo({
+          reader: { id: 'r2', fullName: 'Sin correo', email: null },
+        }),
+      ]),
     });
     const email = fakeEmail();
     const resumen = await revision(repo, email).execute();
