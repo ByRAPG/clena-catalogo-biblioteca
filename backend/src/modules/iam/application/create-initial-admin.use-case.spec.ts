@@ -36,6 +36,8 @@ function setup(existing: User[] = []) {
       stored.set(user.email.value, user);
       return Promise.resolve();
     }),
+    listStaff: () => Promise.resolve([]),
+    setActive: () => Promise.resolve(),
     existsActiveAdmin: () =>
       Promise.resolve(
         [...stored.values()].some((u) => u.role === 'ADMIN' && u.canLogin()),

@@ -58,6 +58,10 @@ export class User {
     return this.active && this.anonymizedAt === null;
   }
 
+  get isActive(): boolean {
+    return this.active;
+  }
+
   isLockedAt(now: Date): boolean {
     return this.lockedUntilDate !== null && this.lockedUntilDate > now;
   }

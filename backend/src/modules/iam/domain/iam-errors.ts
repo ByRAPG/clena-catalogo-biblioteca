@@ -36,3 +36,55 @@ export class InvalidFullNameError extends Error {
     this.name = 'InvalidFullNameError';
   }
 }
+
+export class EmailAlreadyRegisteredError extends Error {
+  constructor() {
+    super('Ya existe una cuenta con ese correo');
+    this.name = 'EmailAlreadyRegisteredError';
+  }
+}
+
+export class UserNotFoundError extends Error {
+  constructor() {
+    super('No se encontró la cuenta indicada');
+    this.name = 'UserNotFoundError';
+  }
+}
+
+export class CannotDeactivateSelfError extends Error {
+  constructor() {
+    super('No puede desactivar su propia cuenta');
+    this.name = 'CannotDeactivateSelfError';
+  }
+}
+
+export class PrivacyNotAcceptedError extends Error {
+  constructor() {
+    super('Debe aceptar el tratamiento de sus datos para crear la cuenta');
+    this.name = 'PrivacyNotAcceptedError';
+  }
+}
+
+export class ActiveLoansError extends Error {
+  constructor() {
+    super('Devuelva el libro primero: tiene un préstamo activo');
+    this.name = 'ActiveLoansError';
+  }
+}
+
+/** La contraseña de confirmación no coincide; responde 403 (no 401: la sesión sigue siendo válida). */
+export class WrongPasswordError extends Error {
+  constructor() {
+    super('La contraseña no es correcta');
+    this.name = 'WrongPasswordError';
+  }
+}
+
+export class AccountDeletionNotAllowedError extends Error {
+  constructor() {
+    super(
+      'Las cuentas del personal se desactivan desde la gestión de usuarios',
+    );
+    this.name = 'AccountDeletionNotAllowedError';
+  }
+}

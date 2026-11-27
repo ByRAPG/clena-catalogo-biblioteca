@@ -6,6 +6,7 @@ import { PaginaImportacion } from '../features/catalog/pagina-importacion'
 import { PaginaEditarEjemplar } from '../features/catalog/pagina-editar-ejemplar'
 import { PaginaRegistrarLibro } from '../features/catalog/pagina-registrar-libro'
 import { PaginaPrestamos } from '../features/loans/pagina-prestamos'
+import { PaginaUsuarios } from '../features/users/pagina-usuarios'
 import { PaginaPrivacidad } from '../features/privacy/pagina-privacidad'
 import { PaginaBusqueda } from '../features/search/pagina-busqueda'
 import { Layout } from './layout'
@@ -30,6 +31,14 @@ export function Rutas() {
           element={
             <RutaProtegida roles={['ADMIN']}>
               <PaginaImportacion />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="gestion/usuarios"
+          element={
+            <RutaProtegida roles={['ADMIN']}>
+              <PaginaUsuarios />
             </RutaProtegida>
           }
         />

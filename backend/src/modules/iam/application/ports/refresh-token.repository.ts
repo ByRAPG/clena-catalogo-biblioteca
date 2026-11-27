@@ -18,4 +18,6 @@ export interface RefreshTokenRepository {
    */
   revokeIfActive(id: string, revokedAt: Date): Promise<boolean>;
   revokeFamily(familyId: string, revokedAt: Date): Promise<void>;
+  /** Revoca todos los tokens vigentes de una cuenta (desactivación o eliminación). */
+  revokeAllForUser(userId: string, revokedAt: Date): Promise<void>;
 }

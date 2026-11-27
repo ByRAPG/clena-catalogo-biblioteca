@@ -114,6 +114,14 @@ class InMemoryUserRepository implements UserRepository {
     return Promise.resolve();
   }
 
+  listStaff(): Promise<never[]> {
+    return Promise.resolve([]);
+  }
+
+  setActive(): Promise<void> {
+    return Promise.resolve();
+  }
+
   existsActiveAdmin(): Promise<boolean> {
     return Promise.resolve(
       [...this.users.values()].some((u) => u.role === 'ADMIN' && u.canLogin()),
@@ -155,6 +163,15 @@ class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
   revokeFamily(familyId: string, revokedAt: Date): Promise<void> {
     for (const row of this.rows) {
       if (row.familyId === familyId && row.revokedAt === null) {
+        row.revokedAt = revokedAt;
+      }
+    }
+    return Promise.resolve();
+  }
+
+  revokeAllForUser(userId: string, revokedAt: Date): Promise<void> {
+    for (const row of this.rows) {
+      if (row.userId === userId && row.revokedAt === null) {
         row.revokedAt = revokedAt;
       }
     }

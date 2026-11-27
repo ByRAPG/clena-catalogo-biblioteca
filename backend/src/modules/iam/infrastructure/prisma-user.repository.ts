@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import type { User as UserRow } from '@prisma/client';
+import { Prisma, type User as UserRow } from '@prisma/client';
 import { PrismaService } from '../../../shared/infrastructure/prisma.service';
-import { UserRepository } from '../application/ports/user.repository';
+import {
+  UserRepository,
+  UserSummary,
+} from '../application/ports/user.repository';
 import { Email } from '../domain/email.vo';
+import { EmailAlreadyRegisteredError } from '../domain/iam-errors';
 import { User } from '../domain/user.entity';
 
 /** Convierte la fila de Prisma en entidad de dominio; el modelo no sale de esta capa. */
@@ -64,16 +68,45 @@ export class PrismaUserRepository implements UserRepository {
   }
 
   async create(user: User): Promise<void> {
-    await this.prisma.user.create({
-      data: {
-        id: user.id,
-        email: user.email.value,
-        passwordHash: user.passwordHash,
-        fullName: user.fullName,
-        role: user.role,
-        active: user.canLogin(),
+    try {
+      await this.prisma.user.create({
+        data: {
+          id: user.id,
+          email: user.email.value,
+          passwordHash: user.passwordHash,
+          fullName: user.fullName,
+          role: user.role,
+          active: user.canLogin(),
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new EmailAlreadyRegisteredError();
+      }
+      throw error;
+    }
+  }
+
+  async listStaff(): Promise<UserSummary[]> {
+    return this.prisma.user.findMany({
+      where: { role: { in: ['ADMIN', 'STAFF'] }, anonymizedAt: null },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        role: true,
+        active: true,
+        createdAt: true,
       },
+      orderBy: [{ role: 'asc' }, { fullName: 'asc' }],
     });
+  }
+
+  async setActive(userId: string, active: boolean): Promise<void> {
+    await this.prisma.user.update({ where: { id: userId }, data: { active } });
   }
 
   async existsActiveAdmin(): Promise<boolean> {
