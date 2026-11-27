@@ -1,16 +1,38 @@
+import { lazy, Suspense } from 'react'
+import { Group, Loader, Text } from '@mantine/core'
 import { Route, Routes } from 'react-router-dom'
 import { PaginaIngreso } from '../features/auth/pagina-ingreso'
 import { PaginaDetalleObra } from '../features/catalog/pagina-detalle-obra'
-import { PaginaGestion } from '../features/catalog/pagina-gestion'
-import { PaginaImportacion } from '../features/catalog/pagina-importacion'
-import { PaginaEditarEjemplar } from '../features/catalog/pagina-editar-ejemplar'
-import { PaginaRegistrarLibro } from '../features/catalog/pagina-registrar-libro'
-import { PaginaPrestamos } from '../features/loans/pagina-prestamos'
 import { PaginaPrivacidad } from '../features/privacy/pagina-privacidad'
 import { PaginaBusqueda } from '../features/search/pagina-busqueda'
 import { Layout } from './layout'
 import { PaginaMensaje } from './pagina-mensaje'
 import { RutaProtegida } from './ruta-protegida'
+
+const PaginaImportacion = lazy(() =>
+  import('../features/catalog/pagina-importacion').then((m) => ({ default: m.PaginaImportacion })),
+)
+const PaginaEditarEjemplar = lazy(() =>
+  import('../features/catalog/pagina-editar-ejemplar').then((m) => ({ default: m.PaginaEditarEjemplar })),
+)
+const PaginaRegistrarLibro = lazy(() =>
+  import('../features/catalog/pagina-registrar-libro').then((m) => ({ default: m.PaginaRegistrarLibro })),
+)
+const PaginaGestion = lazy(() =>
+  import('../features/catalog/pagina-gestion').then((m) => ({ default: m.PaginaGestion })),
+)
+const PaginaPrestamos = lazy(() =>
+  import('../features/loans/pagina-prestamos').then((m) => ({ default: m.PaginaPrestamos })),
+)
+
+function Cargando() {
+  return (
+    <Group gap="sm" justify="center" aria-live="polite" className="estado-cargando">
+      <Loader size="sm" />
+      <Text>Cargando…</Text>
+    </Group>
+  )
+}
 
 /**
  * Mapa de rutas (T-03).
@@ -19,6 +41,7 @@ import { RutaProtegida } from './ruta-protegida'
  */
 export function Rutas() {
   return (
+    <Suspense fallback={<Cargando />}>
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<PaginaBusqueda />} />
@@ -85,5 +108,6 @@ export function Rutas() {
         />
       </Route>
     </Routes>
+    </Suspense>
   )
 }
