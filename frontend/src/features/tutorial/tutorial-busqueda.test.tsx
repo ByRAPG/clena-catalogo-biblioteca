@@ -113,7 +113,7 @@ describe('TutorialBusqueda', () => {
     expect(muestras?.getAttribute('aria-hidden')).toBe('true')
     expect(muestras?.querySelector('.coincidencia-campo')?.textContent).toBe('el título')
     expect(muestras?.querySelector('.insignia-significado')?.textContent).toBe(
-      'Coincide por significado',
+      'Relacionado por tema',
     )
     expect(screen.getByText(/Ejemplo ilustrativo\. Si busca «mar»/)).toBeDefined()
   })

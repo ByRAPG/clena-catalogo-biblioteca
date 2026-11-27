@@ -390,7 +390,7 @@ describe('Pantalla de búsqueda', () => {
     pintar('/?q=soledad')
     await screen.findByRole('link', { name: 'Cien años de soledad' })
 
-    expect(screen.getAllByText('Coincide por significado')).toHaveLength(1)
+    expect(screen.getAllByText('Relacionado por tema')).toHaveLength(1)
   })
 
   it('avisa con discreción si la búsqueda por significado no está disponible', async () => {
