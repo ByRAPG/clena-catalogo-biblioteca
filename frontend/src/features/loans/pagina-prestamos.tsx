@@ -30,6 +30,7 @@ import {
   type LectorMostrador,
   type Prestamo,
 } from './prestamos.api'
+import { SeccionAlertas } from './seccion-alertas'
 
 const PLAZO_POR_DEFECTO = 15
 
@@ -350,6 +351,8 @@ export function PaginaPrestamos() {
             {errorPrestamo}
           </Alert>
         )}
+
+        {token && <SeccionAlertas token={token} lectores={lectores} />}
 
         <Paper withBorder p="lg" radius="md">
           <Stack gap="md">

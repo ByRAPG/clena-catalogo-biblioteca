@@ -74,3 +74,33 @@ export class InvalidLoanRequestError extends LoanDomainError {
     super(message);
   }
 }
+
+/** 404: la obra del aviso de disponibilidad no existe (HU-21). */
+export class AlertWorkNotFoundError extends LoanDomainError {
+  constructor() {
+    super('No se encontró el libro indicado');
+  }
+}
+
+/** 400: el aviso se envía por correo y el lector no tiene uno (HU-21). */
+export class ReaderWithoutEmailError extends LoanDomainError {
+  constructor() {
+    super(
+      'El lector no tiene correo registrado; agréguelo para poder avisarle',
+    );
+  }
+}
+
+/** 409: el libro ya tiene un ejemplar disponible (HU-21). */
+export class WorkAlreadyAvailableError extends LoanDomainError {
+  constructor() {
+    super('El libro ya tiene un ejemplar disponible; puede prestarlo ahora');
+  }
+}
+
+/** 409: ya hay un aviso pendiente para ese lector y ese libro (HU-21). */
+export class AvailabilityAlertPendingError extends LoanDomainError {
+  constructor() {
+    super('Este lector ya tiene un aviso pendiente para ese libro');
+  }
+}

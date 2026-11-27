@@ -1,10 +1,11 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, type RefObject } from 'react'
-import { Anchor } from '@mantine/core'
-import { NavLink, Outlet } from 'react-router-dom'
+import { Anchor, Group, Loader, Text } from '@mantine/core'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { AccesibilidadProvider } from '../features/accessibility/accesibilidad-provider'
 import { CabeceraContenido } from './cabecera'
 import { CreditosInstitucionales } from '../shared/ui/creditos-institucionales'
 import { FranjaFoto } from '../shared/ui/franja-foto'
+import { LimiteErrores } from '../shared/ui/limite-errores'
 import { Marca } from '../shared/ui/marca'
 import { iniciarRevelado } from '../shared/efectos/revelar'
 import './marco.css'
@@ -16,6 +17,15 @@ const IntroCinematica =
   import.meta.env.VITE_INTRO_CINEMATICA === 'true'
     ? lazy(() => import('../features/intro/intro-cinematica'))
     : null
+
+function Cargando() {
+  return (
+    <Group gap="sm" justify="center" aria-live="polite" className="estado-cargando">
+      <Loader size="sm" />
+      <Text>Cargando…</Text>
+    </Group>
+  )
+}
 
 /**
  * Publica en <html> el alto que ocupa la cabecera flotante (`--alto-cabecera`,
@@ -56,6 +66,7 @@ export function Layout() {
   const cabeceraRef = useRef<HTMLElement | null>(null)
   useAltoCabecera(cabeceraRef)
   useEffect(() => iniciarRevelado(), [])
+  const { pathname } = useLocation()
 
   return (
     <AccesibilidadProvider>
@@ -77,7 +88,11 @@ export function Layout() {
         </header>
 
         <main id="contenido" className="marco-ancho marco-contenido">
-          <Outlet />
+          <LimiteErrores key={pathname}>
+            <Suspense fallback={<Cargando />}>
+              <Outlet />
+            </Suspense>
+          </LimiteErrores>
         </main>
 
         <FranjaFoto as="footer" foto="interior" tono="marino" className="pie">

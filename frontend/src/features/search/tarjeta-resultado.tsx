@@ -48,7 +48,7 @@ export function TarjetaResultado({
 
         {obra.matchSource === 'semantic' && (
           <span>
-            <span className="insignia-significado">Coincide por significado</span>
+            <span className="insignia-significado">Relacionado por tema</span>
           </span>
         )}
 
