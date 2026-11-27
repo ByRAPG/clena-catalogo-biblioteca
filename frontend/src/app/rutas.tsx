@@ -1,5 +1,4 @@
-import { lazy, Suspense } from 'react'
-import { Group, Loader, Text } from '@mantine/core'
+import { lazy } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { PaginaIngreso } from '../features/auth/pagina-ingreso'
 import { PaginaDetalleObra } from '../features/catalog/pagina-detalle-obra'
@@ -25,15 +24,6 @@ const PaginaPrestamos = lazy(() =>
   import('../features/loans/pagina-prestamos').then((m) => ({ default: m.PaginaPrestamos })),
 )
 
-function Cargando() {
-  return (
-    <Group gap="sm" justify="center" aria-live="polite" className="estado-cargando">
-      <Loader size="sm" />
-      <Text>Cargando…</Text>
-    </Group>
-  )
-}
-
 /**
  * Mapa de rutas (T-03).
  * Públicas: búsqueda, detalle de la obra, ingreso y aviso de privacidad.
@@ -41,7 +31,6 @@ function Cargando() {
  */
 export function Rutas() {
   return (
-    <Suspense fallback={<Cargando />}>
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<PaginaBusqueda />} />
@@ -108,6 +97,5 @@ export function Rutas() {
         />
       </Route>
     </Routes>
-    </Suspense>
   )
 }
