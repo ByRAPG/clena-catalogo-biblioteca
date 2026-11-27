@@ -1,19 +1,37 @@
+import { lazy } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { PaginaIngreso } from '../features/auth/pagina-ingreso'
 import { PaginaDetalleObra } from '../features/catalog/pagina-detalle-obra'
-import { PaginaGestion } from '../features/catalog/pagina-gestion'
-import { PaginaImportacion } from '../features/catalog/pagina-importacion'
-import { PaginaEditarEjemplar } from '../features/catalog/pagina-editar-ejemplar'
-import { PaginaRegistrarLibro } from '../features/catalog/pagina-registrar-libro'
-import { PaginaPrestamos } from '../features/loans/pagina-prestamos'
-import { PaginaMiCuenta } from '../features/account/pagina-mi-cuenta'
-import { PaginaRegistro } from '../features/account/pagina-registro'
-import { PaginaUsuarios } from '../features/users/pagina-usuarios'
 import { PaginaPrivacidad } from '../features/privacy/pagina-privacidad'
 import { PaginaBusqueda } from '../features/search/pagina-busqueda'
 import { Layout } from './layout'
 import { PaginaMensaje } from './pagina-mensaje'
 import { RutaProtegida } from './ruta-protegida'
+
+const PaginaImportacion = lazy(() =>
+  import('../features/catalog/pagina-importacion').then((m) => ({ default: m.PaginaImportacion })),
+)
+const PaginaEditarEjemplar = lazy(() =>
+  import('../features/catalog/pagina-editar-ejemplar').then((m) => ({ default: m.PaginaEditarEjemplar })),
+)
+const PaginaRegistrarLibro = lazy(() =>
+  import('../features/catalog/pagina-registrar-libro').then((m) => ({ default: m.PaginaRegistrarLibro })),
+)
+const PaginaGestion = lazy(() =>
+  import('../features/catalog/pagina-gestion').then((m) => ({ default: m.PaginaGestion })),
+)
+const PaginaUsuarios = lazy(() =>
+  import('../features/users/pagina-usuarios').then((m) => ({ default: m.PaginaUsuarios })),
+)
+const PaginaMiCuenta = lazy(() =>
+  import('../features/account/pagina-mi-cuenta').then((m) => ({ default: m.PaginaMiCuenta })),
+)
+const PaginaRegistro = lazy(() =>
+  import('../features/account/pagina-registro').then((m) => ({ default: m.PaginaRegistro })),
+)
+const PaginaPrestamos = lazy(() =>
+  import('../features/loans/pagina-prestamos').then((m) => ({ default: m.PaginaPrestamos })),
+)
 
 /**
  * Mapa de rutas (T-03).
