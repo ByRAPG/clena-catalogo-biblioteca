@@ -1,5 +1,5 @@
 import { MantineProvider } from '@mantine/core'
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { theme } from '../../shared/theme/theme'
@@ -159,5 +159,45 @@ describe('Detalle de la obra', () => {
     expect(
       await screen.findByText(/No pudimos conectarnos con el servidor/),
     ).toBeDefined()
+  })
+
+  it('copia la ubicación y confirma con un aviso', async () => {
+    simularRespuesta(OBRA)
+    const escribir = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText: escribir } })
+    pintar()
+    await screen.findByRole('heading', { name: 'Cien años de soledad' })
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Copiar ubicación del ejemplar CLENA-0001-1',
+      }),
+    )
+    await waitFor(() =>
+      expect(escribir).toHaveBeenCalledWith(
+        'Sala General › Sección Literatura Latinoamericana › Estante A-03',
+      ),
+    )
+    expect((await screen.findByText('Ubicación copiada')).getAttribute('role')).toBe(
+      'status',
+    )
+  })
+
+  it('avisa si no se pudo copiar', async () => {
+    simularRespuesta(OBRA)
+    vi.stubGlobal('navigator', { ...navigator, clipboard: undefined })
+    pintar()
+    await screen.findByRole('heading', { name: 'Cien años de soledad' })
+    fireEvent.click(screen.getAllByRole('button', { name: /Copiar ubicación/ })[0])
+    expect(await screen.findByText('No se pudo copiar')).toBeDefined()
+  })
+
+  it('imprime la ficha con window.print', async () => {
+    simularRespuesta(OBRA)
+    const imprimir = vi.spyOn(window, 'print').mockImplementation(() => {})
+    pintar()
+    await screen.findByRole('heading', { name: 'Cien años de soledad' })
+    fireEvent.click(screen.getByRole('button', { name: 'Imprimir ficha' }))
+    expect(imprimir).toHaveBeenCalledTimes(1)
+    imprimir.mockRestore()
   })
 })

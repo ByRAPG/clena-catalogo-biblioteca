@@ -54,3 +54,12 @@ export const GUION_BUSCADOR: readonly string[] = [
   'Pruebe con una idea: libros sobre el mar',
   'Filtre por sala o categoría',
 ]
+
+/** Texto que se copia: «Sala X › Sección Y › Estante Z». */
+export function textoDeUbicacion(u: {
+  room: string
+  section: string
+  shelf: string
+}): string {
+  return `${u.room} › Sección ${u.section} › Estante ${u.shelf}`
+}
