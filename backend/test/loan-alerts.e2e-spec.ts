@@ -104,7 +104,13 @@ describe('Alertas de devolución y disponibilidad (e2e, HU-21)', () => {
     const loan = async (copyId: string, readerId: string, dueInMs: number) =>
       (
         await database.loan.create({
-          data: { copyId, readerId, dueAt: new Date(Date.now() + dueInMs) },
+          data: {
+            copyId,
+            readerId,
+            // Prestado 14 días antes de vencer: la BD exige due_at >= loaned_at.
+            loanedAt: new Date(Date.now() + dueInMs - 14 * day),
+            dueAt: new Date(Date.now() + dueInMs),
+          },
         })
       ).id;
 
