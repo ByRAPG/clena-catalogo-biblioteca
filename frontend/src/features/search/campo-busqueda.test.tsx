@@ -82,6 +82,7 @@ describe('CampoBusqueda', () => {
           FalsoVoz.ultima = this
         }
         start() {}
+        abort() {}
         stop() {}
       }
       ;(window as unknown as Record<string, unknown>).webkitSpeechRecognition =
@@ -126,6 +127,7 @@ describe('CampoBusqueda', () => {
           FalsoVoz.ultima = this
         }
         start() {}
+        abort() {}
       }
       ;(window as unknown as Record<string, unknown>).webkitSpeechRecognition =
         FalsoVoz

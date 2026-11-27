@@ -24,6 +24,19 @@ import { leerArchivoCsv } from './decodificar-csv'
 const EXTENSIONES_PERMITIDAS = /\.(csv|tsv|txt)$/i
 const MAX_TAMANO_BYTES = 1_000_000
 
+const MAX_ERRORES_VISIBLES = 50
+
+/** Deja todas las filas correctas y solo las primeras 50 con error. */
+function acotarErrores<T extends { status: string }>(filas: T[]) {
+  let fallidas = 0
+  const visibles = filas.filter((f) => f.status !== 'failed' || ++fallidas <= MAX_ERRORES_VISIBLES)
+  return { visibles, ocultas: Math.max(0, fallidas - MAX_ERRORES_VISIBLES) }
+}
+
+function AvisoErroresOcultos({ n }: { n: number }) {
+  return n > 0 ? <Text>Y {n} filas más: descargue el CSV de errores</Text> : null
+}
+
 export function PaginaImportacion() {
   const { sesion } = useSesion()
   const [archivo, setArchivo] = useState<File | null>(null)
@@ -206,16 +219,19 @@ export function PaginaImportacion() {
             Filas con errores: {vistaPrevia.failed}.
           </Text>
           {vistaPrevia.failed > 0 && (
-            <ul>
-              {vistaPrevia.rows.map((fila) =>
-                fila.status === 'failed' ? (
-                  <li key={fila.row}>
-                    Fila {fila.row}: {fila.field ? `${fila.field}: ` : ''}
-                    {fila.error}
-                  </li>
-                ) : null,
-              )}
-            </ul>
+            <>
+              <ul>
+                {acotarErrores(vistaPrevia.rows).visibles.map((fila) =>
+                  fila.status === 'failed' ? (
+                    <li key={fila.row}>
+                      Fila {fila.row}: {fila.field ? `${fila.field}: ` : ''}
+                      {fila.error}
+                    </li>
+                  ) : null,
+                )}
+              </ul>
+              <AvisoErroresOcultos n={acotarErrores(vistaPrevia.rows).ocultas} />
+            </>
           )}
           <Group gap="sm">
             <Button
@@ -332,7 +348,7 @@ export function PaginaImportacion() {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {reporte.rows.map((fila) => (
+                {acotarErrores(reporte.rows).visibles.map((fila) => (
                   <Table.Tr key={fila.row}>
                     <Table.Td data-etiqueta="Fila">{fila.row}</Table.Td>
                     <Table.Td data-etiqueta="Resultado">
@@ -359,6 +375,7 @@ export function PaginaImportacion() {
               </Table.Tbody>
             </Table>
           )}
+          <AvisoErroresOcultos n={acotarErrores(reporte.rows).ocultas} />
         </section>
       )}
     </div>

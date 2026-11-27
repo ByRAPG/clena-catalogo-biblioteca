@@ -1,6 +1,6 @@
 import { ActionIcon, TextInput, VisuallyHidden } from '@mantine/core'
 import { useMediaQuery } from '@mantine/hooks'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { IconoMicrofono } from '../../shared/ui/iconos'
 import { GUION_BUSCADOR, PLACEHOLDER_BUSCADOR } from './textos'
 import { usePlaceholderAnimado } from './use-placeholder-animado'
@@ -17,6 +17,7 @@ interface ReconocimientoVoz {
   onend: (() => void) | null
   start: () => void
   stop: () => void
+  abort: () => void
 }
 
 type ConstructorVoz = new () => ReconocimientoVoz
@@ -60,10 +61,15 @@ export function CampoBusqueda({ valorInicial }: { valorInicial: string }) {
   const [Voz] = useState(constructorDeVoz)
   const [escuchando, setEscuchando] = useState(false)
   const [avisoVoz, setAvisoVoz] = useState('')
+  const reconocimientoActivo = useRef<ReconocimientoVoz | null>(null)
+
+  // Al salir de la página se corta el dictado para liberar el micrófono.
+  useEffect(() => () => reconocimientoActivo.current?.abort(), [])
 
   function dictar() {
     if (Voz === null || escuchando) return
     const reconocimiento = new Voz()
+    reconocimientoActivo.current = reconocimiento
     reconocimiento.lang = 'es-CO'
     reconocimiento.interimResults = false
     reconocimiento.maxAlternatives = 1
