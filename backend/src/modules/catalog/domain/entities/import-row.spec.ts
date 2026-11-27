@@ -40,11 +40,14 @@ describe('ImportRow', () => {
     }
   });
 
-  it.each([2024.5, NaN, Infinity])('rechaza el año inválido %s', (year) => {
-    expect(() => new ImportRow({ ...validInput(), year })).toThrow(
-      ImportRowError,
-    );
-  });
+  it.each([2024.5, NaN, Infinity, 0, -5, 3025])(
+    'rechaza el año inválido %s',
+    (year) => {
+      expect(() => new ImportRow({ ...validInput(), year })).toThrow(
+        ImportRowError,
+      );
+    },
+  );
 
   it.each(['texto inválido', 'javascript:alert(1)', 'ftp://example.org'])(
     'rechaza la URL digital %s',

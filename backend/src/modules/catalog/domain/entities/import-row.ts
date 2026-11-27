@@ -154,8 +154,17 @@ export class ImportRow {
   }
 
   private validateYear(year: number | undefined): void {
-    if (year !== undefined && !Number.isInteger(year)) {
+    if (year === undefined) return;
+    if (!Number.isInteger(year)) {
       throw new ImportRowError('anio', 'El año debe ser un número entero');
+    }
+    // Misma regla que «Registrar libro» (HU-10); la base además exige <= 2100.
+    const maxYear = new Date().getFullYear() + 1;
+    if (year < 1 || year > maxYear) {
+      throw new ImportRowError(
+        'anio',
+        `El año debe ser un número entre 1 y ${maxYear}`,
+      );
     }
   }
 
