@@ -82,6 +82,19 @@ export const envSchema = z
     SEARCH_MIN_SIMILARITY: z.coerce.number().min(0).max(1).default(0.84),
     SEARCH_RELATIVE_CUTOFF: z.coerce.number().min(0).max(1).default(0.04),
     SEARCH_LEXICAL_WEIGHT: z.coerce.number().min(0).max(10).default(2),
+    // HU-21: correo de avisos. Sin SMTP_HOST los avisos solo van al log.
+    SMTP_HOST: z.string().min(1).optional(),
+    SMTP_PORT: z.coerce.number().int().positive().default(1025),
+    MAIL_FROM: z
+      .string()
+      .min(1)
+      .default('Biblioteca CLENA <no-responder@clena.example>'),
+    // Revisión de avisos: una vez al día por defecto; 0 la apaga.
+    LOAN_ALERTS_INTERVAL_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .default(86_400),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== 'production') return;
